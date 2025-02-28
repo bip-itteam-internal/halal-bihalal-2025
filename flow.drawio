@@ -1,61 +1,67 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.0.15 Chrome/132.0.6834.196 Electron/34.2.0 Safari/537.36" version="26.0.15">
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.0.16 Chrome/132.0.6834.196 Electron/34.2.0 Safari/537.36" version="26.0.16">
   <diagram name="Page-1" id="I6qwG0xTKFVLU8Desz0M">
-    <mxGraphModel dx="2049" dy="1263" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="1434" dy="884" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="mxjIfYWzx0AP6oLWilOj-2" target="mxjIfYWzx0AP6oLWilOj-3">
+        <mxCell id="9NwwkFvlH_R_vCz4P8hN-1" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="140" y="370" width="420" height="416" as="geometry" />
+        </mxCell>
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="mxjIfYWzx0AP6oLWilOj-9" target="mxjIfYWzx0AP6oLWilOj-11" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-2" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="mxjIfYWzx0AP6oLWilOj-11" target="mxjIfYWzx0AP6oLWilOj-13" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-11" value="Update attandance status" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="385" y="440" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-13" value="Dashboard attandance" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="385" y="560" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="mxjIfYWzx0AP6oLWilOj-15" target="mxjIfYWzx0AP6oLWilOj-13" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-15" value="Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
+          <mxGeometry x="430" y="680" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="mxjIfYWzx0AP6oLWilOj-25" target="mxjIfYWzx0AP6oLWilOj-13" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-25" value="Import attandance from google-form" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="195" y="560" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="9NwwkFvlH_R_vCz4P8hN-2" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="570" y="20" width="460" height="520" as="geometry" />
+        </mxCell>
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="mxjIfYWzx0AP6oLWilOj-2" target="mxjIfYWzx0AP6oLWilOj-3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-2" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
           <mxGeometry x="635" y="40" width="30" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="mxjIfYWzx0AP6oLWilOj-3" target="mxjIfYWzx0AP6oLWilOj-5">
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="mxjIfYWzx0AP6oLWilOj-3" target="mxjIfYWzx0AP6oLWilOj-5" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="mxjIfYWzx0AP6oLWilOj-3" target="mxjIfYWzx0AP6oLWilOj-23">
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="mxjIfYWzx0AP6oLWilOj-3" target="mxjIfYWzx0AP6oLWilOj-23" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-3" value="Scan QR" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-3" value="Scan QR" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="590" y="180" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="mxjIfYWzx0AP6oLWilOj-5" target="mxjIfYWzx0AP6oLWilOj-9">
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="mxjIfYWzx0AP6oLWilOj-5" target="mxjIfYWzx0AP6oLWilOj-9" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="815" y="430" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-5" value="Show phone_number input" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-5" value="Show phone_number input" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="590" y="310" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="mxjIfYWzx0AP6oLWilOj-9" target="mxjIfYWzx0AP6oLWilOj-11">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-9" value="checkout and show shirt size" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-9" value="checkin and show shirt size" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="590" y="440" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="mxjIfYWzx0AP6oLWilOj-11" target="mxjIfYWzx0AP6oLWilOj-13">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-11" value="Update attandance status" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="385" y="440" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-13" value="Dashboard attandance" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="385" y="560" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="mxjIfYWzx0AP6oLWilOj-15" target="mxjIfYWzx0AP6oLWilOj-13">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-15" value="Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
-          <mxGeometry x="430" y="680" width="30" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-23" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;1. Show QR to access check-in API&lt;br&gt;2. API change attandance status&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+        <mxCell id="mxjIfYWzx0AP6oLWilOj-23" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;1. Show QR to access check-in API&lt;br&gt;2. API change attandance status&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="775" y="195" width="200" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="mxjIfYWzx0AP6oLWilOj-25" target="mxjIfYWzx0AP6oLWilOj-13">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="mxjIfYWzx0AP6oLWilOj-25" value="Import attandance from google-form" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="195" y="560" width="120" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

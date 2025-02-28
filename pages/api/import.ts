@@ -52,8 +52,6 @@ export default async function handler(
       const sheetName = workbook.SheetNames[0]; // Get first sheet
       const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]); // Convert to JSON
 
-      console.log({ data })
-
       res.status(200).json({ status: true, message: "Done", data }); // Return parsed data
     } catch (error) {
       const err = error as Error
