@@ -10,7 +10,5 @@ export async function get_data() {
     .from('participant')
     .select()
 
-  console.log({ data, error })
-
   return { data, error }
 }
