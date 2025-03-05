@@ -1,5 +1,4 @@
 import { Button, createListCollection, Flex, Group, Input, SelectContent, SelectItem, SelectRoot, SelectTrigger, SelectValueText } from "@chakra-ui/react";
-import { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,12 +10,12 @@ interface IAddParticipantForm {
 
 const shirtSizes = createListCollection({
   items: [
-    { label: "S", value: "sm" },
-    { label: "M", value: "md" },
-    { label: "L", value: "L" },
-    { label: "XL", value: "xl" },
-    { label: "2XL", value: "2xl" },
-    { label: "3XL", value: "3xl" },
+    { label: "S (P: 67  L: 48)", value: "sm" },
+    { label: "M (P: 69  L: 50)", value: "md" },
+    { label: "L (P: 71  L: 52)", value: "L" },
+    { label: "XL (P: 73  L: 54)", value: "xl" },
+    { label: "2XL (P: 75 L: 56)", value: "2xl" },
+    { label: "3XL (P: 75  L: 58)", value: "3xl" },
   ],
 })
 
