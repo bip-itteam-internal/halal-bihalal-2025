@@ -57,9 +57,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return res.status(500).json({ status: false, message: sessionError.message });
   }
 
-  res.status(200).json({ 
-    status: true, 
-    message: 'Login successful', 
-    token: sessionData.session?.access_token 
+  res.status(200).json({
+    status: true,
+    message: 'Login successful',
+    token: sessionData.session?.access_token
   });
 }
