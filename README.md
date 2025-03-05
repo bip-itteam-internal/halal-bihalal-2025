@@ -1,6 +1,13 @@
 # Flow
 ![Flow](./flow.drawio.png)
 
+## API Documentation
+
+For detailed information about the available API endpoints:  
+[📄 halal-bihalal-2025 Postman API Documentation](https://documenter.getpostman.com/view/23327717/2sAYdkFTT7).
+
+---
+
 ## Getting Started
 
 First, run the development server:
