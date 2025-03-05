@@ -4,7 +4,7 @@ import { Toaster, toaster } from "@/components/ui/toaster";
 import { Flex, HStack, IconButton, Input, Spinner, Stack, Table } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { FaPencilAlt } from "react-icons/fa";
-import { IData } from "../mock/mock_data";
+import { IData } from "@/components/mock/mock_data";
 
 export default function TableParticipant() {
   const [data, setData] = useState<IData[]>([])
@@ -27,7 +27,7 @@ export default function TableParticipant() {
     <>
       {
         data === null || data.length <= 0 && (
-          <Flex h="100vh" justifyContent="center" alignItems="center">
+          <Flex h="50vh" justifyContent="center" alignItems="center">
             <Spinner size="md" />
           </Flex>
         )

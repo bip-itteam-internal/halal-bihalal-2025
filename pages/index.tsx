@@ -1,9 +1,15 @@
 import TableParticipant from "@/components/organisms/TableParticipant";
+import AddParticipantForm from "@/components/organisms/AddParticipantForm";
 import { Box, Container, Heading, Tabs } from "@chakra-ui/react";
 import Head from "next/head";
 import { LuPlus, LuUser } from "react-icons/lu";
+import { useState } from "react";
+
+const TABS_LIST = ["participants", "adds"]
 
 export default function Home() {
+
+  const [tab, setTab] = useState<string | null>(TABS_LIST[1])
 
   return (
     <>
@@ -15,29 +21,33 @@ export default function Home() {
 
         <Heading fontSize="4xl" mb={8} textAlign="center">DASHBOARD</Heading>
 
-        <Tabs.Root justify="center" defaultValue="participants" lazyMount>
+        <Tabs.Root
+          justify="center"
+          lazyMount
+          unmountOnExit
+          value={tab}
+          onValueChange={(e) => setTab(e.value)}>
           <Tabs.List>
-            <Tabs.Trigger value="participants">
+            <Tabs.Trigger value={TABS_LIST[0]}>
               <LuUser />
               Participants
             </Tabs.Trigger>
-            <Tabs.Trigger value="adds">
+            <Tabs.Trigger value={TABS_LIST[1]}>
               <LuPlus />
               New
             </Tabs.Trigger>
           </Tabs.List>
-          <Tabs.Content value="participants">
+          <Tabs.Content value={TABS_LIST[0]}>
             <Box pt={5}>
               <TableParticipant />
             </Box>
           </Tabs.Content>
-          <Tabs.Content value="adds">
+          <Tabs.Content value={TABS_LIST[1]}>
             <Box pt={5}>
-              Manage your tasks for freelancers
+              <AddParticipantForm goToList={() => setTab(TABS_LIST[0])} />
             </Box>
           </Tabs.Content>
         </Tabs.Root>
-
 
       </Container>
     </>
