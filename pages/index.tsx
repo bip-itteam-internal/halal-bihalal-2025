@@ -1,10 +1,14 @@
 import CheckinModal from "@/components/organisms/CheckinModal";
-import { Button, Container, Flex, Heading, Stack, VStack } from "@chakra-ui/react";
+import { Button, Container, Heading, Text, VStack } from "@chakra-ui/react";
+import { Html5QrcodeScanner } from "html5-qrcode";
 import Cookies from "js-cookie";
 import Head from "next/head";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export default function Home() {
+  const [scanResult, setScanResult] = useState<string | null>(null);
+  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+
   const [modal, setModal] = useState({
     state: false,
     title: ""
@@ -13,6 +17,28 @@ export default function Home() {
   const logout = useCallback(() => {
     Cookies.remove("token");
     window && window.location.reload();
+  }, [])
+
+  useEffect(() => {
+    scannerRef.current = new Html5QrcodeScanner(
+      "qr-reader",
+      {
+        fps: 10, qrbox: { width: 250, height: 250 }
+      },
+      false
+    )
+
+    scannerRef.current.render(
+      (decodedText) => {
+        setScanResult(decodedText);
+        scannerRef.current?.clear();
+      },
+      (error) => console.error(error)
+    );
+
+    return () => {
+      scannerRef.current?.clear();
+    };
   }, [])
 
   return (
@@ -25,36 +51,10 @@ export default function Home() {
       <Container w={{ base: "360px", md: "400px" }}>
         <VStack h="calc(100vh - 20vh)" justify="center" alignItems="center">
           <Heading>Choose Event</Heading>
-          <Stack flexDir={{ base: "column", md: "row" }}>
-            <Flex
-              cursor="pointer"
-              justify="center"
-              alignItems="center"
-              boxSize={{ base: "15rem", md: "10rem" }}
-              border={{ base: "black 1px solid", _dark: "white 1px solid" }}
-              borderRadius="2xl"
-              onClick={() => setModal({
-                state: !modal.state,
-                title: "Event 1"
-              })}
-            >
-              Event 1
-            </Flex>
-            <Flex
-              cursor="pointer"
-              justify="center"
-              alignItems="center"
-              boxSize={{ base: "15rem", md: "10rem" }}
-              border={{ base: "black 1px solid", _dark: "white 1px solid" }}
-              borderRadius="2xl"
-              onClick={() => setModal({
-                state: !modal.state,
-                title: "Event 2"
-              })}
-            >
-              Event 2
-            </Flex>
-          </Stack>
+          <VStack>
+            <div id="qr-reader" />
+            {scanResult && <Text>{scanResult}</Text>}
+          </VStack>
           <Button mt="1rem" w="100%" onClick={logout}>Logout</Button>
         </VStack>
       </Container>
