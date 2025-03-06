@@ -1,5 +1,13 @@
 import { Field } from "@/components/ui/field";
-import { Button, Container, Flex, Group, Heading, Input, InputAddon } from "@chakra-ui/react";
+import {
+  Button,
+  Container,
+  Flex,
+  Group,
+  Heading,
+  Input,
+  InputAddon
+} from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Head from "next/head";
 import { useForm } from "react-hook-form";
@@ -34,7 +42,7 @@ export default function UserLogin() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        phone: `+62${phone}`
+        phone: `62${phone}`
       })
     })
 

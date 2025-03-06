@@ -11,7 +11,9 @@ export default async function handler(
   }
 
   const { event } = req.query;
-  const { selected_event } = req.body;
+
+  // after some consideration, user will only scan QR without choosing the event. Event depends on printed-QR (which is only 2 different URLs)
+  // const { selected_event } = req.body; 
 
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) {
@@ -27,13 +29,14 @@ export default async function handler(
 
   const participant_id = participant.id;
 
-  if (!event || !selected_event) {
+  // if (!event || !selected_event) {
+  if (!event) {
     return res.status(400).json({ status: false, message: 'Missing required fields' });
   }
 
-  if (Number(event) !== Number(selected_event)) {
-    return res.status(400).json({ status: false, message: 'Event mismatch' });
-  }
+  // if (Number(event) !== Number(selected_event)) {
+  //   return res.status(400).json({ status: false, message: 'Event mismatch' });
+  // }
 
   const { data: eventData, error: eventError } = await supabase
     .from('event')
@@ -64,6 +67,7 @@ export default async function handler(
     return res.status(400).json({ status: false, message: 'Check-in not allowed before event time' });
   }
 
+  // one hour
   if (timeDifference > 3600) {
     return res.status(400).json({ status: false, message: 'Check-in time exceeded' });
   }
@@ -76,5 +80,10 @@ export default async function handler(
     return res.status(500).json({ status: false, message: insertError.message });
   }
 
-  return res.status(200).json({ status: true, message: 'Check-in successful', shirt_size: participant.shirt_size });
+  return res.status(200).json({ 
+    status: true, 
+    message: 'Check-in successful', 
+    name: participant.name,
+    shirt_size: participant.shirt_size 
+  });
 }
