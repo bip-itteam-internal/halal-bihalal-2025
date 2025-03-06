@@ -66,9 +66,9 @@ export default function UserLogin() {
         <meta name="description" content="Letto show @bharatainternationalpharmaceutical" />
       </Head>
 
-      <Flex flexDir="column" h="calc(100vh - 20vh)" justifyContent="center" alignItems="center">
+      <Flex flexDir="column" h={{ base: "calc(100vh - 30vh)", md: "calc(100vh - 20vh)" }} justifyContent="center" alignItems="center">
         <Heading size="3xl" mb={10}>Login</Heading>
-        <Container width="30%">
+        <Container width={{ base: "100%", lg: "30%" }}>
           <form onSubmit={onSubmit}>
             <Field
               mb={10}
@@ -76,9 +76,10 @@ export default function UserLogin() {
               errorText={errors.phone?.message}>
               <Group attached w="100%">
                 <InputAddon
-                  border="white 1px solid">+62</InputAddon>
+                  border={{ base: "black 1px solid", _dark: "white 1px solid" }}
+                >+62</InputAddon>
                 <Input {...register("phone")}
-                  border="white 1px solid"
+                  border={{ base: "black 1px solid", _dark: "white 1px solid" }}
                   borderRadius="md"
                   placeholder="No. Telephone" />
               </Group>

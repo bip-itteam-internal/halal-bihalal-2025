@@ -1,6 +1,6 @@
-import { Button, Container, Flex, Heading, HStack, VStack } from "@chakra-ui/react";
-import Head from "next/head";
+import { Button, Container, Flex, Heading, Stack, VStack } from "@chakra-ui/react";
 import Cookies from "js-cookie";
+import Head from "next/head";
 import { useCallback } from "react";
 
 export default function Home() {
@@ -20,14 +20,14 @@ export default function Home() {
       <Container w={{ base: "360px", md: "400px" }}>
         <VStack h="calc(100vh - 20vh)" justify="center" alignItems="center">
           <Heading>Choose Event</Heading>
-          <HStack>
+          <Stack flexDir={{ base: "column", md: "row" }}>
             <Flex
               cursor="pointer"
               justify="center"
               alignItems="center"
-              boxSize="10rem"
-              border="white 1px solid"
-              borderRadius="lg"
+              boxSize={{ base: "15rem", md: "10rem" }}
+              border={{ base: "black 1px solid", _dark: "white 1px solid" }}
+              borderRadius="2xl"
             >
               Event 1
             </Flex>
@@ -35,14 +35,14 @@ export default function Home() {
               cursor="pointer"
               justify="center"
               alignItems="center"
-              boxSize="10rem"
-              border="white 1px solid"
-              borderRadius="lg"
+              boxSize={{ base: "15rem", md: "10rem" }}
+              border={{ base: "black 1px solid", _dark: "white 1px solid" }}
+              borderRadius="2xl"
             >
               Event 2
             </Flex>
-          </HStack>
-          <Button w="100%" onClick={logout}>Logout</Button>
+          </Stack>
+          <Button mt="1rem" w="100%" onClick={logout}>Logout</Button>
         </VStack>
       </Container>
     </>
