@@ -14,17 +14,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
   const { phone } = req.body;
   if (!phone) {
-    return res.status(400).json({ status: false, message: 'Phone number is required' });
+    return res.status(400).json({ status: false, message: 'Nomor telepon wajib diisi' });
   }
 
-  const { data, error } = await supabase
+  const { data: { session: activeSession }, error: sessionError } = await supabase.auth.getSession();
+
+  if (activeSession) {
+    await supabase.auth.signOut();
+  }
+
+  const { data, error: queryError } = await supabase
     .from('participant')
     .select('id')
     .eq('phone', phone)
-    .single();
+    .maybeSingle();
 
-  if (error || !data) {
-    return res.status(401).json({ status: false, message: 'Phone number not registered' });
+  if (queryError || !data) {
+    return res.status(401).json({ status: false, message: 'Nomor telepon tidak terdaftar' });
   }
 
   const userEmail = `${phone}@example.com`;
@@ -48,18 +54,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     user = newUser.user;
   }
 
-  const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
+  const { data: sessionData, error: loginError } = await supabase.auth.signInWithPassword({
     email: userEmail,
     password: 'defaultPassword123',
   });
 
-  if (sessionError) {
-    return res.status(500).json({ status: false, message: sessionError.message });
+  if (loginError) {
+    return res.status(500).json({ status: false, message: loginError.message });
   }
 
   res.status(200).json({ 
     status: true, 
-    message: 'Login successful', 
+    message: 'Login berhasil', 
     token: sessionData.session?.access_token 
   });
 }
