@@ -81,6 +81,7 @@ export default function UserLogin() {
                 <Input {...register("phone")}
                   border={{ base: "black 1px solid", _dark: "white 1px solid" }}
                   borderRadius="md"
+                  inputMode="numeric"
                   placeholder="No. Telephone" />
               </Group>
             </Field>
