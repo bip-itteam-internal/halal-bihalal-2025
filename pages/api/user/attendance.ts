@@ -20,7 +20,7 @@ export default async function handler(
 
   const supabase = getSupabaseWithBearer(token);
   const participant = await verifyUser(token);
-  
+
   if (!participant) {
     return res.status(401).json({ status: false, message: 'Invalid token' });
   }
@@ -51,7 +51,7 @@ export default async function handler(
     .eq('event_id', event)
     .eq('participant_id', participant_id)
     .single();
-  
+
   if (attendanceData) {
     return res.status(400).json({ status: false, message: 'Already checked in' });
   }
@@ -67,7 +67,7 @@ export default async function handler(
   if (timeDifference > 3600) {
     return res.status(400).json({ status: false, message: 'Check-in time exceeded' });
   }
-  
+
   const { error: insertError } = await supabase
     .from('attendance')
     .insert([{ event_id: event, participant_id, status: 'Present' }]);
