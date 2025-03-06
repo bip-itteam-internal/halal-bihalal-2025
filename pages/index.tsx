@@ -1,7 +1,14 @@
-import { Container, Flex, Heading, HStack, Spinner, VStack } from "@chakra-ui/react";
+import { Button, Container, Flex, Heading, HStack, VStack } from "@chakra-ui/react";
 import Head from "next/head";
+import Cookies from "js-cookie";
+import { useCallback } from "react";
 
 export default function Home() {
+
+  const logout = useCallback(() => {
+    Cookies.remove("token");
+    window && window.location.reload();
+  }, [])
 
   return (
     <>
@@ -10,7 +17,7 @@ export default function Home() {
         <meta name="description" content="Letto show @bharatainternationalpharmaceutical" />
       </Head>
 
-      <Container>
+      <Container w={{ base: "360px", md: "400px" }}>
         <VStack h="calc(100vh - 20vh)" justify="center" alignItems="center">
           <Heading>Choose Event</Heading>
           <HStack>
@@ -35,6 +42,7 @@ export default function Home() {
               Event 2
             </Flex>
           </HStack>
+          <Button w="100%" onClick={logout}>Logout</Button>
         </VStack>
       </Container>
     </>

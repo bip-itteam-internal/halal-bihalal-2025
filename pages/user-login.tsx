@@ -70,7 +70,6 @@ export default function UserLogin() {
         <Heading size="3xl" mb={10}>Login</Heading>
         <Container width="30%">
           <form onSubmit={onSubmit}>
-
             <Field
               mb={10}
               invalid={!!errors.phone}
