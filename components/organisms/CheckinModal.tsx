@@ -7,9 +7,9 @@ import {
   DialogHeader,
   DialogRoot,
   DialogTitle,
-  DialogTrigger
 } from "@/components/ui/dialog";
 import { Button } from "@chakra-ui/react";
+import { useCallback } from "react";
 
 interface ICheckinModalProps {
   title: string;
@@ -18,28 +18,26 @@ interface ICheckinModalProps {
 }
 
 export default function CheckinModal({ title, isOpen, setOpen }: ICheckinModalProps) {
+  const finishEvent = useCallback(() => {
+    window.location.reload()
+  }, [])
   return (
     <DialogRoot
       lazyMount
       open={isOpen}
-      size="full"
       onOpenChange={(e) => setOpen(e.open)}
       motionPreset="slide-in-bottom">
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle>Welcome</DialogTitle>
         </DialogHeader>
         <DialogBody>
           <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            {title}
           </p>
         </DialogBody>
         <DialogFooter>
-          <DialogActionTrigger asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogActionTrigger>
-          <Button>Save</Button>
+          <Button onClick={finishEvent}>Finish</Button>
         </DialogFooter>
         <DialogCloseTrigger />
       </DialogContent>
