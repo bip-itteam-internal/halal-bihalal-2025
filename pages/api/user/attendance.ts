@@ -67,7 +67,6 @@ export default async function handler(
     return res.status(400).json({ status: false, message: 'Check-in not allowed before event time' });
   }
 
-  // one hour
   if (timeDifference > 3600) {
     return res.status(400).json({ status: false, message: 'Check-in time exceeded' });
   }
@@ -80,10 +79,10 @@ export default async function handler(
     return res.status(500).json({ status: false, message: insertError.message });
   }
 
-  return res.status(200).json({ 
-    status: true, 
-    message: 'Check-in successful', 
+  return res.status(200).json({
+    status: true,
+    message: 'Check-in successful',
     name: participant.name,
-    shirt_size: participant.shirt_size 
+    shirt_size: participant.shirt_size
   });
 }

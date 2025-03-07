@@ -76,7 +76,7 @@ export default function UserLogin() {
 
       <Flex flexDir="column" h={{ base: "calc(100vh - 30vh)", md: "calc(100vh - 20vh)" }} justifyContent="center" alignItems="center">
         <Heading size="3xl" mb={10}>Login</Heading>
-        <Container width={{ base: "100%", lg: "30%" }}>
+        <Container width={{ base: "85%", lg: "30%" }}>
           <form onSubmit={onSubmit}>
             <Field
               mb={10}
