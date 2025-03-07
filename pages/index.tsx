@@ -1,15 +1,13 @@
 import CheckinModal from "@/components/organisms/CheckinModal";
-import { Button, Container, Heading, Text, VStack } from "@chakra-ui/react";
-import { Html5QrcodeScanner } from "html5-qrcode";
+import { Toaster, toaster } from "@/components/ui/toaster";
+import { Button, Container, Heading, VStack } from "@chakra-ui/react";
+import { IDetectedBarcode, Scanner } from '@yudiel/react-qr-scanner';
 import Cookies from "js-cookie";
 import Head from "next/head";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Toaster, toaster } from "@/components/ui/toaster";
 import { useRouter } from "next/router";
+import { useCallback, useState } from "react";
 
 export default function Home() {
-  // const [scanResult, setScanResult] = useState<string | null>(null);
-  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
   const router = useRouter()
 
   const [modal, setModal] = useState({
@@ -22,56 +20,39 @@ export default function Home() {
     window && window.location.reload();
   }, [])
 
-  useEffect(() => {
+  const checkin = useCallback(async (result: IDetectedBarcode[]) => {
     const token = Cookies.get("token")
     if (!token) router.replace("/user-login")
 
-    scannerRef.current = new Html5QrcodeScanner(
-      "qr-reader",
-      {
-        fps: 10, qrbox: { width: 250, height: 250 }
+    const response = await fetch(result[0].rawValue, {
+      method: "POST",
+
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
-      false
-    )
+    })
 
-    scannerRef.current.render(
-      (decodedText) => {
-        // setScanResult(decodedText);
-        (async function () {
-          const result = await fetch(decodedText, {
-            method: "POST",
+    const { name, shirt_size, message } = await response.json()
 
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-          })
+    if (!response.ok) {
+      toaster.create({
+        description: `Error: ${message}`,
+        type: "error",
+        duration: 2000
+      })
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000)
+    }
 
-          const { name, shirt_size, message } = await result.json()
-
-          if (!result.ok) {
-            toaster.create({
-              description: `Error: ${message}`,
-              type: "error",
-              duration: 2000
-            })
-          }
-
-          if (result.ok) setModal({
-            state: true,
-            title: `Welcome ${name}, your size is ${shirt_size}`
-          })
-        })()
-        scannerRef.current?.clear();
-      },
-      (error) => console.error(error)
-    );
-
-    return () => {
-      scannerRef.current?.clear();
-    };
+    if (response.ok) setModal({
+      state: true,
+      title: `Welcome ${name}, your size is ${shirt_size}`
+    })
   }, [])
+
 
   return (
     <>
@@ -83,9 +64,10 @@ export default function Home() {
       <Container w={{ base: "360px", md: "400px" }}>
         <VStack h="calc(100vh - 20vh)" justify="center" alignItems="center">
           <Heading fontSize="lg">Silahkan scan QR Code di tempat acara</Heading>
-          <VStack>
-            <div id="qr-reader" />
-            {/* {scanResult && <Text>{scanResult}</Text>} */}
+          <VStack w="100%" minH="250px">
+
+            <Scanner onScan={(result) => checkin(result)} />
+
           </VStack>
           <Button mt="1rem" w="100%" onClick={logout}>Logout</Button>
         </VStack>
