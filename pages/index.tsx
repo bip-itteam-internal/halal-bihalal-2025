@@ -1,82 +1,111 @@
-import CheckinModal from "@/components/organisms/CheckinModal";
-import { Toaster, toaster } from "@/components/ui/toaster";
-import { Button, Container, Heading, VStack } from "@chakra-ui/react";
-import { IDetectedBarcode, Scanner } from '@yudiel/react-qr-scanner';
-import Cookies from "js-cookie";
+import { Field } from "@/components/ui/field";
+import {
+  Button,
+  Container,
+  Flex,
+  Group,
+  Heading,
+  Input,
+  InputAddon
+} from "@chakra-ui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Head from "next/head";
+import { useForm } from "react-hook-form";
+import { z } from "zod"
+import { Toaster, toaster } from "@/components/ui/toaster";
 import { useRouter } from "next/router";
-import { useCallback, useState } from "react";
+import Cookies from "js-cookie";
+import { useEffect } from "react";
 
-export default function Home() {
+const formSchema = z.object({
+  phone: z.string({ message: "Nomor telepon jangan kosong ya" }).min(1),
+})
+
+type FormValues = z.infer<typeof formSchema>
+
+export default function UserLogin() {
   const router = useRouter()
 
-  const [modal, setModal] = useState({
-    state: false,
-    title: ""
-  });
+  const {
+    handleSubmit,
+    formState: { errors, isLoading, isSubmitting },
+    register,
+  } = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+  })
 
-  const logout = useCallback(() => {
-    Cookies.remove("token");
-    window && window.location.reload();
-  }, [])
-
-  const checkin = useCallback(async (result: IDetectedBarcode[]) => {
-    const token = Cookies.get("token")
-    if (!token) router.replace("/user-login")
-
-    const response = await fetch(result[0].rawValue, {
+  const onSubmit = handleSubmit(async ({ phone }) => {
+    const result = await fetch("/api/auth/login", {
       method: "POST",
-
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json'
       },
+      body: JSON.stringify({
+        phone: `62${phone}`
+      })
     })
 
-    const { name, shirt_size, message } = await response.json()
+    const { token, message } = await result.json()
 
-    if (!response.ok) {
+    if (!result.ok) {
+      console.error({ result })
       toaster.create({
         description: `Error: ${message}`,
         type: "error",
         duration: 2000
       })
-      setTimeout(() => {
-        window.location.reload();
-      }, 3000)
     }
 
-    if (response.ok) setModal({
-      state: true,
-      title: `Welcome ${name}, your size is ${shirt_size}`
-    })
-  }, [])
+    if (result.ok) {
+      Cookies.set("token", token, { expires: 14, path: "/" })
+      router.push("/")
+    }
+  })
 
+  useEffect(() => {
+    if (Cookies.get("token")) router.replace("/user")
+  }, [])
 
   return (
     <>
       <Head>
-        <title>Homepage | Halal Bihalal 2025</title>
+        <title>Login | Halal Bihalal 2025</title>
         <meta name="description" content="Letto show @bharatainternationalpharmaceutical" />
       </Head>
 
-      <Container w={{ base: "360px", md: "400px" }}>
-        <VStack h="calc(100vh - 20vh)" justify="center" alignItems="center">
-          <Heading fontSize="lg">Silahkan scan QR Code di tempat acara</Heading>
-          <VStack w="100%" minH="250px">
+      <Flex flexDir="column" h={{ base: "calc(100vh - 30vh)", md: "calc(100vh - 20vh)" }} justifyContent="center" alignItems="center">
+        <Heading size="3xl" mb={10}>Login</Heading>
+        <Container width={{ base: "85%", lg: "30%" }}>
+          <form onSubmit={onSubmit}>
+            <Field
+              mb={10}
+              invalid={!!errors.phone}
+              errorText={errors.phone?.message}>
+              <Group attached w="100%">
+                <InputAddon
+                  border={{ base: "black 1px solid", _dark: "white 1px solid" }}
+                >+62</InputAddon>
+                <Input {...register("phone")}
+                  border={{ base: "black 1px solid", _dark: "white 1px solid" }}
+                  borderRadius="md"
+                  inputMode="numeric"
+                  placeholder="No. Telephone" />
+              </Group>
+            </Field>
 
-            <Scanner onScan={(result) => checkin(result)} />
-
-          </VStack>
-          <Button mt="1rem" w="100%" onClick={logout}>Logout</Button>
-        </VStack>
-        <Toaster />
-      </Container>
-      <CheckinModal title={modal.title} isOpen={modal.state} setOpen={(e) => setModal({
-        state: e,
-        title: modal.title
-      })} />
+            <Field>
+              <Button
+                w="100%"
+                type="submit"
+                loading={isLoading || isSubmitting}
+                loadingText="Logging in"
+              >Login</Button>
+            </Field>
+          </form>
+          <Toaster />
+        </Container>
+      </Flex>
     </>
-  );
+  )
 }

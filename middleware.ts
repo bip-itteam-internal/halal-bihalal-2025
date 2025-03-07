@@ -4,7 +4,7 @@ export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
 
   if (!token) {
-    return NextResponse.redirect(new URL("/user-login", req.url));
+    return NextResponse.redirect(new URL("/", req.url));
   }
 
   return NextResponse.next(); // Allow access if token exists
@@ -12,5 +12,5 @@ export function middleware(req: NextRequest) {
 
 // Apply middleware to protect specific routes
 export const config = {
-  matcher: ["/"], // Protect the homepage
+  matcher: ["/user"], // Protect the homepage
 };
