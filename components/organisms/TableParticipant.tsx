@@ -2,12 +2,12 @@ import { get_participant_paging } from "@/components/helpers/supabase";
 import { IData } from "@/components/mock/mock_data";
 import { PaginationItems, PaginationNextTrigger, PaginationPrevTrigger, PaginationRoot } from "@/components/ui/pagination";
 import { Toaster, toaster } from "@/components/ui/toaster";
-import { Flex, HStack, IconButton, Input, Spinner, Stack, Table } from "@chakra-ui/react";
+import { Flex, HStack, IconButton, Input, Spinner, Stack, Table, Text, VStack } from "@chakra-ui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 import { FaPencilAlt } from "react-icons/fa";
 
 const PAGE_SIZE = 10;
-const DEBOUNCE_DELAY = 500; // 500ms delay
+const DEBOUNCE_DELAY = 350; // 500ms delay
 
 export default function TableParticipant() {
   const [data, setData] = useState<IData[]>([]);
@@ -51,7 +51,7 @@ export default function TableParticipant() {
   return (
     <>
       {
-        data === null || data.length <= 0 || loading && (
+        loading && (
           <Flex
             h="100%"
             w="100%"
@@ -63,65 +63,77 @@ export default function TableParticipant() {
         )
       }
 
-      {
-        data && data.length > 0 && (
-          <>
-            <Input mb={5} placeholder="Search..." value={searchTerm} onChange={handleSearch} />
-            <Table.Root size="sm" interactive>
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeader>#</Table.ColumnHeader>
-                  <Table.ColumnHeader>Nama</Table.ColumnHeader>
-                  <Table.ColumnHeader>Phone</Table.ColumnHeader>
-                  <Table.ColumnHeader>Email</Table.ColumnHeader>
-                  <Table.ColumnHeader>Shirt Size</Table.ColumnHeader>
-                  <Table.ColumnHeader>Actions</Table.ColumnHeader>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {data.map((item, index) => (
-                  <Table.Row key={item.phone}>
-                    <Table.Cell>{(page - 1) * PAGE_SIZE + index + 1}</Table.Cell>
-                    <Table.Cell>{item.name}</Table.Cell>
-                    <Table.Cell>{item.phone}</Table.Cell>
-                    <Table.Cell>{item.email}</Table.Cell>
-                    <Table.Cell>{item.shirt_size}</Table.Cell>
-                    <Table.Cell>
-                      <IconButton aria-label="Edit" onClick={() => {
-                        toaster.create({
-                          description: "Edit",
-                          type: "info",
-                          duration: 2000
-                        })
-                      }}>
-                        <FaPencilAlt />
-                      </IconButton>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table.Root>
 
-            <Stack>
-              <PaginationRoot
-                count={totalCount}
-                pageSize={PAGE_SIZE}
-                defaultPage={page}
-                onPageChange={(e) => {
-                  setPage(e.page)
-                }}
-              >
-                <HStack>
-                  <PaginationPrevTrigger />
-                  <PaginationItems />
-                  <PaginationNextTrigger />
-                </HStack>
-              </PaginationRoot>
-            </Stack>
-            <Toaster />
-          </>
+      <VStack>
+        <Input mb={5} placeholder="Search..." value={searchTerm} onChange={handleSearch} />
+        {
+          data && data.length > 0 && (
+            <>
+              <Table.Root size="sm" interactive>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeader>#</Table.ColumnHeader>
+                    <Table.ColumnHeader>Nama</Table.ColumnHeader>
+                    <Table.ColumnHeader>Phone</Table.ColumnHeader>
+                    <Table.ColumnHeader>Email</Table.ColumnHeader>
+                    <Table.ColumnHeader>Shirt Size</Table.ColumnHeader>
+                    <Table.ColumnHeader>Actions</Table.ColumnHeader>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {data.map((item, index) => (
+                    <Table.Row key={item.phone}>
+                      <Table.Cell>{(page - 1) * PAGE_SIZE + index + 1}</Table.Cell>
+                      <Table.Cell>{item.name}</Table.Cell>
+                      <Table.Cell>{item.phone}</Table.Cell>
+                      <Table.Cell>{item.email}</Table.Cell>
+                      <Table.Cell>{item.shirt_size}</Table.Cell>
+                      <Table.Cell>
+                        <IconButton aria-label="Edit" onClick={() => {
+                          toaster.create({
+                            description: "Edit",
+                            type: "info",
+                            duration: 2000
+                          })
+                        }}>
+                          <FaPencilAlt />
+                        </IconButton>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Root>
+
+              <Stack>
+                <PaginationRoot
+                  count={totalCount}
+                  pageSize={PAGE_SIZE}
+                  defaultPage={page}
+                  onPageChange={(e) => {
+                    setPage(e.page)
+                  }}
+                >
+                  <HStack>
+                    <PaginationPrevTrigger />
+                    <PaginationItems />
+                    <PaginationNextTrigger />
+                  </HStack>
+                </PaginationRoot>
+              </Stack>
+              <Toaster />
+            </>
+          )
+        }
+      </VStack>
+
+      {
+        data && data.length === 0 && (
+          <VStack>
+            <Text fontStyle="italic">Empty data</Text>
+          </VStack>
         )
       }
+
     </>
   )
 }

@@ -9,7 +9,7 @@ const TABS_LIST = ["participants", "adds"]
 
 export default function Home() {
 
-  const [tab, setTab] = useState<string | null>(TABS_LIST[1])
+  const [tab, setTab] = useState<string | null>(TABS_LIST[0])
 
   return (
     <>

@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { NewParticipantFormValues } from "@/components/organisms/AddParticipantForm";
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL as string || ""
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_KEY as string || ""
@@ -47,4 +48,9 @@ export async function get_participant_paging(
   }
 
   return { data, count, totalPages }
+}
+
+export async function create_participant(form: NewParticipantFormValues) {
+  const { data, error } = await supabase.from("participant").insert(form)
+  return { data, error }
 }

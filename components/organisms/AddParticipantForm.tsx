@@ -1,8 +1,22 @@
-import { Button, createListCollection, Flex, Group, Input, SelectContent, SelectItem, SelectRoot, SelectTrigger, SelectValueText } from "@chakra-ui/react";
+import {
+  Button,
+  createListCollection,
+  Flex,
+  Group,
+  Input,
+  InputAddon,
+  SelectContent,
+  SelectItem,
+  SelectRoot,
+  SelectTrigger,
+  SelectValueText
+} from "@chakra-ui/react";
 import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Field } from "@/components/ui/field";
+import { create_participant } from "@/components/helpers/supabase";
+import { Toaster, toaster } from "@/components/ui/toaster";
 
 interface IAddParticipantForm {
   goToList: () => void
@@ -22,24 +36,36 @@ const shirtSizes = createListCollection({
 const formSchema = z.object({
   name: z.string({ message: "Nama jangan kosong dong" }).min(1),
   phone: z.string({ message: "Nomor telepon jangan kosong ya" }).min(1),
-  email: z.string({ message: "Email jangan kosong  ya" }).email(),
+  email: z.string({ message: "Email jangan kosong ya" }).email(),
   shirt_size: z.string({ message: "Ukuran baju wajib diisi" }).array(),
 })
 
-type FormValues = z.infer<typeof formSchema>
+export type NewParticipantFormValues = z.infer<typeof formSchema>
 
 export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
 
   const {
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting, isLoading },
     control,
     register
-  } = useForm<FormValues>({
+  } = useForm<NewParticipantFormValues>({
     resolver: zodResolver(formSchema),
   })
 
-  const onSubmit = handleSubmit((data) => console.log(data))
+  const onSubmit = handleSubmit(async (data) => {
+    const { error } = await create_participant(data);
+    if (error) {
+
+      toaster.create({
+        description: error.message,
+        type: "error"
+      })
+      return;
+    }
+
+    goToList()
+  })
 
   return (
     <Flex justifyContent="center">
@@ -52,7 +78,13 @@ export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
         <Field mb={5} label="Phone"
           invalid={!!errors.phone}
           errorText={errors.phone?.message}>
-          <Input {...register("phone")}  placeholder="No. Telephone" />
+          <Group attached w="100%">
+            <InputAddon>+62</InputAddon>
+            <Input {...register("phone")}
+              borderRadius="md"
+              inputMode="numeric"
+              placeholder="No. Telephone" />
+          </Group>
         </Field>
         <Field mb={5} label="Email"
           invalid={!!errors.phone}
@@ -92,12 +124,13 @@ export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
 
         <Field alignItems="end">
           <Group grow>
-            <Button type="submit" >Save</Button>
-            <Button variant="outline" onClick={goToList}>Cancel</Button>
+            <Button type="submit" loading={isSubmitting || isLoading}>Save</Button>
+            <Button variant="outline" loading={isSubmitting || isLoading} onClick={goToList}>Cancel</Button>
           </Group>
         </Field>
       </form>
 
+      <Toaster />
     </Flex>
   )
 }
