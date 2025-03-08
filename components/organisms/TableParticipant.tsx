@@ -1,34 +1,64 @@
-import { get_data } from "@/components/helpers/supabase";
+import { get_participant_paging } from "@/components/helpers/supabase";
+import { IData } from "@/components/mock/mock_data";
 import { PaginationItems, PaginationNextTrigger, PaginationPrevTrigger, PaginationRoot } from "@/components/ui/pagination";
 import { Toaster, toaster } from "@/components/ui/toaster";
 import { Flex, HStack, IconButton, Input, Spinner, Stack, Table } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { FaPencilAlt } from "react-icons/fa";
-import { IData } from "@/components/mock/mock_data";
+
+const PAGE_SIZE = 10;
+const DEBOUNCE_DELAY = 500; // 500ms delay
 
 export default function TableParticipant() {
-  const [data, setData] = useState<IData[]>([])
+  const [data, setData] = useState<IData[]>([]);
+  const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await get_data();
-      if (error)
-        toaster.create({
-          description: error.message,
-          type: "error",
-        })
+      setLoading(true);
 
-      if (data)
-        setData(data)
+      const burp = await get_participant_paging({ page, debouncedSearchTerm, page_size: PAGE_SIZE });
+
+      if (burp && burp.data)
+        setData(burp.data)
+
+      if (burp && burp.count)
+        setTotalCount(burp.count)
+
+      setLoading(false)
     })()
-  }, [])
+  }, [page, debouncedSearchTerm])
+
+  // Debounce logic: update debouncedSearchTerm after user stops typing
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, DEBOUNCE_DELAY);
+
+    return () => clearTimeout(handler); // Cleanup timeout if user types again
+  }, [searchTerm]);
+
+  // Handle search input change
+  const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1); // Reset to first page on search
+  };
 
   return (
     <>
       {
-        data === null || data.length <= 0 && (
-          <Flex h="50vh" justifyContent="center" alignItems="center">
-            <Spinner size="md" />
+        data === null || data.length <= 0 || loading && (
+          <Flex
+            h="100%"
+            w="100%"
+            position="absolute"
+            justifyContent="center"
+            alignItems="center">
+            <Spinner size="lg" />
           </Flex>
         )
       }
@@ -36,15 +66,14 @@ export default function TableParticipant() {
       {
         data && data.length > 0 && (
           <>
-            <Input mb={5} placeholder="Search..." />
+            <Input mb={5} placeholder="Search..." value={searchTerm} onChange={handleSearch} />
             <Table.Root size="sm" interactive>
               <Table.Header>
                 <Table.Row>
-                  <Table.ColumnHeader>No.</Table.ColumnHeader>
+                  <Table.ColumnHeader>#</Table.ColumnHeader>
                   <Table.ColumnHeader>Nama</Table.ColumnHeader>
                   <Table.ColumnHeader>Phone</Table.ColumnHeader>
                   <Table.ColumnHeader>Email</Table.ColumnHeader>
-                  <Table.ColumnHeader>Department</Table.ColumnHeader>
                   <Table.ColumnHeader>Shirt Size</Table.ColumnHeader>
                   <Table.ColumnHeader>Actions</Table.ColumnHeader>
                 </Table.Row>
@@ -52,11 +81,10 @@ export default function TableParticipant() {
               <Table.Body>
                 {data.map((item, index) => (
                   <Table.Row key={item.phone}>
-                    <Table.Cell>{++index}</Table.Cell>
+                    <Table.Cell>{(page - 1) * PAGE_SIZE + index + 1}</Table.Cell>
                     <Table.Cell>{item.name}</Table.Cell>
                     <Table.Cell>{item.phone}</Table.Cell>
                     <Table.Cell>{item.email}</Table.Cell>
-                    <Table.Cell>{item.department}</Table.Cell>
                     <Table.Cell>{item.shirt_size}</Table.Cell>
                     <Table.Cell>
                       <IconButton aria-label="Edit" onClick={() => {
@@ -76,14 +104,11 @@ export default function TableParticipant() {
 
             <Stack>
               <PaginationRoot
-                count={10}
-                pageSize={2}
-                defaultPage={1}
+                count={totalCount}
+                pageSize={PAGE_SIZE}
+                defaultPage={page}
                 onPageChange={(e) => {
-                  toaster.create({
-                    description: `Go to ${e.page}`,
-                    type: "info"
-                  })
+                  setPage(e.page)
                 }}
               >
                 <HStack>

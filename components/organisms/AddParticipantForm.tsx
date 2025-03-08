@@ -90,7 +90,7 @@ export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
 
         </Field>
 
-        <Field>
+        <Field alignItems="end">
           <Group grow>
             <Button type="submit" >Save</Button>
             <Button variant="outline" onClick={goToList}>Cancel</Button>
