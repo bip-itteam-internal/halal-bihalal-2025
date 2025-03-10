@@ -63,7 +63,6 @@ export default function TableParticipant() {
         )
       }
 
-
       <VStack>
         <Input mb={5} placeholder="Search..." value={searchTerm} onChange={handleSearch} />
         {

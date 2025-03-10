@@ -18,7 +18,7 @@ export default function Home() {
   const logout = useCallback(() => {
     Cookies.remove("token");
     window && window.location.reload();
-  }, [])
+  }, [router])
 
   const checkin = useCallback(async (result: IDetectedBarcode[]) => {
     const token = Cookies.get("token")
@@ -64,7 +64,7 @@ export default function Home() {
       <Container w={{ base: "360px", md: "400px" }}>
         <VStack h="calc(100vh - 20vh)" justify="center" alignItems="center">
           <Heading fontSize="lg">Silahkan scan QR Code di tempat acara</Heading>
-          <VStack w="100%" minH="250px">
+          <VStack w="100%" minH="350px">
 
             <Scanner onScan={(result) => checkin(result)} />
 

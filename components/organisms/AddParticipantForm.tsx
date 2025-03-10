@@ -15,8 +15,8 @@ import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Field } from "@/components/ui/field";
-import { create_participant } from "@/components/helpers/supabase";
 import { Toaster, toaster } from "@/components/ui/toaster";
+import Cookies from "js-cookie";
 
 interface IAddParticipantForm {
   goToList: () => void
@@ -54,11 +54,27 @@ export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
   })
 
   const onSubmit = handleSubmit(async (data) => {
-    const { error } = await create_participant(data);
-    if (error) {
 
+    const token = Cookies.get("at");
+    const response = await fetch("/api/admin/participant/", {
+      method: "POST",
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        participant: {
+          ...data
+        }
+      })
+    });
+
+    const { message } = await response.json()
+
+    if (!response.ok) {
       toaster.create({
-        description: error.message,
+        description: message,
         type: "error"
       })
       return;

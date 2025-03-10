@@ -6,7 +6,6 @@ import {
   Group,
   Heading,
   Input,
-  InputAddon
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Head from "next/head";
@@ -18,12 +17,13 @@ import Cookies from "js-cookie";
 import { useEffect } from "react";
 
 const formSchema = z.object({
-  phone: z.string({ message: "Nomor telepon jangan kosong ya" }).min(1),
+  email: z.string({ message: "Email required" }).email(),
+  password: z.string({ message: "Password required" })
 })
 
 type FormValues = z.infer<typeof formSchema>
 
-export default function UserLogin() {
+export default function AdminLogin() {
   const router = useRouter()
 
   const {
@@ -34,16 +34,14 @@ export default function UserLogin() {
     resolver: zodResolver(formSchema),
   })
 
-  const onSubmit = handleSubmit(async ({ phone }) => {
-    const result = await fetch("/api/auth/login", {
+  const onSubmit = handleSubmit(async ({ email, password }) => {
+    const result = await fetch("/api/admin/login", {
       method: "POST",
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        phone: `62${phone}`
-      })
+      body: JSON.stringify({ email, password })
     })
 
     const { token, message } = await result.json()
@@ -55,22 +53,19 @@ export default function UserLogin() {
         type: "error",
         duration: 2000
       })
+      return;
     }
 
     if (result.ok) {
-      Cookies.set("token", token, { expires: 14, path: "/" })
-      router.push("/")
+      Cookies.set("at", token, { expires: 14, path: "/admin" })
+      router.replace("/admin")
     }
   })
-
-  useEffect(() => {
-    if (Cookies.get("token")) router.replace("/user")
-  }, [router])
 
   return (
     <>
       <Head>
-        <title>Login | Halal Bihalal 2025</title>
+        <title>Admin Login | Halal Bihalal 2025</title>
         <meta name="description" content="Letto show @bharatainternationalpharmaceutical" />
       </Head>
 
@@ -80,17 +75,21 @@ export default function UserLogin() {
           <form onSubmit={onSubmit}>
             <Field
               mb={10}
-              invalid={!!errors.phone}
-              errorText={errors.phone?.message}>
+              invalid={!!errors.email}
+              errorText={errors.email?.message}>
               <Group attached w="100%">
-                <InputAddon
-                  border={{ base: "black 1px solid", _dark: "white 1px solid" }}
-                >+62</InputAddon>
-                <Input {...register("phone")}
-                  border={{ base: "black 1px solid", _dark: "white 1px solid" }}
-                  borderRadius="md"
-                  inputMode="numeric"
-                  placeholder="No. Telephone" />
+                <Input {...register("email")}
+                  placeholder="Email" />
+              </Group>
+            </Field>
+            <Field
+              mb={10}
+              invalid={!!errors.password}
+              errorText={errors.password?.message}>
+              <Group attached w="100%">
+                <Input {...register("password")}
+                  type="password"
+                  placeholder="Password" />
               </Group>
             </Field>
 

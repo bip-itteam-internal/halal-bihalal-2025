@@ -1,15 +1,25 @@
 import AddParticipantForm from "@/components/organisms/AddParticipantForm";
 import TableParticipant from "@/components/organisms/TableParticipant";
-import { Box, Container, Heading, Tabs } from "@chakra-ui/react";
+import { Box, Button, Container, Heading, Tabs } from "@chakra-ui/react";
 import Head from "next/head";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { LuPlus, LuUser } from "react-icons/lu";
-
+import Cookies from "js-cookie"
+import { useRouter } from "next/router";
 const TABS_LIST = ["participants", "adds"]
 
 export default function Home() {
-
   const [tab, setTab] = useState<string | null>(TABS_LIST[0])
+  const router = useRouter()
+
+  const logout = useCallback(() => {
+    Cookies.remove("at", { path: "/admin" });
+    window && window.location.reload()
+  }, [])
+
+  useEffect(() => {
+    if (!Cookies.get("at")) router.replace("/admin/login")
+  }, [router])
 
   return (
     <>
@@ -20,6 +30,15 @@ export default function Home() {
       <Container mt={10}>
 
         <Heading fontSize="4xl" mb={8} textAlign="center">DASHBOARD</Heading>
+
+        <Button
+          position="absolute"
+          top="0"
+          right="2rem"
+          w="4rem"
+          h="2rem"
+          onClick={logout}
+        >Logout</Button>
 
         <Tabs.Root
           justify="center"
@@ -49,7 +68,9 @@ export default function Home() {
           </Tabs.Content>
         </Tabs.Root>
 
-      </Container>
+
+
+      </Container >
     </>
   )
 }
