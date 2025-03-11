@@ -1,15 +1,18 @@
 import { get_participant_paging } from "@/components/helpers/supabase";
 import { IData } from "@/components/mock/mock_data";
 import { PaginationItems, PaginationNextTrigger, PaginationPrevTrigger, PaginationRoot } from "@/components/ui/pagination";
-import { Toaster, toaster } from "@/components/ui/toaster";
 import { Box, Center, HStack, IconButton, Input, Spinner, Stack, Table, Text, VStack } from "@chakra-ui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 import { FaPencilAlt } from "react-icons/fa";
 
 const PAGE_SIZE = 10;
-const DEBOUNCE_DELAY = 350; // 500ms delay
+const DEBOUNCE_DELAY = 350; // 350ms delay
 
-export default function TableParticipant() {
+interface IEditThis {
+  populatedData: (data: IData) => void
+}
+
+export default function TableParticipant({ populatedData }: IEditThis) {
   const [data, setData] = useState<IData[]>([]);
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -86,10 +89,12 @@ export default function TableParticipant() {
                       <Table.Cell>{item.shirt_size}</Table.Cell>
                       <Table.Cell>
                         <IconButton aria-label="Edit" onClick={() => {
-                          toaster.create({
-                            description: "Edit",
-                            type: "info",
-                            duration: 2000
+                          populatedData({
+                            id: item.id,
+                            phone: item.phone,
+                            name: item.name,
+                            email: item.email,
+                            shirt_size: item.shirt_size
                           })
                         }}>
                           <FaPencilAlt />
@@ -116,7 +121,6 @@ export default function TableParticipant() {
                   </HStack>
                 </PaginationRoot>
               </Stack>
-              <Toaster />
             </>
           )
         }

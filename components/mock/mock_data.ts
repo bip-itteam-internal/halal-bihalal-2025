@@ -1,8 +1,9 @@
 export interface IData {
+  id?: string;
   name: string;
   phone: string;
   email: string;
-  department: string;
+  department?: string;
   shirt_size: string;
 }
 

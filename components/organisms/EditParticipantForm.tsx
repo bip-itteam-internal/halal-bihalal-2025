@@ -19,7 +19,15 @@ import { Toaster, toaster } from "@/components/ui/toaster";
 import Cookies from "js-cookie";
 import { useEffect } from "react";
 
-interface IAddParticipantForm {
+interface IEditParticipanType {
+  populatedData: {
+    id?: string;
+    name: string;
+    phone: string;
+    shirt_size: string;
+    email: string;
+  };
+  clear: () => void;
   goToList: () => void
 }
 
@@ -41,36 +49,41 @@ const formSchema = z.object({
   shirt_size: z.string({ message: "Ukuran baju wajib diisi" }).array(),
 })
 
-export type NewParticipantFormValues = z.infer<typeof formSchema>
+export type EditParticipantFormValues = z.infer<typeof formSchema>
 
-export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
+export default function EditParticipantForm({ clear, populatedData, goToList }: IEditParticipanType) {
 
   const {
     handleSubmit,
     formState: { errors, isSubmitting, isLoading },
     control,
     register,
-    reset,
-    resetField
-  } = useForm<NewParticipantFormValues>({
+    setValue,
+    reset
+  } = useForm<EditParticipantFormValues>({
     resolver: zodResolver(formSchema),
   })
+
+  useEffect(() => {
+    setValue("email", populatedData.email);
+    setValue("name", populatedData.name);
+    setValue("phone", populatedData.phone);
+    setValue("shirt_size", [populatedData.shirt_size]);
+  }, [setValue, populatedData])
 
   const onSubmit = handleSubmit(async (data) => {
 
     const token = Cookies.get("at");
-    const response = await fetch("/api/admin/participant/", {
-      method: "POST",
+    const response = await fetch(`/api/admin/participant/${populatedData.id}`, {
+      method: "PUT",
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
-        participant: {
-          ...data,
-          shirt_size: data.shirt_size[0].toUpperCase(),
-        }
+        ...data,
+        shirt_size: data.shirt_size[0].toUpperCase()
       })
     });
 
@@ -86,10 +99,6 @@ export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
 
     goToList()
   })
-
-  useEffect(() => {
-    reset()
-  }, [reset])
 
   return (
     <Flex justifyContent="center">
@@ -149,7 +158,12 @@ export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
         <Field alignItems="end">
           <Group grow>
             <Button type="submit" loading={isSubmitting || isLoading}>Save</Button>
-            <Button variant="outline" loading={isSubmitting || isLoading} onClick={goToList}>Cancel</Button>
+            <Button variant="outline" loading={isSubmitting || isLoading}
+              onClick={() => {
+                clear();
+                reset();
+                goToList();
+              }}>Cancel</Button>
           </Group>
         </Field>
       </form>
