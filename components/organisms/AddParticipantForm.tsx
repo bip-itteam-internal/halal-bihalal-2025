@@ -65,7 +65,8 @@ export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
       },
       body: JSON.stringify({
         participant: {
-          ...data
+          ...data,
+          shirt_size: data.shirt_size[0],
         }
       })
     });

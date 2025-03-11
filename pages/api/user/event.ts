@@ -5,7 +5,13 @@ import { verifyUser } from '../../../utils/verifyUser';
 type Data = {
   status: boolean;
   message: string;
-  data?: any;
+  data?: {
+    status: string;
+    id: string;
+    name: string;
+    date: string;
+    location: string;
+  }[];
 };
 
 export default async function handler(
@@ -39,7 +45,7 @@ export default async function handler(
 
   const eventsWithStatus = await Promise.all(
     events.map(async (event) => {
-      const { data: attendance, error: attendanceError } = await supabase
+      const { data: attendance } = await supabase
         .from('attendance')
         .select('status')
         .eq('event_id', event.id)

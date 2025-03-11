@@ -1,6 +1,6 @@
 import CheckinModal from "@/components/organisms/CheckinModal";
 import { Toaster, toaster } from "@/components/ui/toaster";
-import { Button, Container, Heading, VStack } from "@chakra-ui/react";
+import { Box, Button, Center, Container, Flex, Heading, Spinner, VStack } from "@chakra-ui/react";
 import { IDetectedBarcode, Scanner } from '@yudiel/react-qr-scanner';
 import Cookies from "js-cookie";
 import Head from "next/head";
@@ -8,7 +8,8 @@ import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
 
 export default function Home() {
-  const router = useRouter()
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [modal, setModal] = useState({
     state: false,
@@ -17,10 +18,12 @@ export default function Home() {
 
   const logout = useCallback(() => {
     Cookies.remove("token");
-    window && window.location.reload();
+    router.reload()
   }, [router])
 
   const checkin = useCallback(async (result: IDetectedBarcode[]) => {
+    setIsLoading(true);
+
     const token = Cookies.get("token")
     if (!token) router.replace("/")
 
@@ -37,21 +40,25 @@ export default function Home() {
     const { name, shirt_size, message } = await response.json()
 
     if (!response.ok) {
+      setIsLoading(false)
       toaster.create({
         description: `Error: ${message}`,
         type: "error",
         duration: 2000
       })
       setTimeout(() => {
-        window.location.reload();
-      }, 3000)
+        router.reload()
+      }, 1000)
     }
 
-    if (response.ok) setModal({
-      state: true,
-      title: `Welcome ${name}, your size is ${shirt_size}`
-    })
-  }, [])
+    if (response.ok) {
+      setIsLoading(false);
+      setModal({
+        state: true,
+        title: `Welcome ${name}, your size is ${shirt_size}`
+      })
+    }
+  }, [router])
 
 
   return (
@@ -62,11 +69,22 @@ export default function Home() {
       </Head>
 
       <Container w={{ base: "360px", md: "400px" }}>
+
+        {
+          isLoading && (
+            <Box pos="absolute" zIndex="popover" inset="0" bg="bg/80">
+              <Center h="full">
+                <Spinner color="teal.500" size="lg" />
+              </Center>
+            </Box>
+          )
+        }
+
         <VStack h="calc(100vh - 20vh)" justify="center" alignItems="center">
           <Heading fontSize="lg">Silahkan scan QR Code di tempat acara</Heading>
           <VStack w="100%" minH="350px">
 
-            <Scanner onScan={(result) => checkin(result)} />
+            <Scanner onScan={checkin} />
 
           </VStack>
           <Button mt="1rem" w="100%" onClick={logout}>Logout</Button>

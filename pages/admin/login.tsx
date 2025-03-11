@@ -14,7 +14,6 @@ import { z } from "zod"
 import { Toaster, toaster } from "@/components/ui/toaster";
 import { useRouter } from "next/router";
 import Cookies from "js-cookie";
-import { useEffect } from "react";
 
 const formSchema = z.object({
   email: z.string({ message: "Email required" }).email(),

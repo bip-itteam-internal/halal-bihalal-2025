@@ -31,7 +31,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse<Data>) {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const { data: newUser, error: userError } = await supabase.auth.admin.createUser({
+  const { error: userError } = await supabase.auth.admin.createUser({
     email,
     password,
     email_confirm: true,

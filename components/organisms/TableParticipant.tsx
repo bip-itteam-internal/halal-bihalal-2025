@@ -2,7 +2,7 @@ import { get_participant_paging } from "@/components/helpers/supabase";
 import { IData } from "@/components/mock/mock_data";
 import { PaginationItems, PaginationNextTrigger, PaginationPrevTrigger, PaginationRoot } from "@/components/ui/pagination";
 import { Toaster, toaster } from "@/components/ui/toaster";
-import { Flex, HStack, IconButton, Input, Spinner, Stack, Table, Text, VStack } from "@chakra-ui/react";
+import { Box, Center, HStack, IconButton, Input, Spinner, Stack, Table, Text, VStack } from "@chakra-ui/react";
 import { ChangeEvent, useEffect, useState } from "react";
 import { FaPencilAlt } from "react-icons/fa";
 
@@ -52,14 +52,11 @@ export default function TableParticipant() {
     <>
       {
         loading && (
-          <Flex
-            h="100%"
-            w="100%"
-            position="absolute"
-            justifyContent="center"
-            alignItems="center">
-            <Spinner size="lg" />
-          </Flex>
+          <Box pos="absolute" inset="0" bg="bg/80">
+            <Center h="full">
+              <Spinner color="teal.500" size="lg" />
+            </Center>
+          </Box>
         )
       }
 

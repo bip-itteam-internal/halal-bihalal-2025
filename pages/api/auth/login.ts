@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return res.status(400).json({ status: false, message: 'Nomor telepon wajib diisi' });
   }
 
-  const { data: { session: activeSession }, error: sessionError } = await supabase.auth.getSession();
+  const { data: { session: activeSession } } = await supabase.auth.getSession();
 
   if (activeSession) {
     await supabase.auth.signOut();
@@ -34,7 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
   }
 
   const userEmail = `${phone}@example.com`;
-  const { data: existingUser, error: fetchUserError } = await supabase.auth.admin.listUsers();
+  const { data: existingUser } = await supabase.auth.admin.listUsers();
 
   let user = existingUser?.users.find((u) => u.email === userEmail);
 

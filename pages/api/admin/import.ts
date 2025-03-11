@@ -1,14 +1,20 @@
 import formidable from "formidable";
+import * as fs from "fs";
 import { NextApiRequest, NextApiResponse } from "next";
 import * as XLSX from "xlsx";
-import * as fs from "fs";
-import * as path from "path";
 import { verifyAdmin } from '../../../utils/verifyAdmin';
+
+type DataType = {
+  name: string;
+  phone: string,
+  shirt_size: string,
+  email: string
+}
 
 type ResponseData = {
   status: boolean;
   message: string,
-  data?: any
+  data?: DataType[]
 }
 
 export const config = {
@@ -34,7 +40,7 @@ const parseForm = (req: NextApiRequest): Promise<{ fields: formidable.Fields, fi
 
 const formatPhone = (phone: string): string => {
   phone = String(phone);
-  
+
   if (phone.startsWith("08")) {
     phone = "628" + phone.substring(2);
   }
@@ -46,7 +52,12 @@ const capitalizeEachWord = (name: string): string => {
   return name.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
 }
 
-const transformData = (data: any[]): any[] => {
+const transformData = (data: {
+  "NAMA LENGKAP": string,
+  "NO HP": string,
+  "UKURAN": string,
+  "EMAIL": string
+}[]): DataType[] => {
   return data.map(item => ({
     name: capitalizeEachWord(item["NAMA LENGKAP"]),
     phone: formatPhone(item["NO HP"]),
@@ -64,7 +75,7 @@ async function handler(
   }
 
   try {
-    const { fields, files } = await parseForm(req);
+    const { files } = await parseForm(req);
     const file = files.file && files.file[0] as formidable.File;
 
     if (!file) {
@@ -76,7 +87,12 @@ async function handler(
     const sheetName = workbook.SheetNames[0];
     const data = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
-    const transformedData = transformData(data);
+    const transformedData = transformData(data as {
+      "NAMA LENGKAP": string,
+      "NO HP": string,
+      "UKURAN": string,
+      "EMAIL": string
+    }[]);
 
     fs.unlinkSync(file.filepath);
 

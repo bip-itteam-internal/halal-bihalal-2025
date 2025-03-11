@@ -6,7 +6,8 @@ import QRCode from 'qrcode';
 type Data = {
   status: boolean;
   message: string;
-  data?: any;
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
+  data?: any; 
 };
 
 async function handler(
@@ -29,7 +30,7 @@ async function handler(
     if (entity === 'event') {
       const DOMAIN = `${req.headers['x-forwarded-proto'] || 'http'}://${req.headers.host}`;
       const eventsWithQR = await Promise.all(
-        data.map(async (event: any) => {
+        data.map(async (event) => {
           const qrUrl = `${DOMAIN}/api/user/attendance/?event=${event.id}`;
           const qrCodeImage = await QRCode.toDataURL(qrUrl);
           return { ...event, qrCode: qrCodeImage };

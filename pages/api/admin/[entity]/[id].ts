@@ -6,7 +6,8 @@ import QRCode from 'qrcode';
 type Data = {
   status: boolean;
   message?: string;
-  data?: any;
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
+  data?: any; 
 };
 
 async function handler(

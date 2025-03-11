@@ -85,7 +85,7 @@ export default function UserLogin() {
               <Group attached w="100%">
                 <InputAddon
                   border={{ base: "black 1px solid", _dark: "white 1px solid" }}
-                >+62</InputAddon>
+                >62</InputAddon>
                 <Input {...register("phone")}
                   border={{ base: "black 1px solid", _dark: "white 1px solid" }}
                   borderRadius="md"

@@ -14,8 +14,8 @@ export default function Home() {
 
   const logout = useCallback(() => {
     Cookies.remove("at", { path: "/admin" });
-    window && window.location.reload()
-  }, [])
+    router.reload();
+  }, [router])
 
   useEffect(() => {
     if (!Cookies.get("at")) router.replace("/admin/login")
