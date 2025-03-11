@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { supabase } from '../../../utils/supabaseAdmin';
 import { verifyAdmin } from '../../../utils/verifyAdmin';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 type Data = {
   status: boolean;

@@ -1,6 +1,6 @@
 import CheckinModal from "@/components/organisms/CheckinModal";
 import { Toaster, toaster } from "@/components/ui/toaster";
-import { Box, Button, Center, Container, Flex, Heading, Spinner, VStack } from "@chakra-ui/react";
+import { Box, Button, Center, Container, Heading, Spinner, VStack } from "@chakra-ui/react";
 import { IDetectedBarcode, Scanner } from '@yudiel/react-qr-scanner';
 import Cookies from "js-cookie";
 import Head from "next/head";
