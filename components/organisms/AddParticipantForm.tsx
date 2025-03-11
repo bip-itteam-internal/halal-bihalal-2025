@@ -51,7 +51,6 @@ export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
     control,
     register,
     reset,
-    resetField
   } = useForm<NewParticipantFormValues>({
     resolver: zodResolver(formSchema),
   })
