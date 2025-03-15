@@ -97,7 +97,7 @@ export default function AdminLogin() {
                 w="100%"
                 type="submit"
                 loading={isLoading || isSubmitting}
-                loadingText="Logging in"
+                loadingText="Loading..."
               >Login</Button>
             </Field>
           </form>

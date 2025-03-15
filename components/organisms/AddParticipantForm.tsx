@@ -4,7 +4,6 @@ import {
   Flex,
   Group,
   Input,
-  InputAddon,
   SelectContent,
   SelectItem,
   SelectRoot,
@@ -18,6 +17,7 @@ import { Field } from "@/components/ui/field";
 import { Toaster, toaster } from "@/components/ui/toaster";
 import Cookies from "js-cookie";
 import { useEffect } from "react";
+import { formatToE164 } from "@/utils/helper";
 
 interface IAddParticipantForm {
   goToList: () => void
@@ -68,6 +68,7 @@ export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
       body: JSON.stringify({
         participant: {
           ...data,
+          phone: formatToE164(data.phone),
           shirt_size: data.shirt_size[0].toUpperCase(),
         }
       })
@@ -102,7 +103,6 @@ export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
           invalid={!!errors.phone}
           errorText={errors.phone?.message}>
           <Group attached w="100%">
-            <InputAddon>+62</InputAddon>
             <Input {...register("phone")}
               borderRadius="md"
               inputMode="numeric"

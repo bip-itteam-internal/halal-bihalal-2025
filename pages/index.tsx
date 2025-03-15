@@ -6,7 +6,6 @@ import {
   Group,
   Heading,
   Input,
-  InputAddon
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Head from "next/head";
@@ -16,6 +15,7 @@ import { Toaster, toaster } from "@/components/ui/toaster";
 import { useRouter } from "next/router";
 import Cookies from "js-cookie";
 import { useEffect } from "react";
+import { formatToE164 } from "@/utils/helper";
 
 const formSchema = z.object({
   phone: z.string({ message: "Nomor telepon jangan kosong ya" }).min(1),
@@ -35,6 +35,7 @@ export default function UserLogin() {
   })
 
   const onSubmit = handleSubmit(async ({ phone }) => {
+    console.log({ phone })
     const result = await fetch("/api/auth/login", {
       method: "POST",
       headers: {
@@ -42,7 +43,7 @@ export default function UserLogin() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        phone: `62${phone}`
+        phone: `${formatToE164(phone)}`
       })
     })
 
@@ -83,9 +84,6 @@ export default function UserLogin() {
               invalid={!!errors.phone}
               errorText={errors.phone?.message}>
               <Group attached w="100%">
-                <InputAddon
-                  border={{ base: "black 1px solid", _dark: "white 1px solid" }}
-                >62</InputAddon>
                 <Input {...register("phone")}
                   border={{ base: "black 1px solid", _dark: "white 1px solid" }}
                   borderRadius="md"
@@ -99,7 +97,7 @@ export default function UserLogin() {
                 w="100%"
                 type="submit"
                 loading={isLoading || isSubmitting}
-                loadingText="Logging in"
+                loadingText="Loading..."
               >Login</Button>
             </Field>
           </form>

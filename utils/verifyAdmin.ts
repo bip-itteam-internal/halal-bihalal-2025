@@ -14,7 +14,7 @@ export function verifyAdmin(handler: NextApiHandler) {
     }
 
     const { data: user, error } = await supabase.auth.getUser(token);
-    
+
     if (error || !user?.user) {
       return res.status(401).json({ status: false, message: 'Invalid or expired token' });
     }

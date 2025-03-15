@@ -4,7 +4,6 @@ import {
   Flex,
   Group,
   Input,
-  InputAddon,
   SelectContent,
   SelectItem,
   SelectRoot,
@@ -112,7 +111,6 @@ export default function EditParticipantForm({ clear, populatedData, goToList }: 
           invalid={!!errors.phone}
           errorText={errors.phone?.message}>
           <Group attached w="100%">
-            <InputAddon>+62</InputAddon>
             <Input {...register("phone")}
               borderRadius="md"
               inputMode="numeric"
