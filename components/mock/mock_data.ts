@@ -5,6 +5,11 @@ export interface IData {
   email: string;
   department?: string;
   shirt_size: string;
+  attendance?: {
+    event_id: number;
+    status: string;
+    check_in_at: string;
+  }[];
 }
 
 export const MOCK_DATA: IData[] = [

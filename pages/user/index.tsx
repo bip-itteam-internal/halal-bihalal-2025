@@ -13,7 +13,10 @@ export default function Home() {
 
   const [modal, setModal] = useState({
     state: false,
-    title: ""
+    message: {
+      name: "Unknown",
+      shirt_size: "Unknown"
+    }
   });
 
   const logout = useCallback(() => {
@@ -29,7 +32,6 @@ export default function Home() {
 
     const response = await fetch(result[0].rawValue, {
       method: "POST",
-
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -55,7 +57,10 @@ export default function Home() {
       setIsLoading(false);
       setModal({
         state: true,
-        title: `Welcome ${name}, your size is ${shirt_size}`
+        message: {
+          name,
+          shirt_size
+        }
       })
     }
   }, [router])
@@ -91,9 +96,9 @@ export default function Home() {
         </VStack>
         <Toaster />
       </Container>
-      <CheckinModal title={modal.title} isOpen={modal.state} setOpen={(e) => setModal({
+      <CheckinModal message={modal.message} isOpen={modal.state} setOpen={(e) => setModal({
         state: e,
-        title: modal.title
+        message: modal.message
       })} />
     </>
   );

@@ -1,9 +1,32 @@
 import { get_participant_paging } from "@/components/helpers/supabase";
 import { IData } from "@/components/mock/mock_data";
-import { PaginationItems, PaginationNextTrigger, PaginationPrevTrigger, PaginationRoot } from "@/components/ui/pagination";
-import { Box, Center, HStack, IconButton, Input, Spinner, Stack, Table, Text, VStack } from "@chakra-ui/react";
-import { ChangeEvent, useEffect, useState } from "react";
+import {
+  PaginationItems,
+  PaginationNextTrigger,
+  PaginationPrevTrigger,
+  PaginationRoot
+} from "@/components/ui/pagination";
+import {
+  Box,
+  Center,
+  Group,
+  HStack,
+  IconButton,
+  Input,
+  Spinner,
+  Stack,
+  Table,
+  Text,
+  VStack
+} from "@chakra-ui/react";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { FaPencilAlt } from "react-icons/fa";
+import { FaBookQuran } from "react-icons/fa6";
+import { ImMusic } from "react-icons/im";
+import { Tooltip } from "@/components/ui/tooltip";
+import Cookies from "js-cookie";
+import { Toaster, toaster } from "@/components/ui/toaster";
+import { useRouter } from "next/router";
 
 const PAGE_SIZE = 10;
 const DEBOUNCE_DELAY = 350; // 350ms delay
@@ -13,6 +36,7 @@ interface IEditThis {
 }
 
 export default function TableParticipant({ populatedData }: IEditThis) {
+  const router = useRouter();
   const [data, setData] = useState<IData[]>([]);
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,6 +75,48 @@ export default function TableParticipant({ populatedData }: IEditThis) {
     setPage(1); // Reset to first page on search
   };
 
+  const checkin = useCallback(async (participant_id: number, event_id: number) => {
+    if (participant_id === undefined)
+      toaster.create({
+        description: `Error: Unknown Participan ID ${participant_id}`,
+        type: "error",
+        duration: 2000
+      })
+
+    setLoading(true);
+
+    const token = Cookies.get("at")
+    const response = await fetch(`/api/admin/attendance`, {
+      method: "POST",
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        attendance: {
+          participant_id: participant_id,
+          event_id: event_id,
+          status: "Present"
+        }
+      })
+    })
+
+    if (!response.ok) {
+      setLoading(false)
+      toaster.create({
+        description: `Error: ${response.statusText}`,
+        type: "error",
+        duration: 2000
+      })
+    }
+
+    if (response.ok) {
+      setLoading(false);
+      router.reload();
+    }
+  }, [router])
+
   return (
     <>
       {
@@ -74,8 +140,8 @@ export default function TableParticipant({ populatedData }: IEditThis) {
                     <Table.ColumnHeader>#</Table.ColumnHeader>
                     <Table.ColumnHeader>Nama</Table.ColumnHeader>
                     <Table.ColumnHeader>Phone</Table.ColumnHeader>
-                    <Table.ColumnHeader>Email</Table.ColumnHeader>
                     <Table.ColumnHeader>Shirt Size</Table.ColumnHeader>
+                    <Table.ColumnHeader>Status</Table.ColumnHeader>
                     <Table.ColumnHeader>Actions</Table.ColumnHeader>
                   </Table.Row>
                 </Table.Header>
@@ -85,20 +151,52 @@ export default function TableParticipant({ populatedData }: IEditThis) {
                       <Table.Cell>{(page - 1) * PAGE_SIZE + index + 1}</Table.Cell>
                       <Table.Cell>{item.name}</Table.Cell>
                       <Table.Cell>{item.phone}</Table.Cell>
-                      <Table.Cell>{item.email}</Table.Cell>
                       <Table.Cell>{item.shirt_size}</Table.Cell>
                       <Table.Cell>
-                        <IconButton aria-label="Edit" onClick={() => {
-                          populatedData({
-                            id: item.id,
-                            phone: item.phone,
-                            name: item.name,
-                            email: item.email,
-                            shirt_size: item.shirt_size
-                          })
-                        }}>
-                          <FaPencilAlt />
-                        </IconButton>
+                        <>
+                          <Box as="ul" listStyleType="circle">
+                            {
+                              item.attendance?.map((x) => (
+                                <li key={x.event_id}>
+                                  <Text>{x.event_id} - {x.status}</Text>
+                                </li>
+                              ))
+                            }
+                          </Box>
+                        </>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Group>
+                          <Tooltip content="CheckIn Tausyah">
+                            <IconButton aria-label="CheckIn 1" onClick={() => {
+                              checkin(Number(item.id), 1)
+                            }}>
+                              <FaBookQuran />
+                            </IconButton>
+                          </Tooltip>
+
+                          <Tooltip content="CheckIn Live Concert">
+                            <IconButton aria-label="CheckIn 2" onClick={() => {
+                              checkin(Number(item?.id), 2)
+                            }}>
+                              <ImMusic />
+                            </IconButton>
+                          </Tooltip>
+
+                          <Tooltip content="Edit">
+                            <IconButton aria-label="Edit" onClick={() => {
+                              populatedData({
+                                id: item.id,
+                                phone: item.phone,
+                                name: item.name,
+                                email: item.email,
+                                shirt_size: item.shirt_size
+                              })
+                            }}>
+                              <FaPencilAlt />
+                            </IconButton>
+                          </Tooltip>
+                        </Group>
                       </Table.Cell>
                     </Table.Row>
                   ))}
@@ -125,6 +223,7 @@ export default function TableParticipant({ populatedData }: IEditThis) {
           )
         }
       </VStack>
+      <Toaster />
 
       {
         data && data.length === 0 && (
