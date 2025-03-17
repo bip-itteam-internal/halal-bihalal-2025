@@ -66,7 +66,7 @@ export default async function handler(
 
   const timeDifference = (currentTimeMs - eventTimeMs) / 1000;
 
-  const WAITING_TIME = 600;
+  const WAITING_TIME = 3600; // 1 hour
   if (timeDifference < -WAITING_TIME) {
     return res.status(400).json({ 
       status: false, 
