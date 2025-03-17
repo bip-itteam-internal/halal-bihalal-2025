@@ -63,12 +63,19 @@ export default async function handler(
   const currentTime = new Date();
   const timeDifference = (currentTime.getTime() - eventTime.getTime()) / 1000;
 
-  if (timeDifference < 0) {
-    return res.status(400).json({ status: false, message: 'Check-in not allowed before event time' });
+  const WAITING_TIME = 600;
+  if (timeDifference < -WAITING_TIME) {
+    return res.status(400).json({ 
+      status: false, 
+      message: 'Check-in not allowed more than 10 minutes before event time'
+    });
   }
 
-  if (timeDifference > 3600) {
-    return res.status(400).json({ status: false, message: 'Check-in time exceeded' });
+  if (timeDifference > WAITING_TIME) {
+    return res.status(400).json({ 
+      status: false, 
+      message: 'Check-in not allowed more than 10 minutes after event time'
+    });
   }
 
   const { error: insertError } = await supabase
