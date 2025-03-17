@@ -65,6 +65,19 @@ export default function Home() {
     }
   }, [router])
 
+  const onError = useCallback((error: unknown) => {
+    console.log({ error })
+
+    setIsLoading(false)
+    toaster.create({
+      description: `Error: ${error}`,
+      type: "error",
+      duration: 2000
+    })
+    setTimeout(() => {
+      router.reload()
+    }, 3000)
+  }, [])
 
   return (
     <>
@@ -89,7 +102,7 @@ export default function Home() {
           <Heading fontSize="lg">Silahkan scan QR Code di tempat acara</Heading>
           <VStack w="100%" minH="350px">
 
-            <Scanner onScan={checkin} />
+            <Scanner onScan={checkin} onError={onError} />
 
           </VStack>
           <Button mt="1rem" w="100%" onClick={logout}>Logout</Button>
