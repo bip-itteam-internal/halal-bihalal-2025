@@ -1,6 +1,5 @@
 import {
   Button,
-  createListCollection,
   Flex,
   Group,
   Input,
@@ -17,22 +16,11 @@ import { Field } from "@/components/ui/field";
 import { Toaster, toaster } from "@/components/ui/toaster";
 import Cookies from "js-cookie";
 import { useEffect } from "react";
-import { formatToE164 } from "@/utils/helper";
+import { formatToE164, SHIRT_SIZES } from "@/utils/helper";
 
 interface IAddParticipantForm {
   goToList: () => void
 }
-
-const shirtSizes = createListCollection({
-  items: [
-    { label: "S (P: 67  L: 48)", value: "sm" },
-    { label: "M (P: 69  L: 50)", value: "md" },
-    { label: "L (P: 71  L: 52)", value: "L" },
-    { label: "XL (P: 73  L: 54)", value: "xl" },
-    { label: "2XL (P: 75 L: 56)", value: "2xl" },
-    { label: "3XL (P: 75  L: 58)", value: "3xl" },
-  ],
-})
 
 const formSchema = z.object({
   name: z.string({ message: "Nama jangan kosong dong" }).min(1),
@@ -126,14 +114,14 @@ export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
                 value={field.value}
                 onValueChange={({ value }) => field.onChange(value)}
                 onInteractOutside={() => field.onBlur()}
-                collection={shirtSizes}
+                collection={SHIRT_SIZES}
                 size="sm"
               >
                 <SelectTrigger>
                   <SelectValueText placeholder="Pilih ukuran baju" />
                 </SelectTrigger>
                 <SelectContent>
-                  {shirtSizes.items.map((x) => (
+                  {SHIRT_SIZES.items.map((x) => (
                     <SelectItem item={x} key={x.value}>
                       {x.label}
                     </SelectItem>
