@@ -60,8 +60,11 @@ export default async function handler(
   }
 
   const eventTime = new Date(eventData.date);
-  const currentTime = new Date();
-  const timeDifference = (currentTime.getTime() - eventTime.getTime()) / 1000;
+  const currentTime = new Date().toLocaleString('en-US', { timeZone: 'Asia/Jakarta' });
+  const eventTimeMs = eventTime.getTime();
+  const currentTimeMs = new Date(currentTime).getTime();
+
+  const timeDifference = (currentTimeMs - eventTimeMs) / 1000;
 
   const WAITING_TIME = 600;
   if (timeDifference < -WAITING_TIME) {
