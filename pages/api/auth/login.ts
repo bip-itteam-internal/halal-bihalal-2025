@@ -17,19 +17,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return res.status(400).json({ status: false, message: 'Nomor telepon wajib diisi' });
   }
 
-  const { data: { session: activeSession } } = await supabase.auth.getSession();
-
-  if (activeSession) {
-    await supabase.auth.signOut();
-  }
-
-  const { data, error: queryError } = await supabase
+  const { data: participant, error: queryError } = await supabase
     .from('participant')
     .select('id')
     .eq('phone', phone)
     .maybeSingle();
 
-  if (queryError || !data) {
+  if (queryError || !participant) {
     return res.status(401).json({ status: false, message: 'Nomor telepon tidak terdaftar' });
   }
 
@@ -63,9 +57,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     return res.status(500).json({ status: false, message: loginError.message });
   }
 
-  res.status(200).json({ 
-    status: true, 
-    message: 'Login berhasil', 
-    token: sessionData.session?.access_token 
+  const { data: existingSession } = await supabase
+    .from('sessions')
+    .select('id, refresh_token')
+    .eq('user_id', user.id)
+    .single();
+  
+  if (existingSession) {
+    await supabase.auth.admin.signOut(user.id);
+    await supabase.from('sessions').delete().eq('id', existingSession.id);
+  }
+
+  const sessionDataToInsert = {
+    user_id: user.id,
+    refresh_token: sessionData.session.refresh_token,
+    created_at: new Date().toISOString(),
+  };
+
+  const { error: sessionInsertError } = await supabase.from('sessions').insert(sessionDataToInsert);
+
+  if (sessionInsertError) {
+    console.log('Session insert error:', sessionInsertError);
+    return res.status(500).json({ status: false, message: 'Gagal menyimpan sesi: ' + sessionInsertError.message });
+  }
+
+  res.status(200).json({
+    status: true,
+    message: 'Login berhasil',
+    token: sessionData.session?.access_token,
   });
 }
