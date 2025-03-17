@@ -50,7 +50,7 @@ export default function Home() {
       })
       setTimeout(() => {
         router.reload()
-      }, 1000)
+      }, 3000)
     }
 
     if (response.ok) {
