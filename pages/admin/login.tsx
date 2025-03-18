@@ -57,7 +57,7 @@ export default function AdminLogin() {
 
     if (result.ok) {
       Cookies.set("at", token, { expires: 14, path: "/admin" })
-      router.replace("/admin")
+      router.replace("/admin", undefined, { shallow: false })
     }
   })
 

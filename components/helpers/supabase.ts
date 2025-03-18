@@ -28,18 +28,10 @@ export async function get_participant_paging(
   const from = (page - 1) * page_size;
   const to = from + page_size - 1;
 
-
-  /*
-BEGIN
-SELECT attendance.id, attendance.status, participant.id, participant.name, participant.phone, participant.email, participant.shirt_size AS participant
-FROM attendance
-RIGHT JOIN participant ON participant.id = attendance.participant_id;
-END;
-  */
-
-  let query = supabase.from("participant").select("id, name, phone, email, shirt_size, attendance(id, status, check_in_at, event_id, participant_id)", { count: "exact" })
-
-  // let query = supabase.from("participant").select("*", { count: "exact" });
+  let query =
+    supabase
+      .from("participant")
+      .select("*, attendance(*)", { count: "exact" })
 
   // Apply search filter if there's a search term
   if (debouncedSearchTerm) {

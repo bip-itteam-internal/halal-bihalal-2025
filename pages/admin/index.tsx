@@ -21,7 +21,7 @@ export default function Home() {
   }, [router])
 
   useEffect(() => {
-    if (!Cookies.get("at")) router.replace("/admin/login")
+    if (!Cookies.get("at")) router.replace("/admin/login", undefined, { shallow: false })
   }, [router])
 
   return (
@@ -77,11 +77,11 @@ export default function Home() {
 
               {
                 populatedData && (
-                  <EditParticipantForm 
-                  goToList={() => setTab(TABS_LIST[0])} 
-                  key="Edit" 
-                  populatedData={populatedData} 
-                  clear={() => setPopulatedData(undefined)} />
+                  <EditParticipantForm
+                    goToList={() => setTab(TABS_LIST[0])}
+                    key="Edit"
+                    populatedData={populatedData}
+                    clear={() => setPopulatedData(undefined)} />
                 )
               }
             </Box>
