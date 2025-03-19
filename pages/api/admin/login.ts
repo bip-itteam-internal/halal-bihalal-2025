@@ -34,8 +34,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     .select('email')
     .eq('email', email)
     .single();
-
-  console.log({ data: adminData, error: adminError })
+    
   if (adminError || !adminData) {
     await supabase.auth.signOut();
     return res.status(403).json({ status: false, message: 'Anda bukan admin' });
@@ -58,12 +57,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     created_at: new Date().toISOString(),
   };
 
-  console.log('Inserting session data for admin:', sessionDataToInsert);
-
   const { error: sessionInsertError } = await supabase.from('sessions').insert(sessionDataToInsert);
 
   if (sessionInsertError) {
-    console.log('Session insert error:', sessionInsertError);
     return res.status(500).json({ status: false, message: 'Gagal menyimpan sesi: ' + sessionInsertError.message });
   }
 
