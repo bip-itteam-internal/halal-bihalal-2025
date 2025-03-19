@@ -77,7 +77,7 @@ export default function Home() {
     setTimeout(() => {
       router.reload()
     }, 3000)
-  }, [])
+  }, [router])
 
   return (
     <>

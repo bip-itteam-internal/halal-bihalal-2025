@@ -1,4 +1,3 @@
-import { get_participant_paging } from "@/components/helpers/supabase";
 import { IData } from "@/components/mock/mock_data";
 import {
   PaginationItems,
@@ -48,13 +47,42 @@ export default function TableParticipant({ populatedData }: IEditThis) {
     (async () => {
       setLoading(true);
 
-      const burp = await get_participant_paging({ page, debouncedSearchTerm, page_size: PAGE_SIZE });
+      const baseURL = `${window.location.protocol}//${window.location.host}`
+      const url = new URL(`${baseURL}/api/admin/participant`)
 
-      if (burp && burp.data)
-        setData(burp.data)
+      if (debouncedSearchTerm)
+        url.searchParams.append("search", debouncedSearchTerm)
 
-      if (burp && burp.count)
-        setTotalCount(burp.count)
+      if (page)
+        url.searchParams.append("page", page.toString())
+
+      url.searchParams.append("page_size", PAGE_SIZE.toString())
+
+      const token = Cookies.get("at");
+      const burp = await fetch(url, {
+        method: "GET",
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!burp.ok) {
+        toaster.create({
+          description: `Error: ${burp.statusText}`,
+          type: "error"
+        })
+        setLoading(false)
+        return;
+      }
+
+      const { data } = await burp.json()
+      const { participants, total } = data
+
+      if (burp && data)
+        setData(participants)
+
+      if (burp && total)
+        setTotalCount(total)
 
       setLoading(false)
     })()

@@ -6,6 +6,7 @@ import QRCode from 'qrcode';
 type Data = {
   status: boolean;
   message: string;
+  /* eslint-disable  @typescript-eslint/no-explicit-any */
   data?: any;
 };
 
@@ -48,7 +49,7 @@ async function getParticipantPaging({
     query = query.ilike('name', `%${debouncedSearchTerm}%`);
   }
 
-  const { data: participants, count, error } = await query;
+  const { data: participants, error } = await query;
 
   if (error) {
     throw new Error(`Failed to fetch participants: ${error.message}`);
