@@ -5,6 +5,7 @@ import {
   Flex,
   Group,
   Heading,
+  Image,
   Input,
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -76,20 +77,22 @@ export default function UserLogin() {
       </Head>
 
       <Flex flexDir="column" h={{ base: "calc(100vh - 30vh)", md: "calc(100vh - 20vh)" }} justifyContent="center" alignItems="center">
-        <Heading size="3xl" mb={10}>Login</Heading>
-        <Container width={{ base: "85%", lg: "30%" }}>
+        <Container
+          width={{ base: "85%", lg: "30%" }}>
+          <Image alt="Logo" src="/logo/logo_512.png" w="200px" mx="auto" mb="2rem" />
+          <Heading size="2xl" textAlign="center">Check-in</Heading>
+          <Heading size="2xl" mb={10} textAlign="center">Halal Bihalal 2025</Heading>
           <form onSubmit={onSubmit}>
             <Field
               mb={10}
+              label="Phone:"
               invalid={!!errors.phone}
               errorText={errors.phone?.message}>
-              <Group attached w="100%">
-                <Input {...register("phone")}
-                  border={{ base: "black 1px solid", _dark: "white 1px solid" }}
-                  borderRadius="md"
-                  inputMode="numeric"
-                  placeholder="No. Telephone" />
-              </Group>
+              <Input {...register("phone")}
+                border={{ base: "black 1px solid", _dark: "white 1px solid" }}
+                borderRadius="md"
+                placeholder="Nomor telepon"
+                inputMode="numeric" />
             </Field>
 
             <Field>
