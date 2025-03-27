@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../../utils/supabaseAdmin';
+import { supabase } from '@/utils/supabaseAdmin';
 import bcrypt from 'bcryptjs';
 
 type Data = {

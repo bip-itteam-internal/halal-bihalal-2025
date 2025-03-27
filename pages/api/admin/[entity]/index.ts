@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { supabase } from '../../../../utils/supabaseAdmin';
-import { verifyAdmin } from '../../../../utils/verifyAdmin';
+import { supabase } from '@/utils/supabaseAdmin';
+import { verifyAdmin } from '@/utils/verifyAdmin';
 import QRCode from 'qrcode';
 
 type Data = {

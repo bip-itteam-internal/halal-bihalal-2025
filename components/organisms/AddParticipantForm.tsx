@@ -25,7 +25,6 @@ interface IAddParticipantForm {
 const formSchema = z.object({
   name: z.string({ message: "Nama jangan kosong dong" }).min(1),
   phone: z.string({ message: "Nomor telepon jangan kosong ya" }).min(1),
-  email: z.string({ message: "Email jangan kosong ya" }).email(),
   shirt_size: z.string({ message: "Ukuran baju wajib diisi" }).array(),
 })
 
@@ -96,11 +95,6 @@ export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
               inputMode="numeric"
               placeholder="No. Telephone" />
           </Group>
-        </Field>
-        <Field mb={5} label="Email"
-          invalid={!!errors.phone}
-          errorText={errors.phone?.message}>
-          <Input {...register("email")} placeholder="Email" />
         </Field>
         <Field mb={5} label="Shirt size" width="320px"
           invalid={!!errors.shirt_size}

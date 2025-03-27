@@ -1,4 +1,4 @@
-import {IData} from "@/components/mock/mock_data";
+import { IData } from "@/components/mock/mock_data";
 import {
   PaginationItems,
   PaginationNextTrigger,
@@ -9,6 +9,7 @@ import {
   Box,
   Center,
   Group,
+  Heading,
   HStack,
   IconButton,
   Input,
@@ -18,14 +19,14 @@ import {
   Text,
   VStack
 } from "@chakra-ui/react";
-import {ChangeEvent, useCallback, useEffect, useState} from "react";
-import {FaPencilAlt} from "react-icons/fa";
-import {FaBookQuran} from "react-icons/fa6";
-import {ImMusic} from "react-icons/im";
-import {Tooltip} from "@/components/ui/tooltip";
+import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { FaPencilAlt } from "react-icons/fa";
+import { FaBookQuran } from "react-icons/fa6";
+import { ImMusic } from "react-icons/im";
+import { Tooltip } from "@/components/ui/tooltip";
 import Cookies from "js-cookie";
-import {Toaster, toaster} from "@/components/ui/toaster";
-import {useRouter} from "next/router";
+import { Toaster, toaster } from "@/components/ui/toaster";
+import { useRouter } from "next/router";
 
 const PAGE_SIZE = 10;
 const DEBOUNCE_DELAY = 350; // 350ms delay
@@ -34,7 +35,7 @@ interface IEditThis {
   populatedData: (data: IData) => void
 }
 
-export default function TableParticipant({populatedData}: IEditThis) {
+export default function TableParticipant({ populatedData }: IEditThis) {
   const router = useRouter();
   const [data, setData] = useState<IData[]>([]);
   const [page, setPage] = useState(1);
@@ -78,8 +79,8 @@ export default function TableParticipant({populatedData}: IEditThis) {
         return;
       }
 
-      const {data} = await burp.json()
-      const {participants, total} = data
+      const { data } = await burp.json()
+      const { participants, total } = data
 
       if (burp && data)
         setData(participants)
@@ -154,14 +155,14 @@ export default function TableParticipant({populatedData}: IEditThis) {
         loading && (
           <Box pos="absolute" inset="0" bg="bg/80">
             <Center h="full">
-              <Spinner color="teal.500" size="lg"/>
+              <Spinner color="teal.500" size="lg" />
             </Center>
           </Box>
         )
       }
 
       <VStack>
-        <Input mb={5} placeholder="Search..." value={searchTerm} onChange={handleSearch}/>
+        <Input mb={5} placeholder="Search..." value={searchTerm} onChange={handleSearch} />
         {
           data && data.length > 0 && (
             <>
@@ -202,7 +203,7 @@ export default function TableParticipant({populatedData}: IEditThis) {
                             <IconButton aria-label="CheckIn 1" onClick={() => {
                               checkin(Number(item.id), 1)
                             }}>
-                              <FaBookQuran/>
+                              <FaBookQuran />
                             </IconButton>
                           </Tooltip>
 
@@ -210,7 +211,7 @@ export default function TableParticipant({populatedData}: IEditThis) {
                             <IconButton aria-label="CheckIn 2" onClick={() => {
                               checkin(Number(item?.id), 2)
                             }}>
-                              <ImMusic/>
+                              <ImMusic />
                             </IconButton>
                           </Tooltip>
 
@@ -220,11 +221,10 @@ export default function TableParticipant({populatedData}: IEditThis) {
                                 id: item.id,
                                 phone: item.phone,
                                 name: item.name,
-                                email: item.email,
                                 shirt_size: item.shirt_size
                               })
                             }}>
-                              <FaPencilAlt/>
+                              <FaPencilAlt />
                             </IconButton>
                           </Tooltip>
                         </Group>
@@ -235,6 +235,7 @@ export default function TableParticipant({populatedData}: IEditThis) {
               </Table.Root>
 
               <Stack>
+
                 <PaginationRoot
                   count={totalCount}
                   pageSize={PAGE_SIZE}
@@ -244,17 +245,19 @@ export default function TableParticipant({populatedData}: IEditThis) {
                   }}
                 >
                   <HStack>
-                    <PaginationPrevTrigger/>
-                    <PaginationItems/>
-                    <PaginationNextTrigger/>
+                    <PaginationPrevTrigger />
+                    <PaginationItems />
+                    <PaginationNextTrigger />
                   </HStack>
                 </PaginationRoot>
+                <Heading textAlign="center" mt="1rem">Total peserta: {totalCount}</Heading>
+
               </Stack>
             </>
           )
         }
       </VStack>
-      <Toaster/>
+      <Toaster />
 
       {
         data && data.length === 0 && (
