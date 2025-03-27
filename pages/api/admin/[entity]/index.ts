@@ -32,7 +32,6 @@ async function getParticipantPaging({
       id,
       name,
       phone,
-      email,
       shirt_size,
       attendance!left (
         id,
