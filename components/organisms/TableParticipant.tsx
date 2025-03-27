@@ -59,6 +59,9 @@ export default function TableParticipant({populatedData}: IEditThis) {
       url.searchParams.append("page_size", PAGE_SIZE.toString())
 
       const token = Cookies.get("at");
+
+      if (!token) return;
+
       const burp = await fetch(url, {
         method: "GET",
         headers: {
