@@ -77,11 +77,11 @@ export default function UserLogin() {
 
       <Flex
         flexDir="column"
-        h={{ base: "calc(100vh - 30vh)", md: "calc(100vh - 20vh)" }}
+        h="100vh"
         justifyContent="center"
         alignItems="center">
         <Container
-          width={{ base: "85%", lg: "40%" }}
+          width={{ base: "100%", lg: "40%" }}
           p="3rem"
           borderRadius="lg"
           backgroundColor="cancel">

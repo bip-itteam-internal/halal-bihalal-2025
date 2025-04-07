@@ -103,7 +103,7 @@ export default function Home() {
           p={{ base: "2rem", lg: "4rem" }}
           borderRadius="lg"
           backgroundColor="cancel">
-          <Heading fontSize="lg">Silahkan scan QR Code di tempat acara</Heading>
+          <Heading fontSize="md">Silahkan scan QR Code di meja registrasi</Heading>
           <VStack minH={{ base: "100%", lg: "350px" }}>
             <Scanner onScan={checkin} onError={onError} />
           </VStack>
@@ -111,7 +111,7 @@ export default function Home() {
         </VStack>
         <Toaster />
       </Flex>
-      <CheckinModal message={modal.message} isOpen={modal.state} setOpen={(e) => setModal({
+      <CheckinModal message={modal.message} isOpen={true} setOpen={(e) => setModal({
         state: e,
         message: modal.message
       })} />

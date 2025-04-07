@@ -4,9 +4,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogRoot,
-  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button, Heading } from "@chakra-ui/react";
+import { Button, Heading, Image, VStack } from "@chakra-ui/react";
 import { useCallback } from "react";
 
 interface ICheckinModalProps {
@@ -33,15 +32,17 @@ export default function CheckinModal({ message, isOpen, setOpen }: ICheckinModal
       motionPreset="slide-in-bottom">
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Checkin</DialogTitle>
         </DialogHeader>
-        <DialogBody textAlign="center">
-          <Heading mb="2rem">Checkin berhasil</Heading>
-          <Heading fontSize="lg">Nama: {message.name}</Heading>
-          <Heading fontSize="lg">Ukuran baju: {message.shirt_size}</Heading>
+        <DialogBody >
+          <VStack textAlign="center" justifyContent="center" alignItems="center">
+            <Heading mb="2rem">Checkin berhasil</Heading>
+            <Image src="/kaos.jpeg" alt="kaos" />
+            <Heading fontSize="lg">Nama: {message.name}</Heading>
+            <Heading fontSize="lg">Ukuran baju: {message.shirt_size}</Heading>
+          </VStack>
         </DialogBody>
         <DialogFooter>
-          <Button onClick={finishEvent}>Finish</Button>
+          <Button backgroundColor="primary" onClick={finishEvent}>Finish</Button>
         </DialogFooter>
       </DialogContent>
     </DialogRoot>
