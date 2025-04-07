@@ -1,6 +1,6 @@
 import AddParticipantForm from "@/components/organisms/AddParticipantForm";
 import TableParticipant from "@/components/organisms/TableParticipant";
-import { Box, Button, Container, Heading, Tabs, Text } from "@chakra-ui/react";
+import { Box, Container, Heading, Tabs, Text } from "@chakra-ui/react";
 import Head from "next/head";
 import { useCallback, useEffect, useState } from "react";
 import { LuPlus, LuUser, LuLogOut } from "react-icons/lu";
