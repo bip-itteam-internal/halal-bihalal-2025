@@ -1,9 +1,9 @@
 import AddParticipantForm from "@/components/organisms/AddParticipantForm";
 import TableParticipant from "@/components/organisms/TableParticipant";
-import { Box, Button, Container, Heading, Tabs } from "@chakra-ui/react";
+import { Box, Button, Container, Heading, Tabs, Text } from "@chakra-ui/react";
 import Head from "next/head";
 import { useCallback, useEffect, useState } from "react";
-import { LuPlus, LuUser } from "react-icons/lu";
+import { LuPlus, LuUser, LuLogOut } from "react-icons/lu";
 import Cookies from "js-cookie"
 import { useRouter } from "next/router";
 import EditParticipantForm from "@/components/organisms/EditParticipantForm";
@@ -31,33 +31,33 @@ export default function Home() {
         <title>Dashboard | Halal Bihalal 2025</title>
         <meta name="description" content="Letto show @bharatainternationalpharmaceutical" />
       </Head>
-      <Container mt={10}>
+      <Container pt="3rem">
 
-        <Heading fontSize="4xl" mb={8} textAlign="center">DASHBOARD</Heading>
-
-        <Button
-          position="absolute"
-          top="0"
-          right="2rem"
-          w="4rem"
-          h="2rem"
-          onClick={logout}
-        >Logout</Button>
+        <Heading
+          fontSize="4xl"
+          mb={8}
+          textAlign="center"
+          color="cancel">DASHBOARD</Heading>
 
         <Tabs.Root
           justify="center"
           lazyMount
           unmountOnExit
           value={tab}
+          colorPalette="green"
           onValueChange={(e) => setTab(e.value)}>
           <Tabs.List>
-            <Tabs.Trigger value={TABS_LIST[0]}>
+            <Tabs.Trigger value={TABS_LIST[0]} color="cancel">
               <LuUser />
               Participants
             </Tabs.Trigger>
-            <Tabs.Trigger value={TABS_LIST[1]}>
+            <Tabs.Trigger value={TABS_LIST[1]} color="cancel">
               <LuPlus />
               {populatedData ? "Edit" : "New"}
+            </Tabs.Trigger>
+            <Tabs.Trigger value="-1" onClick={logout} color="cancel">
+              <LuLogOut />
+              Logout
             </Tabs.Trigger>
           </Tabs.List>
           <Tabs.Content value={TABS_LIST[0]}>
@@ -86,6 +86,9 @@ export default function Home() {
                 )
               }
             </Box>
+          </Tabs.Content>
+          <Tabs.Content value="-1">
+            <Text textAlign="center" color="cancel">Loading...</Text>
           </Tabs.Content>
         </Tabs.Root>
       </Container>

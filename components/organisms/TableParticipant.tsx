@@ -153,16 +153,18 @@ export default function TableParticipant({ populatedData }: IEditThis) {
     <>
       {
         loading && (
-          <Box pos="absolute" inset="0" bg="bg/80">
-            <Center h="full">
-              <Spinner color="teal.500" size="lg" />
-            </Center>
-          </Box>
+          <Spinner
+            color="primary"
+            top="50%"
+            left="50%"
+            transform="translate(-50%, -50%)"
+            position="absolute"
+            size="lg" />
         )
       }
 
       <VStack>
-        <Input mb={5} placeholder="Search..." value={searchTerm} onChange={handleSearch} />
+        <Input mb={5} _placeholder={{ color: "cancel", opacity: "0.5" }} placeholder="Search..." value={searchTerm} onChange={handleSearch} />
         {
           data && data.length > 0 && (
             <>
@@ -262,7 +264,7 @@ export default function TableParticipant({ populatedData }: IEditThis) {
       {
         data && data.length === 0 && (
           <VStack>
-            <Text fontStyle="italic">Empty data</Text>
+            <Text fontStyle="italic" color="cancel">Empty data</Text>
           </VStack>
         )
       }

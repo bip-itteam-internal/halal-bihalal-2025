@@ -6,6 +6,7 @@ import {
   Group,
   Heading,
   Input,
+  VStack,
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Head from "next/head";
@@ -68,9 +69,12 @@ export default function AdminLogin() {
         <meta name="description" content="Letto show @bharatainternationalpharmaceutical" />
       </Head>
 
-      <Flex flexDir="column" h={{ base: "calc(100vh - 30vh)", md: "calc(100vh - 20vh)" }} justifyContent="center" alignItems="center">
-        <Heading size="3xl" mb={10}>Login</Heading>
-        <Container width={{ base: "85%", lg: "30%" }}>
+      <VStack w="100%" h="100vh" justifyContent="center" alignItems="center">
+        <Container
+          width={{ base: "85%", md: "350px", lg: "400px" }}
+          backgroundColor="cancel"
+          borderRadius="md" p="2rem">
+          <Heading textAlign="center" fontWeight="bold" size="3xl" mb={10}>LOGIN ADMIN</Heading>
           <form onSubmit={onSubmit}>
             <Field
               mb={10}
@@ -98,12 +102,13 @@ export default function AdminLogin() {
                 type="submit"
                 loading={isLoading || isSubmitting}
                 loadingText="Loading..."
+                backgroundColor="primary"
               >Login</Button>
             </Field>
           </form>
           <Toaster />
         </Container>
-      </Flex>
+      </VStack>
     </>
   )
 }

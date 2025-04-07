@@ -7,7 +7,8 @@ import {
   SelectItem,
   SelectRoot,
   SelectTrigger,
-  SelectValueText
+  SelectValueText,
+  VStack
 } from "@chakra-ui/react";
 import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
@@ -80,62 +81,68 @@ export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
 
   return (
     <Flex justifyContent="center">
-      <form onSubmit={onSubmit}>
-        <Field mb={5} label="Name"
-          invalid={!!errors.name}
-          errorText={errors.name?.message}>
-          <Input {...register("name")} placeholder="Nama Lengkap" />
-        </Field>
-        <Field mb={5} label="Phone"
-          invalid={!!errors.phone}
-          errorText={errors.phone?.message}>
-          <Group attached w="100%">
-            <Input {...register("phone")}
-              borderRadius="md"
-              inputMode="numeric"
-              placeholder="No. Telephone" />
-          </Group>
-        </Field>
-        <Field mb={5} label="Shirt size" width="320px"
-          invalid={!!errors.shirt_size}
-          errorText={errors.shirt_size?.message}>
-          <Controller
-            control={control}
-            name="shirt_size"
-            render={({ field }) => (
-              <SelectRoot
-                name={field.name}
-                value={field.value}
-                onValueChange={({ value }) => field.onChange(value)}
-                onInteractOutside={() => field.onBlur()}
-                collection={SHIRT_SIZES}
-                size="sm"
-              >
-                <SelectTrigger>
-                  <SelectValueText placeholder="Pilih ukuran baju" />
-                </SelectTrigger>
-                <SelectContent>
-                  {SHIRT_SIZES.items.map((x) => (
-                    <SelectItem item={x} key={x.value}>
-                      {x.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </SelectRoot>
-            )}
-          />
+      <VStack backgroundColor="cancel" p="3rem" borderRadius="md">
+        <form onSubmit={onSubmit}>
+          <Field mb={5} label="Name"
+            invalid={!!errors.name}
+            errorText={errors.name?.message}>
+            <Input {...register("name")}
+              placeholder="Nama Lengkap"
+              _placeholder={{ opacity: "0.5" }} />
+          </Field>
+          <Field mb={5} label="Phone"
+            invalid={!!errors.phone}
+            errorText={errors.phone?.message}>
+            <Group attached w="100%">
+              <Input {...register("phone")}
+                borderRadius="md"
+                color="cancel"
+                inputMode="numeric"
+                placeholder="No. Telephone"
+                _placeholder={{ opacity: "0.5" }} />
+            </Group>
+          </Field>
+          <Field mb={5} label="Shirt size" width="320px"
+            invalid={!!errors.shirt_size}
+            errorText={errors.shirt_size?.message}>
+            <Controller
+              control={control}
+              name="shirt_size"
+              render={({ field }) => (
+                <SelectRoot
+                  name={field.name}
+                  value={field.value}
+                  onValueChange={({ value }) => field.onChange(value)}
+                  onInteractOutside={() => field.onBlur()}
+                  collection={SHIRT_SIZES}
+                  size="sm"
+                >
+                  <SelectTrigger>
+                    <SelectValueText placeholder="Pilih ukuran baju" opacity="0.5" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SHIRT_SIZES.items.map((x) => (
+                      <SelectItem item={x} key={x.value}>
+                        {x.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </SelectRoot>
+              )}
+            />
 
-        </Field>
+          </Field>
 
-        <Field alignItems="end">
-          <Group grow>
-            <Button type="submit" loading={isSubmitting || isLoading}>Save</Button>
-            <Button variant="outline" loading={isSubmitting || isLoading} onClick={goToList}>Cancel</Button>
-          </Group>
-        </Field>
-      </form>
+          <Field alignItems="end">
+            <Group grow>
+              <Button variant="outline" outlineColor="black" borderColor="black" color="black" loading={isSubmitting || isLoading} onClick={goToList}>Cancel</Button>
+              <Button type="submit" loading={isSubmitting || isLoading}>Save</Button>
+            </Group>
+          </Field>
+        </form>
 
-      <Toaster />
+        <Toaster />
+      </VStack>
     </Flex>
   )
 }
