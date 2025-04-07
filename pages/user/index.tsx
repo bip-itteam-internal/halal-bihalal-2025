@@ -1,6 +1,6 @@
 import CheckinModal from "@/components/organisms/CheckinModal";
 import { Toaster, toaster } from "@/components/ui/toaster";
-import { Box, Button, Center, Container, Heading, Spinner, VStack } from "@chakra-ui/react";
+import { Box, Button, Center, Flex, Heading, Spinner, VStack } from "@chakra-ui/react";
 import { IDetectedBarcode, Scanner } from '@yudiel/react-qr-scanner';
 import Cookies from "js-cookie";
 import Head from "next/head";
@@ -86,7 +86,7 @@ export default function Home() {
         <meta name="description" content="Letto show @bharatainternationalpharmaceutical" />
       </Head>
 
-      <Container w={{ base: "360px", md: "400px" }}>
+      <Flex w="100%" h="100vh" justify="center" alignItems="center">
 
         {
           isLoading && (
@@ -98,17 +98,19 @@ export default function Home() {
           )
         }
 
-        <VStack h="calc(100vh - 20vh)" justify="center" alignItems="center">
+        <VStack
+          w={{ base: "100%", lg: "40%" }}
+          p={{ base: "2rem", lg: "4rem" }}
+          borderRadius="lg"
+          backgroundColor="cancel">
           <Heading fontSize="lg">Silahkan scan QR Code di tempat acara</Heading>
-          <VStack w="100%" minH="350px">
-
+          <VStack minH={{ base: "100%", lg: "350px" }}>
             <Scanner onScan={checkin} onError={onError} />
-
           </VStack>
-          <Button mt="1rem" w="100%" onClick={logout}>Logout</Button>
+          <Button backgroundColor="primary" mt="1rem" w="100%" onClick={logout}>Logout</Button>
         </VStack>
         <Toaster />
-      </Container>
+      </Flex>
       <CheckinModal message={modal.message} isOpen={modal.state} setOpen={(e) => setModal({
         state: e,
         message: modal.message

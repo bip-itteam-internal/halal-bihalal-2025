@@ -75,12 +75,19 @@ export default function UserLogin() {
         <meta name="description" content="Letto show @bharatainternationalpharmaceutical" />
       </Head>
 
-      <Flex flexDir="column" h={{ base: "calc(100vh - 30vh)", md: "calc(100vh - 20vh)" }} justifyContent="center" alignItems="center">
+      <Flex
+        flexDir="column"
+        h={{ base: "calc(100vh - 30vh)", md: "calc(100vh - 20vh)" }}
+        justifyContent="center"
+        alignItems="center">
         <Container
-          width={{ base: "85%", lg: "30%" }}>
+          width={{ base: "85%", lg: "40%" }}
+          p="3rem"
+          borderRadius="lg"
+          backgroundColor="cancel">
           <Image alt="Logo" src="/logo/logo_512.png" w="200px" mx="auto" mb="2rem" />
-          <Heading size="2xl" textAlign="center">Check-in</Heading>
-          <Heading size="2xl" mb={10} textAlign="center">Halal Bihalal 2025</Heading>
+          <Heading size="2xl" textAlign="center" color="secondary">Check-in</Heading>
+          <Heading size="2xl" mb={10} textAlign="center" color="secondary">Halal Bihalal 2025</Heading>
           <form onSubmit={onSubmit}>
             <Field
               mb={10}
@@ -100,6 +107,7 @@ export default function UserLogin() {
                 type="submit"
                 loading={isLoading || isSubmitting}
                 loadingText="Loading..."
+                backgroundColor="primary"
               >Login</Button>
             </Field>
           </form>

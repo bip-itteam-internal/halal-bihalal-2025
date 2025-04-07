@@ -17,11 +17,30 @@ const poppins = Poppins({
 })
 
 const system = createSystem(defaultConfig, {
+  globalCss: {
+    body: {
+      background: `linear-gradient(rgb(0 68 123 / 90%), rgba(255, 255, 255, 0.9)), url(../background.webp)`,
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      backgroundSize: "cover",
+    }
+  },
   theme: {
     tokens: {
       fonts: {
         heading: { value: poppins.style.fontFamily },
         body: { value: poppins.style.fontFamily }
+      },
+      colors: {
+        primary: {
+          value: "#009b4c"
+        },
+        secondary: {
+          value: "#b6d43d"
+        },
+        cancel: {
+          value: "#fff"
+        }
       }
     }
   }
