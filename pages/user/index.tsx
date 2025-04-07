@@ -111,7 +111,7 @@ export default function Home() {
         </VStack>
         <Toaster />
       </Flex>
-      <CheckinModal message={modal.message} isOpen={true} setOpen={(e) => setModal({
+      <CheckinModal message={modal.message} isOpen={modal.state} setOpen={(e) => setModal({
         state: e,
         message: modal.message
       })} />
