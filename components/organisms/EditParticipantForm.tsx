@@ -83,6 +83,8 @@ export default function EditParticipantForm({ clear, populatedData, goToList }: 
       return;
     }
 
+    clear();
+    reset();
     goToList()
   })
 
@@ -141,7 +143,7 @@ export default function EditParticipantForm({ clear, populatedData, goToList }: 
 
           <Field alignItems="end">
             <Group grow>
-              <Button variant="outline" outlineColor="black" borderColor="black" color="black"  loading={isSubmitting || isLoading}
+              <Button variant="outline" outlineColor="black" borderColor="black" color="black" loading={isSubmitting || isLoading}
                 onClick={() => {
                   clear();
                   reset();

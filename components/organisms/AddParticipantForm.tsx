@@ -96,7 +96,6 @@ export default function AddParticipantForm({ goToList }: IAddParticipantForm) {
             <Group attached w="100%">
               <Input {...register("phone")}
                 borderRadius="md"
-                color="cancel"
                 inputMode="numeric"
                 placeholder="No. Telephone"
                 _placeholder={{ opacity: "0.5" }} />
