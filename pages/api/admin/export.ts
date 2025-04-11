@@ -18,6 +18,8 @@ interface Attendance {
 interface Participant {
   id: string;
   name: string;
+  phone: string;
+  shirt_size: string;
   attendance: Attendance[] | null;
 }
 
@@ -55,6 +57,8 @@ async function exportAllParticipantsToCSV(req: NextApiRequest, res: NextApiRespo
         `
         id,
         name,
+        phone,
+        shirt_size,
         attendance:attendance!left (
           id,
           status,
@@ -79,6 +83,8 @@ async function exportAllParticipantsToCSV(req: NextApiRequest, res: NextApiRespo
     const csvData = participants.map(participant => {
       const row: Record<string, string> = {
         name: participant.name,
+        phone: `="+${participant.phone}"`,
+        shirt_size: participant.shirt_size,
       };
 
       events.forEach(event => {
@@ -93,6 +99,8 @@ async function exportAllParticipantsToCSV(req: NextApiRequest, res: NextApiRespo
 
     const csvHeader = [
       { id: 'name', title: 'NAME' },
+      { id: 'phone', title: 'PHONE' },
+      { id: 'shirt_size', title: 'SHIRT SIZE' },
       ...events.map(event => ({ id: event.name, title: event.name })),
     ];
 
