@@ -37,7 +37,7 @@ export default function Home() {
           fontSize="4xl"
           mb={8}
           textAlign="center"
-          color="cancel">DASHBOARD</Heading>
+          color="cancel">DASHBOARD PESERTA</Heading>
 
         <Tabs.Root
           justify="center"

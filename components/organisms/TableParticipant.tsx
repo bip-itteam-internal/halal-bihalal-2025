@@ -163,7 +163,13 @@ export default function TableParticipant({ populatedData }: IEditThis) {
       }
 
       <VStack>
-        <Input mb={5} _placeholder={{ color: "cancel", opacity: "0.5" }} placeholder="Search..." value={searchTerm} onChange={handleSearch} />
+        <Input
+          mb={5}
+          _placeholder={{ color: "cancel", opacity: "0.5" }}
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={handleSearch}
+          color="cancel" />
         {
           data && data.length > 0 && (
             <>
