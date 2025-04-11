@@ -80,8 +80,9 @@ async function exportAllParticipantsToCSV(req: NextApiRequest, res: NextApiRespo
       });
     }
 
-    const csvData = participants.map(participant => {
+    const csvData = participants.map((participant, index) => {
       const row: Record<string, string> = {
+        no: (index + 1).toString(),
         name: participant.name,
         phone: `="+${participant.phone}"`,
         shirt_size: participant.shirt_size,
@@ -98,6 +99,7 @@ async function exportAllParticipantsToCSV(req: NextApiRequest, res: NextApiRespo
     });
 
     const csvHeader = [
+      { id: 'no', title: 'NO' },
       { id: 'name', title: 'NAME' },
       { id: 'phone', title: 'PHONE' },
       { id: 'shirt_size', title: 'SHIRT SIZE' },
