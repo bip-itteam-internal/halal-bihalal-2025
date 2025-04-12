@@ -67,8 +67,8 @@ importers:
         specifier: ^3
         version: 3.3.0
       '@netlify/plugin-nextjs':
-        specifier: ^5.10.4
-        version: 5.10.4
+        specifier: ^5.10.5
+        version: 5.10.5
       '@types/formidable':
         specifier: ^3.4.5
         version: 3.4.5
@@ -400,8 +400,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
 
-  '@netlify/plugin-nextjs@5.10.4':
-    resolution: {integrity: sha512-E6r2BG9xfRptY6GviEtghG03tr6+M9S0fnPs7MxNqOjLjrqNCmXgeY5ZoDoTcf1J4H8rf2PW4VL6TjxzxBgOWQ==}
+  '@netlify/plugin-nextjs@5.10.5':
+    resolution: {integrity: sha512-4Lw6fy4VMroBGcrdwjhWfnejmeqbTRgqhQKYIBT0AejzPv4HzxLndtSjqcgZp8gXQ7biEfJvk26cXW6rFnM+dw==}
     engines: {node: '>=18.0.0'}
 
   '@next/env@15.2.4':
@@ -2560,7 +2560,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@netlify/plugin-nextjs@5.10.4': {}
+  '@netlify/plugin-nextjs@5.10.5': {}
 
   '@next/env@15.2.4': {}
 
