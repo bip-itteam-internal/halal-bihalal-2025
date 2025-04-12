@@ -64,6 +64,7 @@ export default function TableParticipant({ populatedData }: IEditThis) {
 
       const burp = await fetch(url, {
         method: "GET",
+        cache: "reload",
         headers: {
           'Authorization': `Bearer ${token}`
         }
