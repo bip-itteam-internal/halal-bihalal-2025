@@ -1,0 +1,1 @@
+INSERT INTO "public"."event" ("id", "name", "location", "date", "created_at") VALUES ('1', 'TAUSIYAH', 'Halaman Parkir Kantor Pusat', '2025-04-14 16:30:00', '2025-03-04 08:05:53.838588+00'), ('2', 'CONCERT', 'Halaman Parkir Kantor Pusat', '2025-04-14 19:20:00', '2025-03-04 08:29:44.861817+00');
