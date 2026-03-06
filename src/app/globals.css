@@ -1,39 +1,68 @@
-@import "tailwindcss";
+:root {
+  --font-sans: "Inter", ui-sans-serif, system-ui;
+  --font-heading: "Outfit", ui-sans-serif, system-ui;
 
-@theme {
-  /* Di v4, variable font dari Next.js akan otomatis terbaca jika kita tidak menimpanya secara manual secara berlebihan */
-  --font-sans: var(--font-sans), "Inter", ui-sans-serif, system-ui;
-  --font-heading: var(--font-heading), "Outfit", ui-sans-serif, system-ui;
+  --color-primary: #10b981;
+  --color-primary-dark: #065f46;
+  --color-secondary: #f59e0b;
+  --color-glass: rgba(255, 255, 255, 0.08);
+  --color-glass-border: rgba(255, 255, 255, 0.12);
 
-  --color-primary: #059669;
-  --color-secondary: #fbbf24;
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
 
-  --radius-3xl: 1.5rem;
-  --radius-4xl: 2rem;
-  --radius-5xl: 3rem;
+  --primary-color: #10b981;
+  --secondary-color: #f59e0b;
+  --foreground: #020617;
+  --background: #ffffff;
+  --selection-bg: rgba(16, 185, 129, 0.26);
 }
 
-@layer base {
-  :root {
-    --primary-color: #059669;
-    --secondary-color: #fbbf24;
-    --foreground: #020617;
-    --background: #ffffff;
-  }
-
-  [data-theme='dark'] {
-    --foreground: #f8fafc;
-    --background: #020617;
-  }
+[data-theme='dark'] {
+  --foreground: #f8fafc;
+  --background: #020617;
+  --selection-bg: rgba(16, 185, 129, 0.4);
 }
 
 * {
   box-sizing: border-box;
 }
 
+::selection {
+  background-color: var(--selection-bg);
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
   min-height: 100dvh;
+  margin: 0;
+  font-family: var(--font-sans);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition-property: background-color, color;
+  transition-duration: 300ms;
+}
+
+.glass {
+  background: var(--color-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-glass-border);
+  box-shadow: var(--shadow-glass);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.text-gradient {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(to right, #34d399, #22d3ee);
+  /* from-emerald-400 to-cyan-400 */
 }

@@ -12,20 +12,25 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Guest, Checkin } from "@/types";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { 
+  Box, 
+  Heading, 
+  Text, 
+  Button, 
+  Stack, 
+  HStack, 
+  VStack, 
+  SimpleGrid, 
+  Badge, 
+  Input, 
+  Flex,
+  Table,
+  IconButton,
+  Spinner,
+} from "@chakra-ui/react";
+import { InputGroup } from "@/components/ui/input-group";
 import { StatsCard } from "@/components/shared/stats-card";
 import { Sidebar } from "@/components/layout/sidebar";
-import { 
-  Table, 
-  TableHeader, 
-  TableBody, 
-  TableRow, 
-  TableHead, 
-  TableCell 
-} from "@/components/ui/table";
 
 interface GuestWithCheckins extends Guest {
   checkins: Checkin[];
@@ -49,7 +54,6 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       
-      // 1. Fetch Event for status and quota
       const { data: event } = await supabase.from('events').select('*').single();
       if (event) {
         setRegStatus(event.public_reg_status);
@@ -65,7 +69,6 @@ export default function DashboardPage() {
 
       setGuests(allGuests as GuestWithCheckins[]);
 
-      // 3. Calculate Stats
       const total = allGuests.length;
       const internal = allGuests.filter(g => g.guest_type === 'internal').length;
       const external = allGuests.filter(g => g.guest_type === 'external').length;
@@ -91,7 +94,7 @@ export default function DashboardPage() {
     const { error } = await supabase
       .from('events')
       .update({ public_reg_status: newStatus })
-      .eq('name', 'Halal Bihalal 2025'); // Adjust key as needed
+      .eq('name', 'Halal Bihalal 2025');
 
     if (!error) setRegStatus(newStatus);
   };
@@ -106,125 +109,161 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="flex min-h-screen bg-slate-50/50">
+    <Flex minH="100vh" bg={{ base: "gray.50", _dark: "gray.900" }}>
       <Sidebar />
 
-      {/* Main Content */}
-      <main className="flex-1 p-8 lg:p-16 overflow-y-auto">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-16">
-          <div>
-            <h1 className="text-5xl font-heading font-black tracking-tighter mb-3">Event Analytics</h1>
-            <p className="text-muted-foreground font-medium text-lg">Halal Bihalal 2025 & Festival Letto</p>
-          </div>
+      <Box flex="1" p={{ base: 8, lg: 16 }} overflowY="auto">
+        <Stack direction={{ base: "column", md: "row" }} justify="space-between" align={{ base: "start", md: "center" }} gap={8} mb={16}>
+          <Box>
+            <Heading fontSize="5xl" fontWeight="black" letterSpacing="tighter" mb={3} color={{ base: "gray.900", _dark: "white" }}>
+              Event Analytics
+            </Heading>
+            <Text color="gray.500" fontWeight="medium" fontSize="lg">
+              Halal Bihalal 2025 & Festival Letto
+            </Text>
+          </Box>
 
-          <Card className="flex items-center gap-6 p-3 bg-white pr-6">
-            <div className="px-6 py-2 border-r border-slate-100">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] block mb-1">Public Reg</span>
-              <Badge variant={regStatus === 'open' ? 'success' : 'destructive'} className="h-6">
+          <HStack bg="white" _dark={{ bg: "gray.800" }} p={3} pr={6} borderRadius="2xl" boxShadow="sm" gap={6} borderWidth="1px" borderColor={{ base: "gray.100", _dark: "gray.700" }}>
+            <Box px={6} py={2} borderEndWidth="1px" borderColor={{ base: "gray.100", _dark: "gray.700" }}>
+              <Text fontSize="10px" fontWeight="black" color="gray.400" textTransform="uppercase" letterSpacing="0.2em" mb={1}>
+                Public Reg
+              </Text>
+              <Badge colorPalette={regStatus === 'open' ? 'green' : 'red'} variant="solid" height="6" borderRadius="md">
                 {regStatus.toUpperCase()}
               </Badge>
-            </div>
+            </Box>
             <Button 
-              variant={regStatus === 'open' ? 'destructive' : 'primary'}
+              colorPalette={regStatus === 'open' ? 'red' : 'blue'}
               size="sm"
               onClick={toggleRegStatus}
-              className="h-12 px-6"
+              height="12"
+              px={6}
+              borderRadius="xl"
             >
               {regStatus === 'open' ? "Tutup Registrasi" : "Buka Registrasi"}
             </Button>
-          </Card>
-        </div>
+          </HStack>
+        </Stack>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={8} mb={16}>
           <StatsCard icon={<Users />} label="Total Tamu" value={stats.total} color="blue" />
           <StatsCard icon={<UserCheck />} label="Hadir (Cek-in)" value={stats.checkedIn} color="emerald" />
           <StatsCard icon={<Ticket />} label="Sisa Kuota" value={stats.quotaLeft} color="amber" />
           <StatsCard icon={<Timer />} label="Intern / Ekstern" value={`${stats.internal} / ${stats.external}`} color="indigo" />
-        </div>
+        </SimpleGrid>
 
-        {/* Table & Filters */}
-        <Card className="overflow-hidden border-none shadow-2xl shadow-slate-200/60 rounded-[3rem]">
-          <CardHeader className="p-10 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <CardTitle className="text-2xl">Daftar Tamu</CardTitle>
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <Box bg="white" _dark={{ bg: "gray.800" }} borderRadius="3rem" boxShadow="2xl" overflow="hidden" borderWidth="1px" borderColor={{ base: "gray.100", _dark: "gray.700" }}>
+          <Stack direction={{ base: "column", md: "row" }} justify="space-between" align={{ base: "start", md: "center" }} p={10} borderBottomWidth="1px" borderColor={{ base: "gray.50", _dark: "gray.700" }} gap={6}>
+            <Heading fontSize="2xl" fontWeight="bold">Daftar Tamu</Heading>
+            <HStack gap={4} w={{ base: "full", md: "auto" }}>
+              <InputGroup 
+                w={{ base: "full", md: "80" }} 
+                startElement={<Search size={16} color="gray" />}
+              >
                 <Input 
                   placeholder="Cari nama atau perusahaan..." 
-                  className="pl-12 w-full md:w-80 h-12 bg-slate-50 border-transparent shadow-none"
+                  h="12" 
+                  bg={{ base: "gray.50", _dark: "gray.700" }}
+                  border="none"
+                  borderRadius="xl"
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                 />
-              </div>
-              <Button variant="secondary" size="icon" className="h-12 w-12 rounded-xl">
-                <Filter className="w-4 h-4" />
-              </Button>
-            </div>
-          </CardHeader>
+              </InputGroup>
+              <IconButton 
+                aria-label="Filter"
+                h="12" 
+                w="12" 
+                borderRadius="xl"
+                variant="outline"
+              >
+                <Filter size={16} />
+              </IconButton>
+            </HStack>
+          </Stack>
 
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent border-none">
-                  <TableHead className="px-10 py-6">Tamu</TableHead>
-                  <TableHead className="px-10 py-6">Kategori</TableHead>
-                  <TableHead className="px-10 py-6">Instansi</TableHead>
-                  <TableHead className="px-10 py-6">Check-in</TableHead>
-                  <TableHead className="px-10 py-6 text-right">Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+          <Box overflowX="auto">
+            <Table.Root variant="line">
+              <Table.Header bg="gray.50" _dark={{ bg: "gray.700" }}>
+                <Table.Row>
+                  <Table.ColumnHeader px={10} py={6} fontSize="xs" fontWeight="bold">Tamu</Table.ColumnHeader>
+                  <Table.ColumnHeader px={10} py={6} fontSize="xs" fontWeight="bold">Kategori</Table.ColumnHeader>
+                  <Table.ColumnHeader px={10} py={6} fontSize="xs" fontWeight="bold">Instansi</Table.ColumnHeader>
+                  <Table.ColumnHeader px={10} py={6} fontSize="xs" fontWeight="bold">Check-in</Table.ColumnHeader>
+                  <Table.ColumnHeader px={10} py={6} fontSize="xs" fontWeight="bold" textAlign="right">Aksi</Table.ColumnHeader>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
                 {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="p-32 text-center font-bold text-slate-300 animate-pulse text-xl">
-                      Diving into data...
-                    </TableCell>
-                  </TableRow>
+                  <Table.Row>
+                    <Table.Cell colSpan={5} p={32} textAlign="center">
+                      <VStack gap={4}>
+                        <Spinner size="xl" color="blue.500" />
+                        <Text fontWeight="bold" color="gray.300" fontSize="xl">Diving into data...</Text>
+                      </VStack>
+                    </Table.Cell>
+                  </Table.Row>
                 ) : filteredGuests.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="p-32 text-center font-medium text-slate-400">
-                      Belum ada tamu yang terdaftar.
-                    </TableCell>
-                  </TableRow>
+                  <Table.Row>
+                    <Table.Cell colSpan={5} p={32} textAlign="center">
+                      <Text fontWeight="medium" color="gray.400">Belum ada tamu yang terdaftar.</Text>
+                    </Table.Cell>
+                  </Table.Row>
                 ) : filteredGuests.map((guest) => (
-                  <TableRow key={guest.id} className="hover:bg-slate-50/30 transition-colors group cursor-pointer">
-                    <TableCell className="px-10 py-7">
-                      <p className="font-bold text-slate-900 text-lg">{guest.full_name}</p>
-                      <p className="text-xs text-slate-400 font-bold tracking-tight">{guest.phone || 'No WhatsApp'}</p>
-                    </TableCell>
-                    <TableCell className="px-10 py-7">
-                      <Badge variant={guest.guest_type === 'internal' ? 'info' : 'purple'}>
+                  <Table.Row 
+                    key={guest.id} 
+                    cursor="pointer"
+                    _hover={{ bg: { base: "gray.50", _dark: "gray.700/30" } }}
+                    transition="background 0.2s"
+                  >
+                    <Table.Cell px={10} py={7}>
+                      <Box>
+                        <Text fontWeight="bold" fontSize="lg" color="gray.900" _dark={{ color: "white" }}>{guest.full_name}</Text>
+                        <Text fontSize="xs" color="gray.400" fontWeight="bold">{guest.phone || 'No WhatsApp'}</Text>
+                      </Box>
+                    </Table.Cell>
+                    <Table.Cell px={10} py={7}>
+                      <Badge colorPalette={guest.guest_type === 'internal' ? 'blue' : 'purple'} variant="solid" borderRadius="full">
                         {guest.guest_type}
                       </Badge>
-                    </TableCell>
-                    <TableCell className="px-10 py-7 text-sm font-bold text-slate-500 uppercase tracking-tight">
-                      {guest.company || guest.department || 'Personal'}
-                    </TableCell>
-                    <TableCell className="px-10 py-7">
-                      <div className="flex gap-2">
+                    </Table.Cell>
+                    <Table.Cell px={10} py={7}>
+                      <Text fontSize="sm" fontWeight="bold" color="gray.500" textTransform="uppercase">
+                        {guest.company || guest.department || 'Personal'}
+                      </Text>
+                    </Table.Cell>
+                    <Table.Cell px={10} py={7}>
+                      <HStack gap={2}>
                         {(['siang', 'malam'] as const).map(s => {
                           const hasChecked = guest.checkins?.some((c: Checkin) => c.session_type === s);
                           return (
-                            <Badge key={s} variant={hasChecked ? 'success' : 'outline'} className="rounded-lg h-6 px-2 lowercase font-medium">
+                            <Badge key={s} colorPalette={hasChecked ? 'green' : 'gray'} variant={hasChecked ? 'solid' : 'outline'} borderRadius="lg" h="6" px={2} textTransform="lowercase" fontWeight="medium">
                               {s}
                             </Badge>
                           );
                         })}
-                      </div>
-                    </TableCell>
-                    <TableCell className="px-10 py-7 text-right">
-                      <div className="p-3 hover:bg-white rounded-2xl transition-all group-hover:shadow-md inline-block">
-                        <ChevronRight className="w-6 h-6 text-slate-300 group-hover:text-primary transition-colors" />
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                      </HStack>
+                    </Table.Cell>
+                    <Table.Cell px={10} py={7} textAlign="right">
+                      <Box 
+                        display="inline-block" 
+                        p={3} 
+                        borderRadius="2xl" 
+                        transition="all 0.2s"
+                        _hover={{ bg: { base: "white", _dark: "gray.700" }, boxShadow: "md", color: "blue.500" }}
+                      >
+                        <IconButton aria-label="Detail" variant="ghost" rounded="full">
+                          <ChevronRight size={24} color="gray" />
+                        </IconButton>
+                      </Box>
+                    </Table.Cell>
+                  </Table.Row>
                 ))}
-              </TableBody>
-            </Table>
-         </CardContent>
-        </Card>
-      </main>
-    </div>
+              </Table.Body>
+            </Table.Root>
+          </Box>
+        </Box>
+      </Box>
+    </Flex>
   );
 }
