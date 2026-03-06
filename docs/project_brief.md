@@ -93,11 +93,13 @@ graph TD
 Pemilik sistem dengan otoritas penuh (**Omnipotent**). Super Admin memiliki akses ke **seluruh fitur di semua role** (Guest, Admin, dan Staff Scanner) tanpa terkecuali. Hal ini dirancang agar Super Admin dapat mengelola, menguji, dan melakukan tindakan operasional tanpa perlu berpindah akun.
 
 **Hak akses:**
+
 - **All-in-One Access**: Melakukan fungsi Admin, Staff Scanner, hingga melihat simulasi Invitations.
 - **User Management**: Eksklusif—membuat, mengedit, dan mengelola akun Admin/Staff lain.
 - **System-Wide Control**: Akses penuh ke seluruh Event, Branding, dan Data Manajemen.
 
 **Workflow:**
+
 ```mermaid
 graph TD
     SA1[Login Super Admin] --> SA2[Full Feature Access]
@@ -428,6 +430,7 @@ Mencatat riwayat kehadiran tamu di lokasi acara.
 # 8. Detailed Feature Flows
 
 ## 8.1 Event Preparation & Branding Flow
+
 Proses awal di mana Admin menyiapkan identitas visual dan informasi dasar event.
 
 ```mermaid
@@ -444,6 +447,7 @@ graph TD
 ---
 
 ## 8.2 Guest Data Management Flow
+
 Alur penambahan data tamu baik melalui impor massal maupun input manual.
 
 ```mermaid
@@ -455,11 +459,11 @@ graph TD
     E -- Tidak --> F[Admin Edit Langsung di Preview]
     F --> D
     E -- Ya --> G[Konfirmasi Import]
-    
+  
     B -- Manual --> H[Buka Form Tambah Tamu]
     H --> I[Isi Data: Nama, WA, Tipe, dll]
     I --> J[Simpan Data]
-    
+  
     G --> K[Sistem Generate Unique UUID]
     J --> K
     K --> L[Generate Link Personal]
@@ -469,6 +473,7 @@ graph TD
 ---
 
 ## 8.3 WhatsApp Invitation Distribution Flow
+
 Proses pengiriman undangan otomatis menggunakan layanan NotifAPI.
 
 ```mermaid
@@ -484,6 +489,7 @@ graph TD
 ---
 
 ## 8.4 Guest RSVP & QR Code Generation Flow
+
 Interaksi tamu dari menerima pesan hingga mendapatkan bukti registrasi.
 
 ```mermaid
@@ -503,6 +509,7 @@ graph TD
 ---
 
 ## 8.5 Edit Shirt Size Flow (With Deadline Constraint)
+
 Logika untuk pembatasan waktu perubahan ukuran kaos.
 
 ```mermaid
@@ -518,6 +525,7 @@ graph TD
 ---
 
 ## 8.6 Real-time QR Scanner & Check-in Flow
+
 Proses registrasi di lokasi acara dengan penanganan berbagai skenario.
 
 ```mermaid
@@ -528,7 +536,7 @@ graph TD
     C -- Ada --> E{Sudah Check-in?}
     E -- Ya --> F[Pesan: Tamu Sudah Terdaftar pada Jam XX:XX]
     E -- Belum --> G[Tampilkan Data: Nama, Dept, Ukuran Kaos]
-    G --> H[Panitia Serahkan Kaos & Klik Check-in]
+    G --> H[Klik Check-in]
     H --> I[Update checkins & checkin_time]
     I --> J[Trigger Supabase Realtime Broadcast]
 ```
@@ -536,6 +544,7 @@ graph TD
 ---
 
 ## 8.7 Real-time Welcome Board & Analytics Flow
+
 Bagaimana data kehadiran disajikan secara instan di layar monitor.
 
 ```mermaid
@@ -789,7 +798,6 @@ Button:
 CHECK-IN
 
 ---
-
 
 # 20. Project Structure
 
