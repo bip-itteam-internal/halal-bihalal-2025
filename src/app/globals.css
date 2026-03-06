@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", "Outfit", system-ui, sans-serif;
+  --color-primary: var(--primary-color, #059669);
+  --color-secondary: var(--secondary-color, #fbbf24);
+}
+
+@layer base {
+  :root {
+    --primary-color: #059669; /* Default Classic Emerald */
+    --secondary-color: #fbbf24;
+    --foreground: #020617;
+    --background: #ffffff;
+  }
+
+  [data-theme='dark'] {
+    --foreground: #f8fafc;
+    --background: #020617;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  min-height: 100dvh;
+}
