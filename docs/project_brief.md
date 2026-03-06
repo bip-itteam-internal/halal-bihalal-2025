@@ -733,7 +733,6 @@ graph TD
 
 Name: Zulhakim
 Department: General Affair
-Shirt Size: L
 
 Status: Not Checked-in
 
