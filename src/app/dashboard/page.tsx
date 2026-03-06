@@ -1,269 +1,344 @@
-"use client";
+'use client'
 
-import { useState, useEffect } from "react";
-import { 
-  Users, 
-  Search, 
-  Filter, 
-  ChevronRight,
-  UserCheck,
+import { useState, useEffect, useCallback } from 'react'
+import {
+  Users,
+  Search,
+  CheckCircle2,
   Ticket,
-  Timer
-} from "lucide-react";
-import { supabase } from "@/lib/supabase";
-import { Guest, Checkin } from "@/types";
-import { 
-  Box, 
-  Heading, 
-  Text, 
-  Button, 
-  Stack, 
-  HStack, 
-  VStack, 
-  SimpleGrid, 
-  Badge, 
-  Input, 
-  Flex,
+  Activity,
+  Loader2,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
+import { Guest, Checkin } from '@/types'
+import { StatsCard } from '@/components/shared/stats-card'
+import { AppLayout } from '@/components/layout/app-layout'
+
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import {
   Table,
-  IconButton,
-  Spinner,
-} from "@chakra-ui/react";
-import { InputGroup } from "@/components/ui/input-group";
-import { StatsCard } from "@/components/shared/stats-card";
-import { Sidebar } from "@/components/layout/sidebar";
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 
 interface GuestWithCheckins extends Guest {
-  checkins: Checkin[];
+  checkins: Checkin[]
 }
 
 export default function DashboardPage() {
+  const supabase = createClient()
   const [stats, setStats] = useState({
     total: 0,
     internal: 0,
     external: 0,
     checkedIn: 0,
     quotaLeft: 0,
-  });
-  
-  const [guests, setGuests] = useState<GuestWithCheckins[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [regStatus, setRegStatus] = useState<'open' | 'closed'>('open');
+  })
 
-  const fetchDashboardData = async () => {
+  const [guests, setGuests] = useState<GuestWithCheckins[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
+  const [regStatus, setRegStatus] = useState<'open' | 'closed'>('open')
+
+  const fetchDashboardData = useCallback(async () => {
     try {
-      setLoading(true);
-      
-      const { data: event } = await supabase.from('events').select('*').single();
+      setLoading(true)
+
+      const { data: event } = await supabase.from('events').select('*').single()
       if (event) {
-        setRegStatus(event.public_reg_status);
+        setRegStatus(event.public_reg_status)
       }
 
       const { data: allGuests, error } = await supabase
         .from('guests')
         .select(`*, checkins(*)`)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
 
-      if (error) throw error;
-      if (!allGuests) return;
+      if (error) throw error
+      if (!allGuests) return
 
-      setGuests(allGuests as GuestWithCheckins[]);
+      setGuests(allGuests as GuestWithCheckins[])
 
-      const total = allGuests.length;
-      const internal = allGuests.filter(g => g.guest_type === 'internal').length;
-      const external = allGuests.filter(g => g.guest_type === 'external').length;
-      const checkedIn = allGuests.filter(g => g.checkins && g.checkins.length > 0).length;
-      
+      const total = allGuests.length
+      const internal = allGuests.filter(
+        (g) => g.guest_type === 'internal',
+      ).length
+      const external = allGuests.filter(
+        (g) => g.guest_type === 'external',
+      ).length
+      const checkedIn = allGuests.filter(
+        (g) => g.checkins && g.checkins.length > 0,
+      ).length
+
       setStats({
         total,
         internal,
         external,
         checkedIn,
-        quotaLeft: event ? event.external_quota - external : 0
-      });
-
+        quotaLeft: event ? event.external_quota - external : 0,
+      })
     } catch (err) {
-      console.error(err);
+      console.error(err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }, [supabase])
 
   const toggleRegStatus = async () => {
-    const newStatus = regStatus === 'open' ? 'closed' : 'open';
+    const newStatus = regStatus === 'open' ? 'closed' : 'open'
     const { error } = await supabase
       .from('events')
       .update({ public_reg_status: newStatus })
-      .eq('name', 'Halal Bihalal 2025');
+      .eq('name', 'Halal Bihalal 2025')
 
-    if (!error) setRegStatus(newStatus);
-  };
+    if (!error) setRegStatus(newStatus)
+  }
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    fetchDashboardData()
+  }, [fetchDashboardData])
 
-  const filteredGuests = guests.filter(g => 
-    g.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (g.company && g.company.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredGuests = guests.filter(
+    (g) =>
+      g.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (g.address &&
+        g.address.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (g.email && g.email.toLowerCase().includes(searchTerm.toLowerCase())),
+  )
+
+  const totalPages = Math.ceil(filteredGuests.length / pageSize)
+  const paginatedGuests = filteredGuests.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  )
+
+  // Reset to page 1 when searching
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm])
 
   return (
-    <Flex minH="100vh" bg={{ base: "gray.50", _dark: "gray.900" }}>
-      <Sidebar />
-
-      <Box flex="1" p={{ base: 8, lg: 16 }} overflowY="auto">
-        <Stack direction={{ base: "column", md: "row" }} justify="space-between" align={{ base: "start", md: "center" }} gap={8} mb={16}>
-          <Box>
-            <Heading fontSize="5xl" fontWeight="black" letterSpacing="tighter" mb={3} color={{ base: "gray.900", _dark: "white" }}>
-              Event Analytics
-            </Heading>
-            <Text color="gray.500" fontWeight="medium" fontSize="lg">
-              Halal Bihalal 2025 & Festival Letto
-            </Text>
-          </Box>
-
-          <HStack bg="white" _dark={{ bg: "gray.800" }} p={3} pr={6} borderRadius="2xl" boxShadow="sm" gap={6} borderWidth="1px" borderColor={{ base: "gray.100", _dark: "gray.700" }}>
-            <Box px={6} py={2} borderEndWidth="1px" borderColor={{ base: "gray.100", _dark: "gray.700" }}>
-              <Text fontSize="10px" fontWeight="black" color="gray.400" textTransform="uppercase" letterSpacing="0.2em" mb={1}>
-                Public Reg
-              </Text>
-              <Badge colorPalette={regStatus === 'open' ? 'green' : 'red'} variant="solid" height="6" borderRadius="md">
-                {regStatus.toUpperCase()}
-              </Badge>
-            </Box>
-            <Button 
-              colorPalette={regStatus === 'open' ? 'red' : 'blue'}
-              size="sm"
+    <AppLayout>
+      <div className="flex-1 space-y-4 p-8 pt-6">
+        <div className="flex items-center justify-between space-y-2">
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant={regStatus === 'open' ? 'destructive' : 'default'}
               onClick={toggleRegStatus}
-              height="12"
-              px={6}
-              borderRadius="xl"
             >
-              {regStatus === 'open' ? "Tutup Registrasi" : "Buka Registrasi"}
+              {regStatus === 'open'
+                ? 'Close Registration'
+                : 'Open Registration'}
             </Button>
-          </HStack>
-        </Stack>
+          </div>
+        </div>
 
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} gap={8} mb={16}>
-          <StatsCard icon={<Users />} label="Total Tamu" value={stats.total} color="blue" />
-          <StatsCard icon={<UserCheck />} label="Hadir (Cek-in)" value={stats.checkedIn} color="emerald" />
-          <StatsCard icon={<Ticket />} label="Sisa Kuota" value={stats.quotaLeft} color="amber" />
-          <StatsCard icon={<Timer />} label="Intern / Ekstern" value={`${stats.internal} / ${stats.external}`} color="indigo" />
-        </SimpleGrid>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <StatsCard
+            icon={<Users />}
+            label="Total Registrants"
+            value={stats.total}
+          />
+          <StatsCard
+            icon={<CheckCircle2 />}
+            label="Checked In"
+            value={stats.checkedIn}
+          />
+          <StatsCard
+            icon={<Ticket />}
+            label="Remaining Quota"
+            value={stats.quotaLeft}
+          />
+          <StatsCard
+            icon={<Activity />}
+            label="Internal / External"
+            value={`${stats.internal} / ${stats.external}`}
+          />
+        </div>
 
-        <Box bg="white" _dark={{ bg: "gray.800" }} borderRadius="3rem" boxShadow="2xl" overflow="hidden" borderWidth="1px" borderColor={{ base: "gray.100", _dark: "gray.700" }}>
-          <Stack direction={{ base: "column", md: "row" }} justify="space-between" align={{ base: "start", md: "center" }} p={10} borderBottomWidth="1px" borderColor={{ base: "gray.50", _dark: "gray.700" }} gap={6}>
-            <Heading fontSize="2xl" fontWeight="bold">Daftar Tamu</Heading>
-            <HStack gap={4} w={{ base: "full", md: "auto" }}>
-              <InputGroup 
-                w={{ base: "full", md: "80" }} 
-                startElement={<Search size={16} color="gray" />}
-              >
-                <Input 
-                  placeholder="Cari nama atau perusahaan..." 
-                  h="12" 
-                  bg={{ base: "gray.50", _dark: "gray.700" }}
-                  border="none"
-                  borderRadius="xl"
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Guest List</CardTitle>
+                <CardDescription>
+                  Manage and monitor all registered event guests.
+                </CardDescription>
+              </div>
+              <div className="flex w-full max-w-sm items-center space-x-2">
+                <Search className="text-muted-foreground mr-2 h-4 w-4" />
+                <Input
+                  type="search"
+                  placeholder="Search guests..."
                   value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full"
                 />
-              </InputGroup>
-              <IconButton 
-                aria-label="Filter"
-                h="12" 
-                w="12" 
-                borderRadius="xl"
-                variant="outline"
-              >
-                <Filter size={16} />
-              </IconButton>
-            </HStack>
-          </Stack>
-
-          <Box overflowX="auto">
-            <Table.Root variant="line">
-              <Table.Header bg="gray.50" _dark={{ bg: "gray.700" }}>
-                <Table.Row>
-                  <Table.ColumnHeader px={10} py={6} fontSize="xs" fontWeight="bold">Tamu</Table.ColumnHeader>
-                  <Table.ColumnHeader px={10} py={6} fontSize="xs" fontWeight="bold">Kategori</Table.ColumnHeader>
-                  <Table.ColumnHeader px={10} py={6} fontSize="xs" fontWeight="bold">Instansi</Table.ColumnHeader>
-                  <Table.ColumnHeader px={10} py={6} fontSize="xs" fontWeight="bold">Check-in</Table.ColumnHeader>
-                  <Table.ColumnHeader px={10} py={6} fontSize="xs" fontWeight="bold" textAlign="right">Aksi</Table.ColumnHeader>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Guest Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Organization/Address</TableHead>
+                  <TableHead>Check-in Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {loading ? (
-                  <Table.Row>
-                    <Table.Cell colSpan={5} p={32} textAlign="center">
-                      <VStack gap={4}>
-                        <Spinner size="xl" color="blue.500" />
-                        <Text fontWeight="bold" color="gray.300" fontSize="xl">Diving into data...</Text>
-                      </VStack>
-                    </Table.Cell>
-                  </Table.Row>
-                ) : filteredGuests.length === 0 ? (
-                  <Table.Row>
-                    <Table.Cell colSpan={5} p={32} textAlign="center">
-                      <Text fontWeight="medium" color="gray.400">Belum ada tamu yang terdaftar.</Text>
-                    </Table.Cell>
-                  </Table.Row>
-                ) : filteredGuests.map((guest) => (
-                  <Table.Row 
-                    key={guest.id} 
-                    cursor="pointer"
-                    _hover={{ bg: { base: "gray.50", _dark: "gray.700/30" } }}
-                    transition="background 0.2s"
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                      <Loader2 className="text-muted-foreground mx-auto h-6 w-6 animate-spin" />
+                    </TableCell>
+                  </TableRow>
+                ) : paginatedGuests.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                      No guests found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paginatedGuests.map((guest) => (
+                    <TableRow key={guest.id}>
+                      <TableCell>
+                        <div className="font-medium">{guest.full_name}</div>
+                        <div className="text-muted-foreground text-sm">
+                          {guest.phone || 'No phone'}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            guest.guest_type === 'internal'
+                              ? 'default'
+                              : 'secondary'
+                          }
+                        >
+                          {guest.guest_type}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {guest.guest_type === 'tenant'
+                          ? guest.metadata.umkm_product
+                          : guest.address || 'Personal'}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          {(['siang', 'malam'] as const).map((s) => {
+                            const hasChecked = guest.checkins?.some(
+                              (c: Checkin) => c.session_type === s,
+                            )
+                            return (
+                              <Badge
+                                key={s}
+                                variant={hasChecked ? 'default' : 'outline'}
+                              >
+                                {s}
+                              </Badge>
+                            )
+                          })}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+
+            {/* Pagination Controls */}
+            {!loading && filteredGuests.length > 0 && (
+              <div className="mt-4 flex items-center justify-between border-t pt-4">
+                <div className="text-muted-foreground text-sm">
+                  Menampilkan{' '}
+                  <span className="font-medium">
+                    {(currentPage - 1) * pageSize + 1}
+                  </span>{' '}
+                  sampai{' '}
+                  <span className="font-medium">
+                    {Math.min(currentPage * pageSize, filteredGuests.length)}
+                  </span>{' '}
+                  dari{' '}
+                  <span className="font-medium">{filteredGuests.length}</span>{' '}
+                  tamu
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
                   >
-                    <Table.Cell px={10} py={7}>
-                      <Box>
-                        <Text fontWeight="bold" fontSize="lg" color="gray.900" _dark={{ color: "white" }}>{guest.full_name}</Text>
-                        <Text fontSize="xs" color="gray.400" fontWeight="bold">{guest.phone || 'No WhatsApp'}</Text>
-                      </Box>
-                    </Table.Cell>
-                    <Table.Cell px={10} py={7}>
-                      <Badge colorPalette={guest.guest_type === 'internal' ? 'blue' : 'purple'} variant="solid" borderRadius="full">
-                        {guest.guest_type}
-                      </Badge>
-                    </Table.Cell>
-                    <Table.Cell px={10} py={7}>
-                      <Text fontSize="sm" fontWeight="bold" color="gray.500" textTransform="uppercase">
-                        {guest.company || guest.department || 'Personal'}
-                      </Text>
-                    </Table.Cell>
-                    <Table.Cell px={10} py={7}>
-                      <HStack gap={2}>
-                        {(['siang', 'malam'] as const).map(s => {
-                          const hasChecked = guest.checkins?.some((c: Checkin) => c.session_type === s);
-                          return (
-                            <Badge key={s} colorPalette={hasChecked ? 'green' : 'gray'} variant={hasChecked ? 'solid' : 'outline'} borderRadius="lg" h="6" px={2} textTransform="lowercase" fontWeight="medium">
-                              {s}
-                            </Badge>
-                          );
-                        })}
-                      </HStack>
-                    </Table.Cell>
-                    <Table.Cell px={10} py={7} textAlign="right">
-                      <Box 
-                        display="inline-block" 
-                        p={3} 
-                        borderRadius="2xl" 
-                        transition="all 0.2s"
-                        _hover={{ bg: { base: "white", _dark: "gray.700" }, boxShadow: "md", color: "blue.500" }}
-                      >
-                        <IconButton aria-label="Detail" variant="ghost" rounded="full">
-                          <ChevronRight size={24} color="gray" />
-                        </IconButton>
-                      </Box>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table.Root>
-          </Box>
-        </Box>
-      </Box>
-    </Flex>
-  );
+                    <ChevronLeft className="mr-2 h-4 w-4" />
+                    Sebelumnya
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter(
+                        (p) =>
+                          p === 1 ||
+                          p === totalPages ||
+                          (p >= currentPage - 1 && p <= currentPage + 1),
+                      )
+                      .map((p, i, arr) => {
+                        const showEllipsis = i > 0 && p !== arr[i - 1] + 1
+                        return (
+                          <div key={p} className="flex items-center gap-1">
+                            {showEllipsis && (
+                              <span className="text-muted-foreground px-1">
+                                ...
+                              </span>
+                            )}
+                            <Button
+                              variant={
+                                currentPage === p ? 'default' : 'outline'
+                              }
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => setCurrentPage(p)}
+                            >
+                              {p}
+                            </Button>
+                          </div>
+                        )
+                      })}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                  >
+                    Selanjutnya
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </AppLayout>
+  )
 }

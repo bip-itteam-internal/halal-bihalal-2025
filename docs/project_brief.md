@@ -226,11 +226,10 @@ Admin dapat mengimport daftar tamu melalui file Excel dengan tahap **Review & Pr
 
 Format Excel:
 
-| Guest Type                                                                                                     | Employee Id    | Full Name   | Department     | Position | Company                  | WA         |
-| -------------------------------------------------------------------------------------------------------------- | -------------- | ----------- | -------------- | -------- | ------------------------ | ---------- |
-| internal                                                                                                       | BIP-0006-03-21 | Zulhakim    | General Affair | Security | PT Bharata Internasional | 0838959159 |
-| external                                                                                                       |                | Ahmad Fauzi |                |          | Vendor Partner           | 0812345678 |
-| *(Note: Untuk tamu **internal**, Company otomatis terisi "PT Bharata Internasional" jika dikosongkan)* |                |             |                |          |                          |            |
+| Guest Type | Full Name | Phone | Email | Address | UMKM Product |
+| ---------- | --------- | ----- | ----- | ------- | ------------ |
+| internal   | Zulhakim  | 083...| zul.. |         |              |
+| tenant     | Ani       | 081...|       | Bekasi  | Kripik Singk.|
 
 Mapping:
 
@@ -658,25 +657,24 @@ File format:
 
 ## Required Columns
 
-| Column      | Required | Description               |
-| ----------- | -------- | ------------------------- |
-| Guest Type  | yes      | internal / external       |
-| Employee Id | optional | hanya untuk internal      |
-| Full Name   | yes      | nama tamu                 |
-| Department  | optional | departemen karyawan       |
-| Position    | optional | jabatan                   |
-| Company     | optional | perusahaan tamu eksternal |
-| WA          | optional | nomor WhatsApp            |
+| Column       | Required | Description             |
+| ------------ | -------- | ----------------------- |
+| Guest Type   | yes      | internal / external / tenant |
+| Full Name    | yes      | nama lengkap tamu       |
+| Phone        | yes      | nomor WhatsApp          |
+| Email        | optional | khusus tamu internal    |
+| Address      | optional | khusus tenant/external  |
+| UMKM Product | optional | khusus kategori tenant  |
 
 ---
 
 ## Example Excel
 
-| Guest Type | Employee Id    | Full Name         | Department     | Position           | Company        | WA           |
-| ---------- | -------------- | ----------------- | -------------- | ------------------ | -------------- | ------------ |
-| internal   | BIP-0006-03-21 | Zulhakim          | General Affair | Security           |                | 0838959159   |
-| internal   | BIP-0008-02-22 | Endri Tri Pranoto | Finance        | Finance Supervisor |                | 085770277720 |
-| external   |                | Ahmad Fauzi       |                |                    | Vendor Partner | 0812345678   |
+| Guest Type | Full Name | WA | Email | Address | UMKM Product |
+| ---------- | --------- | -- | ----- | ------- | ------------ |
+| internal   | Zulhakim  | 08... | zul@.. | | |
+| tenant     | Ani       | 08... | | Bekasi | Kripik |
+| external   | Fauzi     | 08... | | Jakarta | |
 
 ---
 

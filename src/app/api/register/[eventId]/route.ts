@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ eventId: string }> }
 ) {
+  const supabase = await createClient();
   try {
     const { eventId } = await params;
-    const { full_name, phone, company } = await req.json();
+    const { full_name, phone, address } = await req.json();
 
     if (!full_name || !phone) {
       return NextResponse.json(
@@ -54,7 +55,7 @@ export async function POST(
         event_id: eventId,
         full_name,
         phone,
-        company: company || 'Personal',
+        address: address || 'Personal',
         guest_type: 'external',
         registration_source: 'public_registration',
         rsvp_status: 'confirmed'

@@ -82,7 +82,7 @@ Endpoint yang dipanggil oleh scanner QR di venue.
 ```json
 {
   "status": "error",
-  "message": "Tamu ini sudah melakukan check-in Sesi Siang pada pukul 09:15"
+  "message": "Tamu ini sudah melakukan check-in siang pada pukul 09:15"
 }
 ```
 

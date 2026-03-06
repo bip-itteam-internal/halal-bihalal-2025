@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET() {
+  const supabase = await createClient();
   try {
     // 1. Fetch Guest who are internal and have a checkin for the 'malam' session
     const { data: guests, error } = await supabase
       .from('guests')
-      .select('id, full_name, department, checkins!inner(session_type)')
+      .select('id, full_name, checkins!inner(session_type)')
       .eq('guest_type', 'internal')
       .eq('checkins.session_type', 'malam');
 

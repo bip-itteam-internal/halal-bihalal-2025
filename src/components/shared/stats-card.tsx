@@ -1,67 +1,25 @@
-import React from "react";
-import { Box, Text, Heading, VStack, Card, Circle } from "@chakra-ui/react";
+import React from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { cn } from '@/lib/utils'
 
 interface StatsCardProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string | number;
-  color: 'blue' | 'emerald' | 'amber' | 'indigo' | 'rose' | 'primary' | 'secondary';
-  className?: string;
+  icon: React.ReactNode
+  label: string
+  value: string | number
+  color?: string
+  className?: string
 }
 
-export function StatsCard({ icon, label, value, color, className }: StatsCardProps) {
-  const colorMap: Record<StatsCardProps['color'], string> = {
-    blue: "blue",
-    emerald: "green",
-    amber: "orange",
-    indigo: "purple",
-    rose: "red",
-    primary: "emerald",
-    secondary: "amber",
-  };
-
-  const chakraColor = colorMap[color];
-
+export function StatsCard({ icon, label, value, className }: StatsCardProps) {
   return (
-    <Card.Root
-      flex="1"
-      p={8}
-      borderRadius="3xl"
-      boxShadow="sm"
-      borderWidth="1px"
-      borderColor={{ base: "gray.100", _dark: "gray.700" }}
-      bg={{ base: "white", _dark: "gray.800" }}
-      transition="all 0.3s"
-      _hover={{ boxShadow: "2xl", transform: "translateY(-4px)" }}
-    >
-      <VStack align="start" gap={6}>
-        <Circle 
-          size="14" 
-          bg={{ base: `${chakraColor}.50`, _dark: `${chakraColor}.900/20` }}
-          color={{ base: `${chakraColor}.600`, _dark: `${chakraColor}.400` }}
-          borderWidth="1px"
-          borderColor={{ base: `${chakraColor}.100`, _dark: `${chakraColor}.800/20` }}
-        >
-          {React.isValidElement<{ size?: number }>(icon) && React.cloneElement(icon, { 
-            size: 28 
-          })}
-        </Circle>
-        <Box>
-          <Text 
-            fontSize="xs" 
-            fontWeight="black" 
-            color="gray.400" 
-            textTransform="uppercase" 
-            letterSpacing="widest" 
-            mb={1}
-          >
-            {label}
-          </Text>
-          <Heading fontSize="3xl" fontWeight="black" color={{ base: "gray.900", _dark: "white" }}>
-            {value}
-          </Heading>
-        </Box>
-      </VStack>
-    </Card.Root>
-  );
+    <Card className={cn('', className)}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{label}</CardTitle>
+        <div className="text-muted-foreground h-4 w-4">{icon}</div>
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+      </CardContent>
+    </Card>
+  )
 }

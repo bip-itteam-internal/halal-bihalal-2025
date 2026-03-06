@@ -1,17 +1,20 @@
 # Development Rules, Standards & Architecture
 
-Dokumen ini mendefinisikan standar teknis untuk proyek **Event Invitation & QR Check-in System**. Fokus utama adalah **Scalability (Skalabilitas)**, **Modularity (Modularitas)**, dan konsistensi menggunakan **Chakra UI v3**.
+Dokumen ini mendefinisikan standar teknis untuk proyek **Event Invitation & QR Check-in System**. Fokus utama adalah **Scalability (Skalabilitas)**, **Modularity (Modularitas)**, dan konsistensi menggunakan **shadcn/ui** dan **Tailwind CSS**.
 
 ## 1. Core Architecture Principles
+
 Sistem ini menggunakan **Next.js 15+ App Router** dengan prinsip-prinsip berikut:
+
 - **Separation of Concerns (SoC)**: Pisahkan antara logika bisnis (actions/services), UI (components), dan data (Supabase).
 - **Single Responsibility Principle (SRP)**: Satu komponen atau fungsi hanya melakukan satu hal dengan sangat baik.
-- **Chakra UI v3 First**: Gunakan komponen bawaan Chakra UI v3 untuk semua elemen UI. Hindari kustomisasi CSS manual atau Tailwind jika memungkinkan.
+- **shadcn/ui First**: Gunakan komponen bawaan shadcn/ui untuk semua elemen UI. Gunakan Tailwind CSS untuk kustomisasi style.
 
 ## 2. Directory Structure (Modular & Scalable)
+
 - `app/`: Routing-first. Gunakan Route Groups `(admin)`, `(guest)` jika perlu.
 - `components/`:
-  - `ui/`: Komponen dasar dari Chakra UI (berada di `src/components/ui` setelah `npx chakra-ui@latest add ...`).
+  - `ui/`: Komponen dasar dari shadcn/ui (berada di `src/components/ui` setelah `pnpm dlx shadcn@latest add ...`).
   - `modules/`: Komponen spesifik fitur (e.g., `RSVPForm.tsx`, `QRScanner.tsx`).
   - `layout/`: Sidebar, Navigation.
   - `shared/`: Komponen yang digunakan di banyak tempat (e.g., `StatsCard`).
@@ -21,49 +24,55 @@ Sistem ini menggunakan **Next.js 15+ App Router** dengan prinsip-prinsip berikut
 - `docs/`: Dokumentasi (Schema, spec).
 
 ## 3. Tech Stack & State Management
-- **Styling**: **Chakra UI v3**. Gunakan system props dan `css` prop.
+
+- **Styling**: **Tailwind CSS**. Gunakan class utility untuk styling.
+- **UI Components**: **shadcn/ui**.
 - **Database**: Supabase.
 - **State Management**:
   - **Server State**: RSC & Server Actions.
   - **Global Client State**: Zustand (untuk Active Event context).
   - **Form State**: React Hook Form + Zod.
-- **Icons**: Lucide React (diintegrasikan via Chakra `Icon`).
+- **Icons**: Lucide React.
 
-## 4. Chakra UI v3 Development Rules
+## 4. UI Development Rules
 
 ### Package Constraints
-- **Removed**: `@emotion/styled` dan `framer-motion` (tidak lagi diperlukan secara langsung).
+
+- **Tailwind CSS First**: Semua styling harus memanfaatkan Tailwind CSS utility classes.
 - **Icons**: Gunakan `lucide-react`.
-- **Next.js**: Gunakan `asChild` prop untuk `Link` integration.
 
 ### Import Sources
-- Komponen dasar (Box, Flex, Text, Heading, Button, dll) diimpor dari `@chakra-ui/react`.
-- Komponen kompleks (Checkbox, Dialog, Tooltip, InputGroup, dll) diimpor dari `@/components/ui`.
 
-### Prop Changes (v2 -> v3)
-- `isOpen` → `open`
-- `isDisabled` → `disabled`
-- `isInvalid` → `invalid`
-- `colorScheme` → `colorPalette`
-- `spacing` → `gap`
-- `noOfLines` → `lineClamp`
-- `Divider` → `Separator`
-- `Modal` → `Dialog`
-
-### Component Patterns
-- **Button Icons**: Gunakan sebagai children: `<Button><Mail /> Email</Button>`.
-- **Table**: Gunakan namespace `Table.Root`, `Table.Header`, `Table.Row`, `Table.ColumnHeader`, `Table.Body`, `Table.Cell`.
-- **Toast**: Gunakan `toaster.create()` dari `@/components/ui/toaster`.
-- **Gradients**: Gunakan `bgGradient="to-r" gradientFrom="..." gradientTo="..."`.
+- Komponen dasar diimpor dari `@/components/ui` hasil dari CLI shadcn.
+- Hindari membuat komponen UI custom kecuali memang tidak tersedia di shadcn/ui, dan jika membuat pastikan sesuai pedoman desain shadcn.
 
 ## 5. Scalability & DX
+
 - **Zero Hardcoding**: Data event fetched dari tabel `events`.
 - **Self-Documenting Code**: Nama variabel deskriptif.
 - **TypeScript**: Hindari `any`. Definisikan interface/type untuk semua data.
 - **Commits**: Conventional Commits (`feat:`, `fix:`, dll).
 
 ## 6. Documentation Sync
+
 Wajib perbarui `docs/` setiap ada perubahan pada skema atau spec.
 
+## 7. Package Management
+
+- **Primary Package Manager**: Gunakan **pnpm** untuk semua manajemen dependensi.
+- **Workflow**:
+  - `pnpm install` untuk instalasi.
+  - `pnpm add <pkg>` untuk menambah package.
+  - `pnpm dev` untuk menjalankan development server.
+  - `pnpm build` untuk production build.
+- **Commands**: Hindari penggunaan `npm` atau `yarn`. Gunakan `pnpm dlx` untuk menggantikan `npx`.
+
+## 8. Language Preference (Preferensi Bahasa)
+
+- **Bahasa Indonesia**: Seluruh antarmuka pengguna (UI), teks, placeholder, pesan error, dan dialog aplikasi wajib menggunakan **Bahasa Indonesia** yang baik, formal, dan konsisten.
+- Istilah teknis yang umum (seperti Dashboard, Event, Quota) dapat dipertahankan atau disesuaikan dengan konteks yang natural bagi pengguna Indonesia (misal: "Buat Event", "Kuota", "Dasbor").
+- Pesan pada terminal, komentar kode, dan dokumentasi ditekankan untuk menggunakan Bahasa Indonesia agar mempermudah pemahaman tim.
+
 ---
-*Architecture is about the details that are hard to change later. Build it right, build it modular with Chakra UI v3.*
+
+_Architecture is about the details that are hard to change later. Build it right, build it modular with shadcn/ui._
