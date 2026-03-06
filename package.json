@@ -16,6 +16,7 @@
     "@yudiel/react-qr-scanner": "^2.2.1",
     "bcryptjs": "^3.0.2",
     "canvas-confetti": "^1.9.4",
+    "class-variance-authority": "^0.7.1",
     "csv-writer": "^1.6.0",
     "html5-qrcode": "^2.3.8",
     "js-cookie": "^3.0.5",
@@ -33,6 +34,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@netlify/plugin-nextjs": "^5.10.5",
+    "@tailwindcss/postcss": "^4.2.1",
     "@types/canvas-confetti": "^1.9.0",
     "@types/formidable": "^3.4.5",
     "@types/js-cookie": "^3.0.6",
