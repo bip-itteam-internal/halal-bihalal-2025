@@ -90,23 +90,23 @@ graph TD
 
 ## 4.2 Super Admin
 
-Pemilik sistem dengan otoritas penuh. Super Admin memiliki seluruh kemampuan **Admin**, ditambah otoritas manajemen sistem.
+Pemilik sistem dengan otoritas penuh (**Omnipotent**). Super Admin memiliki akses ke **seluruh fitur di semua role** (Guest, Admin, dan Staff Scanner) tanpa terkecuali. Hal ini dirancang agar Super Admin dapat mengelola, menguji, dan melakukan tindakan operasional tanpa perlu berpindah akun.
 
 **Hak akses:**
-
-- Melakukan **semua** fungsi operasional Admin.
-- **User Management**: Membuat, mengedit, dan mengelola akun Admin/Staff lain (Assign role).
-- **Event Lifecycle**: Membuat, mengedit, dan menghapus Event.
-- **Global Branding**: Mengatur Branding & Tema global yang menjadi preset.
+- **All-in-One Access**: Melakukan fungsi Admin, Staff Scanner, hingga melihat simulasi Invitations.
+- **User Management**: Eksklusif—membuat, mengedit, dan mengelola akun Admin/Staff lain.
+- **System-Wide Control**: Akses penuh ke seluruh Event, Branding, dan Data Manajemen.
 
 **Workflow:**
-
 ```mermaid
 graph TD
-    SA1[Login Super Admin] --> SA2[Buat/Pilih Event]
-    SA2 --> SA3[Atur Branding & Theme]
-    SA3 --> SA4[Assign Admin/Staff ke Event]
-    SA4 --> SA5[Monitoring Dashboard & User Management]
+    SA1[Login Super Admin] --> SA2[Full Feature Access]
+    SA2 --> SA3[User & Staff Management]
+    SA2 --> SA4[Event Management & Guest Ops]
+    SA2 --> SA5[QR Scanning & Check-in]
+    SA3 --> SA6[Operational Excellence]
+    SA4 --> SA6
+    SA5 --> SA6
 ```
 
 ## 4.3 Admin / Panitia (Event Manager)
@@ -125,11 +125,10 @@ Pengelola operasional event. Memiliki akses penuh terhadap fitur sistem untuk me
 
 ```mermaid
 graph TD
-    A1[Login Admin] --> A2[Atur Event & Branding]
-    A2 --> A3[Upload Data Tamu Excel]
-    A3 --> A4[Preview & Validasi Data]
-    A4 --> A5[Generate Link & Kirim WA]
-    A5 --> A6[Monitoring RSVP & Reports]
+    A1[Login Admin] --> A2[Buat/Pilih Event]
+    A2 --> A3[Atur Branding & Theme]
+    A3 --> A4[Kelola Tamu & Undangan]
+    A4 --> A5[Monitoring Dashboard & Reports]
 ```
 
 ## 4.4 Staff Scanner (Registration Staff)
