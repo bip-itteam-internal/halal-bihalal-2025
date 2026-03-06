@@ -12,10 +12,10 @@ Sistem ini memungkinkan panitia untuk:
 
 - Mengimpor daftar tamu dari Excel
 - Mengirim link undangan digital
-- Mengumpulkan RSVP dan ukuran kaos
+- Mengumpulkan RSVP konfirmasi kehadiran
 - Menghasilkan QR Code untuk check-in
 - Mempercepat proses registrasi saat event
-- Melihat laporan kehadiran dan rekap ukuran kaos
+- Melihat laporan kehadiran real-time
 
 Sistem dirancang agar:
 
@@ -29,11 +29,10 @@ Sistem dirancang agar:
 Tujuan utama sistem ini adalah:
 
 1. Mengelola undangan event secara digital
-2. Mengumpulkan data RSVP dan ukuran kaos sebelum event
+2. Mengumpulkan data RSVP kehadiran sebelum event
 3. Mempercepat proses check-in saat event
 4. Mengurangi antrian registrasi
 5. Menyediakan data kehadiran secara realtime
-6. Menyediakan laporan ukuran kaos untuk produksi
 
 ---
 
@@ -45,12 +44,10 @@ Fitur yang termasuk dalam sistem:
 
 - Import daftar tamu dari Excel
 - Digital invitation
-- RSVP (pilih ukuran kaos)
-- Edit ukuran kaos hingga H-1 event
+- RSVP (konfirmasi kehadiran)
 - QR Code invitation
 - QR Scanner untuk check-in
 - Dashboard daftar tamu
-- Rekap ukuran kaos
 - Rekap kehadiran
 
 ## 3.2 Out of Scope
@@ -74,18 +71,15 @@ Tamu undangan yang menerima link invitation unik. Tidak memerlukan login.
 **Hak akses:**
 
 - Membuka halaman undangan (via UUID).
-- Memilih ukuran kaos (jika event mewajibkan).
 - Melihat QR Code personal.
-- Mengedit ukuran kaos sebelum deadline.
 
 **Workflow:**
 
 ```mermaid
 graph TD
     G1[Terima Link WhatsApp] --> G2[Buka Halaman Undangan]
-    G2 --> G3[Pilih Ukuran Kaos]
-    G3 --> G4[Simpan RSVP]
-    G4 --> G5[Terima QR Code Personal]
+    G2 --> G3[Simpan RSVP Hadir]
+    G3 --> G4[Terima QR Code Personal]
 ```
 
 ## 4.2 Super Admin
@@ -151,7 +145,7 @@ graph TD
     S1[Buka Halaman Scanner] --> S2{Tamu bawa QR?}
     S2 -- Ya --> S3[Scan QR Guest]
     S2 -- Tidak --> S4[Cari Nama Tamu Manual]
-    S3 --> S5[Verifikasi Data & Ukuran Kaos]
+    S3 --> S5[Verifikasi Data Tamu]
     S4 --> S5
     S5 --> S6[Klik Check-in]
     S6 --> S7[Data Masuk Real-time Dashboard]
@@ -185,8 +179,6 @@ Data event:
 - Dress Code
 - logo event
 - Custom WhatsApp Template (Support dynamic tags: `{name}`, `{link}`, `{event_name}`, `{location}`)
-- requirement (pakai kaos atau tidak)
-- deadline edit ukuran kaos (jika pakai kaos)
 
 ---
 
@@ -241,29 +233,15 @@ Link digunakan untuk:
 
 ## 5.4 RSVP (Konfirmasi Kehadiran)
 
-Tamu dapat memilih ukuran kaos.
-
-Ukuran tersedia:
-
-S
-M
-L
-XL
-XXL
+Tamu melakukan konfirmasi kehadiran melalui halaman undangan.
 
 Data RSVP akan disimpan ke database.
 
 ---
 
-## 5.5 Edit Ukuran Kaos
+## 5.5 (Fitur Dihapus)
 
-Tamu dapat mengubah ukuran kaos hingga:
-
-H-1 sebelum event
-
-Setelah melewati deadline:
-
-- tombol edit dinonaktifkan
+Bagian ini sebelumnya untuk pemilihan ukuran kaos.
 
 ---
 
@@ -304,17 +282,6 @@ Panitia search nama
 Klik check-in
 
 ---
-
-## 5.9 Reports
-
-Sistem menyediakan laporan:
-
-### Rekap ukuran kaos
-
-S : 12
-M : 35
-L : 60
-XL : 22
 
 ### Rekap kehadiran (Real-time)
 
@@ -383,8 +350,6 @@ Menyimpan data utama setiap acara/event yang dibuat.
 | **location**              | Lokasi acara                          |
 | **dress_code**            | Ketentuan pakaian                     |
 | **logo_url**              | URL logo khusus event                 |
-| **has_shirt_requirement** | Boolean (apakah ada pembagian kaos?)  |
-| **edit_deadline**         | Batas waktu terakhir edit ukuran kaos |
 | **created_at**            | Waktu pembuatan data                  |
 
 ---
@@ -404,10 +369,8 @@ Menyimpan daftar tamu undangan beserta status RSVP mereka.
 | **position**         | Jabatan                                          |
 | **company**          | Perusahaan (Default: "PT Bharata Internasional") |
 | **phone**            | Nomor WhatsApp/Telepon                           |
-| **shirt_size**       | Ukuran kaos yang dipilih (S, M, L, XL, XXL)      |
 | **rsvp_status**      | Status konfirmasi kehadiran                      |
 | **wa_sent_at**       | Timestamp pengiriman undangan via WA             |
-| **shirt_updated_at** | Terakhir kali ukuran kaos diubah                 |
 | **created_at**       | Waktu data di-import/dibuat                      |
 
 ---
@@ -495,32 +458,17 @@ Interaksi tamu dari menerima pesan hingga mendapatkan bukti registrasi.
 ```mermaid
 graph TD
     A[Tamu Klik Link di WhatsApp] --> B[Buka Halaman Undangan Personal]
-    B --> C{Cek Requirement Kaos?}
-    C -- Ya --> D[Tampilkan Pilihan Ukuran Kaos]
-    C -- Tidak --> E[Langsung Tampilkan Tombol Konfirmasi]
-    D --> F[Tamu Pilih Ukuran & Klik Simpan]
-    E --> G[Tamu Klik Konfirmasi Hadir]
-    F --> H[Update rsvp_status & shirt_size]
-    G --> H
-    H --> I[Sistem Generate QR Code Guest ID]
-    I --> J[Tampilkan QR Code & Animasi Sukses]
+    B --> C[Tamu Klik Konfirmasi Hadir]
+    C --> D[Update rsvp_status]
+    D --> E[Sistem Generate QR Code Guest ID]
+    E --> F[Tampilkan QR Code & Animasi Sukses]
 ```
 
 ---
 
-## 8.5 Edit Shirt Size Flow (With Deadline Constraint)
+## 8.5 (Flow Dihapus)
 
-Logika untuk pembatasan waktu perubahan ukuran kaos.
-
-```mermaid
-graph TD
-    A[Tamu Buka Kembali Link Undangan] --> B{Cek current_date vs edit_deadline}
-    B -- Belum Deadline --> C[Tampilkan Tombol 'Ubah Ukuran']
-    C --> D[Tamu Simpan Ukuran Baru]
-    D --> E[Update shirt_updated_at]
-    B -- Sudah Lewat Deadline --> F[Tombol Edit Disembunyikan/Disable]
-    F --> G[Tampilkan Pesan: Batas waktu edit sudah berakhir]
-```
+Bagian ini sebelumnya untuk pengecekan deadline edit ukuran kaos.
 
 ---
 
@@ -535,7 +483,7 @@ graph TD
     C -- Tidak Ditemukan --> D[Pesan: Undangan Tidak Valid!]
     C -- Ada --> E{Sudah Check-in?}
     E -- Ya --> F[Pesan: Tamu Sudah Terdaftar pada Jam XX:XX]
-    E -- Belum --> G[Tampilkan Data: Nama, Dept, Ukuran Kaos]
+    E -- Belum --> G[Tampilkan Data: Nama, Dept]
     G --> H[Klik Check-in]
     H --> I[Update checkins & checkin_time]
     I --> J[Trigger Supabase Realtime Broadcast]
@@ -570,8 +518,6 @@ Guest sudah check-in
 ### RSVP belum dilakukan
 
 Scanner tetap menampilkan tamu.
-
-Ukuran kaos: belum dipilih
 
 ---
 
@@ -627,12 +573,10 @@ Versi pertama sistem mencakup:
 - event management
 - import tamu dari Excel
 - digital invitation
-- RSVP ukuran kaos
-- edit ukuran hingga H-1
+- RSVP konfirmasi kehadiran
 - QR invitation
 - QR scanner
 - check-in system
-- laporan ukuran kaos
 - laporan kehadiran
 
 ---
@@ -849,7 +793,6 @@ Route:
 Features:
 
 - show guest info
-- choose shirt size
 - confirm RSVP
 - show QR code
 
@@ -876,7 +819,6 @@ Features:
 - guest list
 - RSVP status
 - check-in status
-- shirt size summary
 - import Excel
 - Branding & Theme settings (Color picker, Logo upload)
 
@@ -894,11 +836,10 @@ Jika guest tidak ditemukan:
 
 Invalid QR
 
-## Deadline Validation
+## Security Checks
 
-Edit ukuran kaos hanya diizinkan jika:
-
-current_date < edit_deadline
+1. **Anti-Duplication**: User cannot check-in twice.
+2. **Access Control**: Invitations are unique via UUID.
 
 # 23. Performance Optimization
 
@@ -914,7 +855,7 @@ Index penting:
 Scanner hanya mengambil data yang diperlukan:
 
 - name
-- shirt_size
+- department
 - checkin_status
 
 # 24. Deployment Plan
