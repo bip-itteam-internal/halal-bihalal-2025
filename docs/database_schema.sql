@@ -54,8 +54,6 @@ CREATE TABLE events (
     dress_code TEXT,
     logo_url TEXT, -- Keep logo in event because it's usually event-specific
     wa_template TEXT, -- Custom message template with placeholders like {name}, {link}
-    has_shirt_requirement BOOLEAN DEFAULT FALSE,
-    edit_deadline TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -70,10 +68,8 @@ CREATE TABLE guests (
     position TEXT,
     company TEXT DEFAULT 'PT Bharata Internasional',
     phone TEXT,
-    shirt_size TEXT CHECK (shirt_size IN ('S', 'M', 'L', 'XL', 'XXL')),
     rsvp_status TEXT DEFAULT 'pending' CHECK (rsvp_status IN ('pending', 'confirmed', 'declined')),
     wa_sent_at TIMESTAMP WITH TIME ZONE,
-    shirt_updated_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

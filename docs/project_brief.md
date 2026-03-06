@@ -239,11 +239,6 @@ Data RSVP akan disimpan ke database.
 
 ---
 
-## 5.5 (Fitur Dihapus)
-
-Bagian ini sebelumnya untuk pemilihan ukuran kaos.
-
----
 
 ## 5.6 QR Code Invitation
 
@@ -466,11 +461,6 @@ graph TD
 
 ---
 
-## 8.5 (Flow Dihapus)
-
-Bagian ini sebelumnya untuk pengecekan deadline edit ukuran kaos.
-
----
 
 ## 8.6 Real-time QR Scanner & Check-in Flow
 
@@ -612,7 +602,6 @@ Keberhasilan sistem diukur dari:
 - jumlah RSVP yang terkumpul
 - waktu check-in < 3 detik
 - antrian registrasi minimal
-- data ukuran kaos lengkap sebelum deadline
 
 ---
 

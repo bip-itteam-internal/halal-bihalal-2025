@@ -15,7 +15,6 @@ Mengambil daftar semua event (untuk dashboard admin).
     "event_date": "2025-04-10T09:00:00Z",
     "location": "Main Hall Lt. 2, Kantor Pusat BIP",
     "dress_code": "Batik Bebas",
-    "has_shirt_requirement": true,
     "total_guests": 150,
     "total_checked_in": 45
   }
@@ -29,9 +28,7 @@ Membuat event baru.
 {
   "name": "string",
   "event_date": "ISO8601",
-  "location": "string",
-  "has_shirt_requirement": boolean,
-  "edit_deadline": "ISO8601"
+  "location": "string"
 }
 ```
 
@@ -44,22 +41,18 @@ Digunakan oleh halaman undangan (`/invite/[guestId]/[slug]`) untuk mengambil dat
   "full_name": "Zulhakim",
   "guest_type": "internal",
   "event": {
-    "name": "Halal Bihalal 2025",
-    "has_shirt_requirement": true,
-    "edit_deadline": "2025-04-09T23:59:59Z"
+    "name": "Halal Bihalal 2025"
   },
-  "rsvp_status": "pending",
-  "shirt_size": null
+  "rsvp_status": "pending"
 }
 ```
 
 ### PATCH /api/guests/[guestId]/rsvp
-Melakukan konfirmasi kehadiran dan memilih ukuran kaos.
+Melakukan konfirmasi kehadiran.
 **Payload:**
 ```json
 {
-  "rsvp_status": "confirmed",
-  "shirt_size": "XL"
+  "rsvp_status": "confirmed"
 }
 ```
 
@@ -76,8 +69,7 @@ Endpoint yang dipanggil oleh scanner QR di venue.
 ```json
 {
   "status": "success",
-  "guest_name": "Zulhakim",
-  "shirt_size": "XL"
+  "guest_name": "Zulhakim"
 }
 ```
 **Response Error (Sudah Check-in):** `400 Bad Request`
@@ -97,7 +89,7 @@ Endpoint untuk memproses data tamu. Mendukung alur **Review/Preview** di mana da
 **Payload:** `JSON Array of Guests` (setelah divalidasi admin).
 
 ### GET /api/admin/export/[eventId]
-Menghasilkan file CSV/Excel berisi rekap kehadiran dan ukuran kaos.
+Menghasilkan file CSV/Excel berisi rekap kehadiran.
 
 ## 5. Assets (Storage)
 ### POST /api/admin/upload

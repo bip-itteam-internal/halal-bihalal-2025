@@ -29,10 +29,8 @@ This document outlines the step-by-step plan to transform the current guestbook 
 
 ## Phase 4: Guest Experience (Invitation & RSVP) 🎟️
 - [ ] **Invitation Page**: `app/invite/[guestId]/page.tsx`
-  - Fetch event settings (`has_shirt_requirement`).
   - **Dynamic Theme**: Inject CSS variables from event branding data.
-  - RSVP logic (shirt size) - only if required.
-  - Deadline check (H-1).
+  - RSVP logic (confirm attendance).
   - QR Code generation.
 - [ ] **Success Page**: Confirmation after RSVP.
 
