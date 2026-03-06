@@ -3,10 +3,10 @@
 This document outlines the step-by-step plan to transform the current guestbook application into a multi-event invitation and check-in system based on the new project brief.
 
 ## Phase 1: Tech Stack & Infrastructure 🛠️
-- [ ] Install Tailwind CSS, PostCSS, and Autoprefixer.
-- [ ] Configure `tailwind.config.ts` and `app/globals.css`.
+- [ ] Set up Chakra UI (v3) with Provider.
+- [ ] Configure `app/layout.tsx` with ChakraProvider.
 - [ ] Set up the App Router directory structure (`app/`).
-- [ ] Migrate common components to Tailwind (Button, Input, Card).
+- [ ] Create common Chakra components (Button, Input, Card).
 
 ## Phase 2: Auth & Permissions 🔑
 - [ ] Set up Supabase Auth.
@@ -32,7 +32,8 @@ This document outlines the step-by-step plan to transform the current guestbook 
   - RSVP logic and QR Code display.
 - [ ] **Public Registration Page**: `app/register/[eventId]/page.tsx`
   - **Auto-Quota Logic**: Validate `external_quota` before allowing submission.
-  - **Success Screen**: Show instant E-Ticket (QR Code).
+  - **Category Support**: Allow registration for 'External' and 'Tenant'.
+  - **Success Screen**: Show instant E-Ticket (QR Code 1).
 - [ ] **Success Page**: Confirmation for both RSVP and Registration.
 
 ## Phase 5: Admin Experience (Scanner & Dashboard) 📊
@@ -40,8 +41,8 @@ This document outlines the step-by-step plan to transform the current guestbook 
 - [ ] **Guest Management**: **Import Excel (Internal)** & View Public Registrations.
   - [ ] Toggle to open/close public registration.
 - [ ] **QR Scanner**: `app/scanner/page.tsx` using `html5-qrcode`.
-  - [ ] **Session Toggle**: Switch between 'Siang' and 'Malam' mode.
-  - [ ] **Bracelet Logic**: Checkbox/Status for "Gelang Terdistribusi".
+  - [ ] **Step 1 Mode (Exchange)**: Scan QR 1 -> Scan & Pair with QR 2 (Bracelet).
+  - [ ] **Step 2 Mode (Entrance)**: Scan QR 2 for gate access verification.
 - [ ] **Internal Doorprize Spinner**: `app/admin/doorprize/page.tsx`
 - [ ] **Welcome Display Board**: `app/display/[eventId]/page.tsx`.
 

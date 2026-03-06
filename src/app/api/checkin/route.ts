@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 2. Check for existing check-in for this session
-    const { data: existingCheckin, error: checkinErr } = await supabase
+    const { data: existingCheckin } = await supabase
       .from('checkins')
       .select('id')
       .eq('guest_id', guest_id)
@@ -59,10 +59,10 @@ export async function POST(req: NextRequest) {
       checkin: newCheckin
     }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Check-in Error:", error);
     return NextResponse.json(
-      { message: "Terjadi kesalahan sistem.", detail: error.message },
+      { message: "Terjadi kesalahan sistem.", detail: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }

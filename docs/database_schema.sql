@@ -63,15 +63,16 @@ CREATE TABLE events (
 CREATE TABLE guests (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     event_id UUID REFERENCES events(id) ON DELETE CASCADE,
-    guest_type TEXT CHECK (guest_type IN ('internal', 'external')),
+    guest_type TEXT CHECK (guest_type IN ('internal', 'external', 'tenant')),
     registration_source TEXT DEFAULT 'admin_invite' CHECK (registration_source IN ('admin_invite', 'public_registration')), -- New: distinguish invite vs self-reg
     full_name TEXT NOT NULL,
-    employee_id TEXT,
-    department TEXT,
-    position TEXT,
-    company TEXT, -- Removed default for flexibility
     phone TEXT,
+    email TEXT,
+    address TEXT,
+    metadata JSONB DEFAULT '{}'::jsonb, -- Specifically: 'umkm_product' for Tenant category
     rsvp_status TEXT DEFAULT 'pending' CHECK (rsvp_status IN ('pending', 'confirmed', 'declined')),
+    invitation_code TEXT UNIQUE, -- Code for QR 1 (Exchanged for bracelet)
+    bracelet_code TEXT UNIQUE,   -- Code for QR 2 (Akses masuk konser)
     wa_sent_at TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -87,11 +88,11 @@ WHERE g.wa_sent_at IS NULL AND g.phone IS NOT NULL;
 CREATE TABLE checkins (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     guest_id UUID REFERENCES guests(id) ON DELETE CASCADE,
+    step TEXT CHECK (step IN ('exchange', 'entrance')), -- 'exchange' (QR 1) or 'entrance' (QR 2)
     session_type TEXT CHECK (session_type IN ('day', 'night')), -- 'siang' or 'malam'
-    bracelet_given BOOLEAN DEFAULT FALSE,
     checkin_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    checkin_by UUID, -- Reference to admin user if needed
-    UNIQUE(guest_id, session_type) -- One guest can check-in once per session
+    checkin_by UUID, -- Reference to admin user
+    UNIQUE(guest_id, step) -- One guest can do each step once
 );
 
 -- Indexes for performance

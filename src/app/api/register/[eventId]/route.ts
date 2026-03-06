@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { eventId: string } }
+  { params }: { params: Promise<{ eventId: string }> }
 ) {
   try {
     const { eventId } = await params;
@@ -70,10 +70,10 @@ export async function POST(
       qr_payload: guest.id
     }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Registration Error:", error);
     return NextResponse.json(
-      { message: "Terjadi kesalahan sistem.", detail: error.message },
+      { message: "Terjadi kesalahan sistem.", detail: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }

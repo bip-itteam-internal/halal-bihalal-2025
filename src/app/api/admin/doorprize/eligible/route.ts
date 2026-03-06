@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
     // 1. Fetch Guest who are internal and have a checkin for the 'malam' session
     const { data: guests, error } = await supabase
@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
       candidates: guests
     });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Doorprize API Error:", error);
     return NextResponse.json(
       { message: "Gagal mengambil data peserta doorprize." },

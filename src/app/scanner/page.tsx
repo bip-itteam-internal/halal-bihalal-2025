@@ -2,15 +2,34 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Html5Qrcode } from "html5-qrcode";
-import { MoveLeft, User, ShieldCheck, Ticket, AlertCircle, CheckCircle2, QrCode } from "lucide-react";
+import { 
+  MoveLeft, 
+  User, 
+  ShieldCheck, 
+  Ticket, 
+  AlertCircle, 
+  CheckCircle2, 
+  QrCode 
+} from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Guest } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+
+import { Sidebar } from "@/components/layout/sidebar";
+
+interface ScanResult {
+  success: boolean;
+  message: string;
+  guest?: Guest;
+}
 
 export default function ScannerPage() {
   const [session, setSession] = useState<'siang' | 'malam'>('siang');
   const [scanning, setScanning] = useState(false);
-  const [scanningStatus, setScanningStatus] = useState<string>("Buka Kamera");
-  const [lastResult, setLastResult] = useState<any>(null);
+  const [lastResult, setLastResult] = useState<ScanResult | null>(null);
   const [error, setError] = useState("");
   const [braceletGiven, setBraceletGiven] = useState(false);
   
@@ -23,22 +42,21 @@ export default function ScannerPage() {
       }
 
       setScanning(true);
-      setScanningStatus("Menunggu Scaning...");
       setError("");
 
       await scannerRef.current.start(
         { facingMode: "environment" },
         { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
+        (decodedText: string) => {
           handleScan(decodedText);
           stopScanner();
         },
-        (errorMessage) => {
+        () => {
           // Keep scanning...
         }
       );
-    } catch (err: any) {
-      setError("Gagal mengakses kamera: " + err.message);
+    } catch (err: unknown) {
+      setError("Gagal mengakses kamera: " + (err instanceof Error ? err.message : "Error tidak dikenal"));
       setScanning(false);
     }
   };
@@ -47,7 +65,6 @@ export default function ScannerPage() {
     if (scannerRef.current && scannerRef.current.isScanning) {
       await scannerRef.current.stop();
       setScanning(false);
-      setScanningStatus("Scan Selesai");
     }
   };
 
@@ -78,10 +95,10 @@ export default function ScannerPage() {
       // Auto reset status feedback after 5 seconds
       setTimeout(() => setLastResult(null), 5000);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       setLastResult({
         success: false,
-        message: err.message
+        message: err instanceof Error ? err.message : "Gagal check-in"
       });
     }
   };
@@ -95,124 +112,155 @@ export default function ScannerPage() {
   }, []);
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-50">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-50 px-6 h-20 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="p-2 rounded-xl hover:bg-slate-100 transition-colors">
-            <MoveLeft className="w-6 h-6" />
+    <div className="flex min-h-screen bg-slate-50/50">
+      <Sidebar />
+      
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 px-8 h-24 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-6">
+          <Link href="/">
+            <Button variant="outline" size="icon" className="rounded-2xl w-12 h-12">
+              <MoveLeft className="w-6 h-6" />
+            </Button>
           </Link>
-          <h1 className="text-xl font-heading font-bold">Event Scanner</h1>
+          <h1 className="text-2xl font-heading font-black tracking-tighter">Event Scanner</h1>
         </div>
         
-        <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200">
+        <Card className="flex bg-slate-100 p-1.5 rounded-[1.4rem] border-transparent shadow-none">
           <button 
             onClick={() => setSession('siang')}
             className={cn(
-              "px-4 py-2 rounded-xl text-sm font-bold transition-all",
-              session === 'siang' ? "bg-white text-emerald-600 shadow-sm" : "text-slate-500 hover:text-slate-900"
+              "px-6 py-2.5 rounded-2xl text-sm font-black transition-all uppercase tracking-widest",
+              session === 'siang' ? "bg-white text-emerald-600 shadow-md" : "text-slate-500 hover:text-slate-900"
             )}
           >
-            Sesi Siang
+            Siang
           </button>
           <button 
             onClick={() => setSession('malam')}
             className={cn(
-              "px-4 py-2 rounded-xl text-sm font-bold transition-all",
-              session === 'malam' ? "bg-black text-white shadow-sm" : "text-slate-500 hover:text-slate-900"
+              "px-6 py-2.5 rounded-2xl text-sm font-black transition-all uppercase tracking-widest",
+              session === 'malam' ? "bg-slate-900 text-white shadow-md" : "text-slate-500 hover:text-slate-900"
             )}
           >
-            Sesi Malam
+            Malam
           </button>
-        </div>
-      </div>
+        </Card>
+      </header>
 
-      <div className="flex-1 max-w-2xl w-full mx-auto p-6 space-y-6">
+      <div className="flex-1 max-w-2xl w-full mx-auto p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         
         {/* Scanner Area */}
-        <div className="bg-white rounded-[2.5rem] shadow-xl shadow-slate-200/50 p-4 border border-slate-100 overflow-hidden relative">
-          <div id="reader" className="w-full aspect-square rounded-[2rem] overflow-hidden bg-slate-900 flex items-center justify-center text-white text-center">
-            {!scanning && (
-              <div className="p-10 space-y-6 flex flex-col items-center">
-                <div className="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center animate-pulse">
-                  <QrCode className="w-12 h-12" />
+        <Card className="overflow-hidden relative p-4 border-none shadow-2xl shadow-slate-200/60 rounded-[3rem]">
+          <CardContent className="p-0">
+            <div id="reader" className="w-full aspect-square rounded-[2.5rem] overflow-hidden bg-slate-950 flex items-center justify-center text-white text-center">
+              {!scanning && (
+                <div className="p-12 space-y-8 flex flex-col items-center">
+                  <div className="w-28 h-28 rounded-full bg-white/5 flex items-center justify-center border border-white/10 ring-8 ring-white/5 animate-pulse">
+                    <QrCode className="w-14 h-14" />
+                  </div>
+                  <div className="space-y-3">
+                    <h2 className="text-3xl font-heading font-black tracking-tight">Kamera Siap</h2>
+                    <p className="text-white/40 font-medium max-w-[250px] mx-auto text-sm leading-relaxed italic">Point your camera at the guest&apos;s QR code to begin check-in.</p>
+                  </div>
+                  <Button 
+                    onClick={startScanner}
+                    size="lg"
+                    className="rounded-3xl px-12 h-18 text-xl font-black tracking-widest"
+                  >
+                    Buka Kamera
+                  </Button>
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold mb-2">Kamera Siap</h2>
-                  <p className="text-white/60 text-sm">Pastikan pencahayaan cukup untuk scanning QR Code.</p>
-                </div>
-                <button 
-                  onClick={startScanner}
-                  className="px-8 py-4 bg-primary text-white rounded-2xl font-bold hover:scale-105 transition-transform"
+              )}
+            </div>
+
+            {scanning && (
+              <div className="absolute inset-x-12 bottom-12 z-10 flex flex-col items-center">
+                <Button 
+                  variant="glass"
+                  onClick={stopScanner}
+                  className="w-full h-16 rounded-3xl font-black tracking-widest text-lg"
                 >
-                  Buka Kamera
-                </button>
+                  CANCEL SCAN
+                </Button>
               </div>
             )}
-          </div>
+          </CardContent>
+        </Card>
 
-          {scanning && (
-            <div className="absolute inset-x-8 bottom-10 z-10">
-               <button 
-                onClick={stopScanner}
-                className="w-full py-4 bg-white/20 backdrop-blur-md text-white rounded-2xl font-bold border border-white/20 hover:bg-white/30 transition-all"
-              >
-                Batalkan
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Status Option: Bracelet (Only for Afternoon Session) */}
-        {session === 'siang' && (
-          <div className="bg-white rounded-3xl p-6 border border-slate-200 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-amber-100 rounded-2xl flex items-center justify-center">
-                <Ticket className="w-6 h-6 text-amber-600" />
+        {/* Status Option: Bracelet */}
+        <Card className={cn(
+          "p-8 border-none shadow-xl shadow-slate-200/40 rounded-[2.5rem] transition-all",
+          braceletGiven ? "bg-amber-500 text-white ring-8 ring-amber-500/10" : "bg-white"
+        )}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className={cn(
+                "w-16 h-16 rounded-3xl flex items-center justify-center transition-colors",
+                braceletGiven ? "bg-white/20" : "bg-amber-100"
+              )}>
+                <Ticket className={cn("w-8 h-8", braceletGiven ? "text-white" : "text-amber-600")} />
               </div>
               <div>
-                <p className="font-bold">Distribusi Gelang</p>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Beri Centang Jika Gelang Diberikan</p>
+                <p className="font-heading font-black text-xl tracking-tight">Distribusi Gelang</p>
+                <p className={cn(
+                  "text-xs font-black uppercase tracking-[0.2em]",
+                  braceletGiven ? "text-white/80" : "text-slate-400"
+                )}>
+                  GELANG DIBERIKAN?
+                </p>
               </div>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input 
-                type="checkbox" 
-                className="sr-only peer" 
-                checked={braceletGiven} 
-                onChange={(e) => setBraceletGiven(e.target.checked)} 
-              />
-              <div className="w-14 h-8 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
-            </label>
+            
+            <button 
+              onClick={() => setBraceletGiven(!braceletGiven)}
+              className={cn(
+                "w-16 h-9 rounded-full relative transition-all duration-300",
+                braceletGiven ? "bg-white" : "bg-slate-200"
+              )}
+            >
+              <div className={cn(
+                "absolute top-1.5 w-6 h-6 rounded-full transition-all duration-300 shadow-sm",
+                braceletGiven ? "left-8 bg-amber-500" : "left-1.5 bg-white"
+              )} />
+            </button>
           </div>
-        )}
+        </Card>
 
         {/* Scan Results Feedback */}
         {lastResult && (
           <div className={cn(
-            "rounded-3xl p-6 border-2 animate-in fade-in zoom-in slide-in-from-top-4 duration-300",
+            "rounded-[2.5rem] p-10 shadow-2xl animate-in fade-in zoom-in slide-in-from-top-4 duration-500",
             lastResult.success 
-              ? "bg-emerald-50 border-emerald-200 text-emerald-900" 
-              : "bg-rose-50 border-rose-200 text-rose-900"
+              ? "bg-emerald-600 text-white shadow-emerald-200/50" 
+              : "bg-rose-600 text-white shadow-rose-200/50"
           )}>
-            <div className="flex gap-5">
+            <div className="flex gap-8">
               <div className={cn(
-                "w-14 h-14 rounded-2xl flex items-center justify-center shrink-0",
-                lastResult.success ? "bg-emerald-200" : "bg-rose-200"
+                "w-20 h-20 rounded-[2rem] flex items-center justify-center shrink-0 shadow-inner",
+                lastResult.success ? "bg-white/20" : "bg-white/20"
               )}>
-                {lastResult.success ? <CheckCircle2 className="w-8 h-8" /> : <AlertCircle className="w-8 h-8" />}
+                {lastResult.success ? <CheckCircle2 className="w-12 h-12" /> : <AlertCircle className="w-12 h-12" />}
               </div>
               
-              <div className="flex-1 space-y-1">
-                <h3 className="font-bold text-xl">{lastResult.success ? "Check-in Berhasil" : "Gagal Check-in"}</h3>
-                <p className="opacity-80 font-medium leading-tight">{lastResult.message}</p>
+              <div className="flex-1 space-y-4">
+                <div className="space-y-1">
+                  <h3 className="font-heading font-black text-3xl tracking-tighter">
+                    {lastResult.success ? "BERHASIL!" : "GAGAL!"}
+                  </h3>
+                  <p className="text-lg font-medium text-white/90 leading-snug">{lastResult.message}</p>
+                </div>
                 
                 {lastResult.success && lastResult.guest && (
-                  <div className="mt-4 p-4 bg-white/50 rounded-2xl border border-emerald-200/50 space-y-1">
-                    <p className="text-xs text-emerald-600 font-bold uppercase tracking-widest">Detail Tamu</p>
-                    <p className="font-bold text-lg">{lastResult.guest.full_name}</p>
-                    <p className="text-sm opacity-70">Tipe: {lastResult.guest.guest_type.toUpperCase()}</p>
-                  </div>
+                  <Card className="bg-white/10 border-white/10 shadow-none rounded-[2rem] p-6 text-white space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60">Info Tamu</p>
+                    <p className="font-heading font-black text-2xl">{lastResult.guest.full_name}</p>
+                    <div className="flex gap-2 pt-2">
+                       <Badge variant="glass" className="h-6 text-[10px]">{lastResult.guest.guest_type}</Badge>
+                       <Badge variant="glass" className="h-6 text-[10px]">{lastResult.guest.company || 'PERSONAL'}</Badge>
+                    </div>
+                  </Card>
                 )}
               </div>
             </div>
@@ -221,26 +269,36 @@ export default function ScannerPage() {
 
         {/* Error Message */}
         {error && (
-          <div className="bg-rose-100 text-rose-700 p-4 rounded-2xl flex items-center gap-3 border border-rose-200 font-medium italic text-sm">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="bg-rose-50 text-rose-600 p-6 rounded-3xl flex items-center gap-4 border border-rose-100 font-bold italic text-sm shadow-sm animate-in shake-1">
+            <AlertCircle className="w-6 h-6 shrink-0" />
             {error}
           </div>
         )}
 
         {/* Static Instructions */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-slate-100 p-5 rounded-3xl space-y-2 border border-slate-200">
-            <ShieldCheck className="w-5 h-5 text-emerald-600" />
-            <h4 className="font-bold text-sm">Security Pertama</h4>
-            <p className="text-xs text-slate-500 leading-normal italic">Pastikan QR Code berasal dari E-Ticket resmi Halal Bihalal 2025.</p>
-          </div>
-          <div className="bg-slate-100 p-5 rounded-3xl space-y-2 border border-slate-200">
-            <User className="w-5 h-5 text-primary" />
-            <h4 className="font-bold text-sm">Verifikasi Data</h4>
-            <p className="text-xs text-slate-500 leading-normal italic">Cek tipe tamu (Internal/Eksternal) untuk distribusi akomodasi.</p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
+          <Card className="p-8 space-y-4 border-none shadow-lg shadow-slate-200/30 rounded-[2.5rem]">
+            <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center">
+              <ShieldCheck className="w-6 h-6 text-emerald-600" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-heading font-black text-lg tracking-tight uppercase">Security 1st</h4>
+              <p className="text-xs text-slate-400 font-medium leading-relaxed italic">Pastikan QR Code berasal dari E-Ticket resmi Halal Bihalal 2025.</p>
+            </div>
+          </Card>
+          
+          <Card className="p-8 space-y-4 border-none shadow-lg shadow-slate-200/30 rounded-[2.5rem]">
+            <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center">
+              <User className="w-6 h-6 text-primary" />
+            </div>
+            <div className="space-y-1">
+              <h4 className="font-heading font-black text-lg tracking-tight uppercase">Verifikasi</h4>
+              <p className="text-xs text-slate-400 font-medium leading-relaxed italic">Cek tipe tamu (Internal/Eksternal) untuk distribusi akomodasi.</p>
+            </div>
+          </Card>
         </div>
 
+        </div>
       </div>
     </div>
   );

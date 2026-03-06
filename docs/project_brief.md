@@ -10,13 +10,15 @@ Event Invitation & QR Check-in System adalah aplikasi web yang digunakan untuk m
 
 Sistem ini memungkinkan panitia untuk:
 
-- Mengimpor daftar tamu dari Excel (Internal)
+- Mengimpor daftar tamu dari Excel (Internal & Tenant)
 - **Halaman Registrasi Publik (Self-Ticket)**: Untuk pendaftaran tamu eksternal mandiri
-- Mengirim link undangan digital
+- Mengirim link undangan digital dengan QR Code 1
 - Mengumpulkan RSVP konfirmasi kehadiran
-- Menghasilkan QR Code untuk check-in
-- **Manajemen Dua Sesi**: Sesi Siang (Karyawan) dan Sesi Malam (Puncak Acara)
-- **Distribusi Gelang Konser**: Sebagai penanda akses untuk sesi malam
+- **Sistem Dua Barcode**: 
+    - **QR 1**: Untuk penukaran gelang (Bracelet Exchange)
+    - **QR 2**: Pada gelang untuk akses masuk konser (Entrance Access)
+- **Tiga Kategori Tamu**: Internal, External, dan Tenant
+- **Manajemen Dua Sesi**: Sesi Siang (Internal) dan Sesi Malam (Puncak Acara)
 - **Fitur Doorprize Spinner**: Khusus untuk tamu internal yang hadir
 - Melihat laporan kehadiran real-time
 
@@ -78,27 +80,29 @@ Tamu undangan (Internal Karyawan) atau pendaftar mandiri (Eksternal 1000 pax) ya
 
 - Membuka halaman undangan / Halaman registrasi publik.
 - Melakukan RSVP / Pendaftaran Mandiri.
-- Mendapatkan QR Code (E-Ticket) untuk ditukar gelang (Siang/Sore).
+- Mendapatkan **QR Code 1 (E-Ticket)** untuk ditukar gelang di venue.
 
 **Workflow:**
 
 ```mermaid
 graph TD
-    subgraph Internal
-    I1[Link via WA] --> I2[Konfirmasi RSVP]
+    subgraph Registration
+    I1[Internal/Tenant via WA] --> I2[Konfirmasi RSVP]
+    E1[External via Landing Page] --> E2[Isi Data & Submit]
     end
     
-    subgraph External
-    E1[Landing Page Registrasi] --> E2[Isi Data & Submit]
-    E2 --> E3{Cek Kuota < 1000?}
-    E3 -- Ya --> E4[Data Tersimpan]
-    E3 -- Penuh --> E5[Tampilkan Maaf, Kuota Penuh]
+    I2 --> G4[Dapat QR Code 1]
+    E2 --> G4
+    
+    subgraph Venue_Step_1
+    G4 --> G5[Scanner 1: Tukar Gelang]
+    G5 --> G6[Scan QR 1 -> Link ke Barcode Gelang QR 2]
     end
     
-    I2 --> G4[Dapat QR Code]
-    E4 --> G4
-    G4 --> G5[Scan di Venue -> Terima Gelang]
-    G5 --> G6[Masuk Acara Malam dg Gelang]
+    subgraph Venue_Step_2
+    G6 --> G7[Scanner 2: Pintu Konser]
+    G7 --> G8[Scan QR 2 pada Gelang -> Masuk]
+    end
 ```
 
 ## 4.2 Super Admin
@@ -152,9 +156,8 @@ graph TD
 ## 4.4 Staff Scanner (Registration Staff)
 
 **Tugas di Venue:**
-1. **Sesi Siang (Internal):** Scan QR -> Beri Gelang.
-2. **Sesi Sore (External - 16:30):** Scan QR -> Beri Gelang (Cek Kuota).
-3. **Sesi Malam:** Scan Gelang/QR untuk akses masuk final.
+1. **Posisi 1 (Exchange Desk):** Scan QR 1 dari HP Tamu -> Ambil gelang -> Scan Barcode QR 2 di gelang untuk verifikasi & pairing -> Berikan gelang.
+2. **Posisi 2 (Concert Gate):** Scan Barcode QR 2 di gelang untuk izin masuk akses konser sesi malam.
 
 ---
 
@@ -166,9 +169,9 @@ graph TD
 - **Auto-Quota:** Pendaftaran otomatis ditutup jika mencapai 1000 orang.
 - **Instant E-Ticket:** QR Code langsung muncul setelah pendaftaran berhasil.
 
-### Dual Session Check-in Logic
-- **Sesi Siang:** Registrasi awal tamu internal, pemberian gelang konser untuk acara malam.
-- **Sesi Malam:** Registrasi ulang menggunakan barcode pada gelang yang sudah diberikan.
+### Two-Step Verification Logic
+- **Step 1 (Exchange):** Penukaran E-Ticket (QR 1) dengan gelang fisik. Staff melakukan pairing ID tamu dengan Barcode gelang (QR 2).
+- **Step 2 (Entrance):** Scan Barcode gelang (QR 2) di pintu masuk utama gedung/konser untuk verifikasi akses.
 
 ### External Guest Management
 - **Open Gate:** Mulai pukul 16:30 (setelah sesi siang selesai).
@@ -231,15 +234,14 @@ Format Excel:
 
 Mapping:
 
-| Excel Column | Database Field |
-| ------------ | -------------- |
-| Guest Type   | guest_type     |
-| Employee Id  | employee_id    |
-| Full Name    | full_name      |
-| Department   | department     |
-| Position     | position       |
-| Company      | company        |
-| WA           | phone          |
+| Excel Column      | Database Field | Category Requirements Mapping                       |
+| ----------------- | -------------- | --------------------------------------------------- |
+| Guest Type        | guest_type     | internal, external, tenant                          |
+| Full Name         | full_name      | All Categories                                      |
+| WA Number         | phone          | All Categories                                      |
+| Email             | email          | Required for: Internal                              |
+| Address           | address        | Required for: Tenant & External                     |
+| UMKM Product Name | metadata       | Required for: Tenant (Stored in metadata JSON)      |
 
 ---
 
@@ -329,7 +331,7 @@ Halaman khusus untuk ditampilkan di layar besar/TV di area registrasi.
 
 # 6. System Architecture
 
-Frontend Web App
+Frontend Web App (Next.js + Chakra UI)
 │
 │
 ▼
@@ -385,14 +387,13 @@ Menyimpan daftar tamu undangan beserta status RSVP mereka.
 | :------------------------- | :----------------------------------------------- |
 | **id**               | Primary Key (UUID)                               |
 | **event_id**         | Foreign Key ke `events`                        |
-| **guest_type**       | `internal` atau `external`                   |
-| **employee_id**      | ID Karyawan (khusus tamu internal)               |
-| **full_name**        | Nama lengkap tamu                                |
-| **department**       | Departemen (untuk internal)                      |
-| **position**         | Jabatan                                          |
-| **company**          | Perusahaan (Default: "PT Bharata Internasional") |
-| **phone**            | Nomor WhatsApp/Telepon                           |
-| **rsvp_status**      | Status konfirmasi kehadiran                      |
+| **guest_type**       | `internal`, `external`, atau `tenant`        |
+| **full_name**        | Nama lengkap tamu                                     |
+| **phone**            | Nomor WhatsApp/Telepon                                |
+| **email**            | Email tamu (Khusus Internal)                          |
+| **address**          | Alamat tamu (Khusus Tenant & External)                |
+| **metadata**         | JSONB (e.g. `umkm_product`)                         |
+| **rsvp_status**      | Status konfirmasi kehadiran                           |
 | **wa_sent_at**       | Timestamp pengiriman undangan via WA             |
 | **created_at**       | Waktu data di-import/dibuat                      |
 
@@ -576,11 +577,12 @@ Manual check-in
 
 | Category                     | Technology            | Description                                       |
 | :--------------------------- | :-------------------- | :------------------------------------------------ |
-| **Frontend**           | Next.js               | React framework for web development               |
-| **Styling**            | Tailwind CSS          | Utility-first CSS framework                       |
+| **Frontend**           | Next.js 15            | React framework (App Router)                      |
+| **UI Framework**       | Chakra UI v3          | Modern, accessible component library              |
+| **Styling**            | Emotion / CSS-in-JS   | Styling engine for Chakra UI                      |
 | **QR Scanner**         | html5-qrcode          | Library for cross-platform QR code scanning       |
 | **Backend / Database** | Supabase (PostgreSQL) | Open source Firebase alternative                  |
-| **Deployment**         | Vercel                | Platform for frontend frameworks and static sites |
+| **Deployment**         | Vercel                | Platform for frontend frameworks                  |
 
 ---
 

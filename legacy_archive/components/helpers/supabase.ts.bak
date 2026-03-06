@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { NewParticipantFormValues } from "@/components/organisms/AddParticipantForm";
+import { NewParticipantFormValues } from "@/legacy/components/organisms/AddParticipantForm";
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL as string || ""
 const KEY = process.env.NEXT_PUBLIC_SUPABASE_KEY as string || ""

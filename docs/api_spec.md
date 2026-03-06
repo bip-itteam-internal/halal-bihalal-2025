@@ -40,8 +40,11 @@ Digunakan oleh halaman undangan (`/invite/[guestId]/[slug]`) untuk mengambil dat
 {
   "full_name": "Zulhakim",
   "guest_type": "internal",
+  "phone": "08123456789",
+  "email": "zulhakim@bharata.id",
+  "metadata": {},
   "event": {
-    "name": "Halal Bihalal 2025"
+    "name": "Halal Bihalal 2026"
   },
   "rsvp_status": "pending"
 }
@@ -63,8 +66,8 @@ Endpoint yang dipanggil oleh scanner QR di venue.
 ```json
 {
   "guest_id": "uuid",
-  "session_type": "siang" | "malam",
-  "bracelet_given": boolean
+  "step": "exchange" | "entrance",
+  "bracelet_code": "string" -- Required only for 'exchange' step to pair with guest
 }
 ```
 **Response Success:** `200 OK`
@@ -113,8 +116,12 @@ Pendaftaran mandiri oleh tamu eksternal (Umum).
 ```json
 {
   "full_name": "string",
-  "company": "string", -- e.g. 'Personal' or 'General Public'
-  "phone": "string"
+  "phone": "string",
+  "address": "string",
+  "guest_type": "external" | "tenant",
+  "metadata": {
+    "umkm_product": "string"
+  }
 }
 ```
 **Response Success:** `201 Created`
