@@ -25,5 +25,11 @@ Untuk membuat sistem ini terasa **Premium**, **Scalable**, dan **Reliable** di l
 - **Guest ID Obfuscation (UUID)**: Tetap gunakan UUID (seperti yang sudah direncanakan) untuk mencegah orang menebak link undangan tamu lain.
 - **Admin Audit Log**: Catat siapa (admin mana) yang melakukan manual check-in atau mengubah data tamu untuk akuntabilitas.
 
+## 6. High Volume Handling & Bracelets
+- **Offline-First Scan**: Dengan 1000+ tamu eksternal, latensi API bisa menghambat antrian. Gunakan sinkronisasi berkala (batch sync) agar scanner tidak 'freeze' saat sinyal lemah.
+- **Bracelet Reconciliation**: Tambahkan fitur di dashboard untuk mencatat stok fisik gelang yang keluar vs jumlah check-in di sistem untuk menghindari selisih.
+- **Doorprize Fairness**: Pastikan sistem spinner menyimpan "Winner List" agar orang yang sudah menang tidak muncul lagi di putaran berikutnya.
+- **Quota Guard**: Implementasikan *race-condition protection* pada endpoint registrasi eksternal agar tepat berhenti di angka 1000.
+
 ---
 *Follow these strategies to elevate the user and admin experience.*

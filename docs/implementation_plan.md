@@ -27,19 +27,27 @@ This document outlines the step-by-step plan to transform the current guestbook 
 - [ ] Create utility for Excel parsing (XLSX).
 - [ ] Implement **Theme Config tokens** (Font families & Shadow presets).
 
-## Phase 4: Guest Experience (Invitation & RSVP) 🎟️
+## Phase 4: Guest Experience (Invitation & Registration) 🎟️
 - [ ] **Invitation Page**: `app/invite/[guestId]/page.tsx`
-  - **Dynamic Theme**: Inject CSS variables from event branding data.
-  - RSVP logic (confirm attendance).
-  - QR Code generation.
-- [ ] **Success Page**: Confirmation after RSVP.
+  - RSVP logic and QR Code display.
+- [ ] **Public Registration Page**: `app/register/[eventId]/page.tsx`
+  - **Auto-Quota Logic**: Validate `external_quota` before allowing submission.
+  - **Success Screen**: Show instant E-Ticket (QR Code).
+- [ ] **Success Page**: Confirmation for both RSVP and Registration.
 
 ## Phase 5: Admin Experience (Scanner & Dashboard) 📊
 - [ ] **Event Dashboard**: List events and guest summary with **Supabase Realtime** analytics.
-- [ ] **Guest Management**: **Import Excel with Review/Preview page**, manual add/edit.
+- [ ] **Guest Management**: **Import Excel (Internal)** & View Public Registrations.
+  - [ ] Toggle to open/close public registration.
 - [ ] **QR Scanner**: `app/scanner/page.tsx` using `html5-qrcode`.
-- [ ] **Manual Check-in**: Search and click to check-in.
-- [ ] **Welcome Display Board**: `app/display/[eventId]/page.tsx` (TV Monitor) using **Supabase Realtime** for instant welcome effects.
+  - [ ] **Session Toggle**: Switch between 'Siang' and 'Malam' mode.
+  - [ ] **Bracelet Logic**: Checkbox/Status for "Gelang Terdistribusi".
+- [ ] **Internal Doorprize Spinner**: `app/admin/doorprize/page.tsx`
+- [ ] **Welcome Display Board**: `app/display/[eventId]/page.tsx`.
+
+## Phase 8: Data Integrity 🔌
+- [ ] Implement race-condition protection for quota counting.
+- [ ] Real-time quota counter for admin dashboard.
 
 ## Phase 6: WhatsApp Integration (NotifAPI) 📱
 - [ ] Set up HTTP service for WhatsApp NotifAPI.

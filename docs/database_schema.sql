@@ -54,6 +54,8 @@ CREATE TABLE events (
     dress_code TEXT,
     logo_url TEXT, -- Keep logo in event because it's usually event-specific
     wa_template TEXT, -- Custom message template with placeholders like {name}, {link}
+    external_quota INTEGER DEFAULT 1000, -- Added quota for external guests
+    public_reg_status TEXT DEFAULT 'closed' CHECK (public_reg_status IN ('open', 'closed')), -- Toggle for registration page
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -80,12 +82,15 @@ FROM guests g
 JOIN events e ON g.event_id = e.id
 WHERE g.wa_sent_at IS NULL AND g.phone IS NOT NULL;
 
--- 3. Checkins Table
+-- 3. Checkins Table (Updated to support dual sessions and bracelets)
 CREATE TABLE checkins (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    guest_id UUID REFERENCES guests(id) ON DELETE CASCADE UNIQUE,
+    guest_id UUID REFERENCES guests(id) ON DELETE CASCADE,
+    session_type TEXT CHECK (session_type IN ('siang', 'malam')), -- 'siang' or 'malam'
+    bracelet_given BOOLEAN DEFAULT FALSE,
     checkin_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    checkin_by UUID -- Reference to admin user if needed
+    checkin_by UUID, -- Reference to admin user if needed
+    UNIQUE(guest_id, session_type) -- One guest can check-in once per session
 );
 
 -- Indexes for performance

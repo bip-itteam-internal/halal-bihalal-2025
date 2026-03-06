@@ -10,16 +10,19 @@ Event Invitation & QR Check-in System adalah aplikasi web yang digunakan untuk m
 
 Sistem ini memungkinkan panitia untuk:
 
-- Mengimpor daftar tamu dari Excel
+- Mengimpor daftar tamu dari Excel (Internal)
+- **Halaman Registrasi Publik (Self-Ticket)**: Untuk pendaftaran tamu eksternal mandiri
 - Mengirim link undangan digital
 - Mengumpulkan RSVP konfirmasi kehadiran
 - Menghasilkan QR Code untuk check-in
-- Mempercepat proses registrasi saat event
+- **Manajemen Dua Sesi**: Sesi Siang (Karyawan) dan Sesi Malam (Puncak Acara)
+- **Distribusi Gelang Konser**: Sebagai penanda akses untuk sesi malam
+- **Fitur Doorprize Spinner**: Khusus untuk tamu internal yang hadir
 - Melihat laporan kehadiran real-time
 
 Sistem dirancang agar:
 
-- **mendukung tamu karyawan dan tamu eksternal**
+- **mendukung tamu karyawan dan tamu eksternal (Kuota Otomatis 1000 pax)**
 - **dapat digunakan untuk banyak event (multi-event)**
 
 ---
@@ -30,9 +33,10 @@ Tujuan utama sistem ini adalah:
 
 1. Mengelola undangan event secara digital
 2. Mengumpulkan data RSVP kehadiran sebelum event
-3. Mempercepat proses check-in saat event
-4. Mengurangi antrian registrasi
-5. Menyediakan data kehadiran secara realtime
+3. Mempercepat proses check-in saat event dengan sistem **Double Verification** (QR + Gelang)
+4. Mengelola kuota tamu eksternal secara mandiri dan real-time (**Internal Ticketing**)
+5. Menyediakan fitur hiburan terintegrasi (Doorprize Spinner) untuk internal
+6. Menyediakan data kehadiran secara realtime
 
 ---
 
@@ -42,20 +46,22 @@ Tujuan utama sistem ini adalah:
 
 Fitur yang termasuk dalam sistem:
 
-- Import daftar tamu dari Excel
-- Digital invitation
-- RSVP (konfirmasi kehadiran)
+- Import daftar tamu dari Excel (Internal)
+- **Public Registration Page** (External Ticketing)
+- Digital invitation & RSVP
 - QR Code invitation
-- QR Scanner untuk check-in
-- Dashboard daftar tamu
-- Rekap kehadiran
+- **Dual Session Check-in System** (Siang & Malam)
+- **Concert Bracelet Tracking** (Pemberian gelang saat scan)
+- **Internal Doorprize Spinner**
+- Dashboard daftar tamu & Rekap kehadiran
+- Welcome Display Board
 
 ## 3.2 Out of Scope
 
 Fitur berikut tidak termasuk dalam versi awal:
 
 - Email invitation
-- WhatsApp automation
+- WhatsApp automation (Hanya manual trigger / API)
 - Seat assignment
 - Payment/ticketing
 - Authentication untuk tamu
@@ -66,20 +72,33 @@ Fitur berikut tidak termasuk dalam versi awal:
 
 ## 4.1 Guest (Tamu)
 
-Tamu undangan yang menerima link invitation unik. Tidak memerlukan login.
+Tamu undangan (Internal Karyawan) atau pendaftar mandiri (Eksternal 1000 pax) yang menerima link invitation unik atau mendaftar via landing page.
 
 **Hak akses:**
 
-- Membuka halaman undangan (via UUID).
-- Melihat QR Code personal.
+- Membuka halaman undangan / Halaman registrasi publik.
+- Melakukan RSVP / Pendaftaran Mandiri.
+- Mendapatkan QR Code (E-Ticket) untuk ditukar gelang (Siang/Sore).
 
 **Workflow:**
 
 ```mermaid
 graph TD
-    G1[Terima Link WhatsApp] --> G2[Buka Halaman Undangan]
-    G2 --> G3[Simpan RSVP Hadir]
-    G3 --> G4[Terima QR Code Personal]
+    subgraph Internal
+    I1[Link via WA] --> I2[Konfirmasi RSVP]
+    end
+    
+    subgraph External
+    E1[Landing Page Registrasi] --> E2[Isi Data & Submit]
+    E2 --> E3{Cek Kuota < 1000?}
+    E3 -- Ya --> E4[Data Tersimpan]
+    E3 -- Penuh --> E5[Tampilkan Maaf, Kuota Penuh]
+    end
+    
+    I2 --> G4[Dapat QR Code]
+    E4 --> G4
+    G4 --> G5[Scan di Venue -> Terima Gelang]
+    G5 --> G6[Masuk Acara Malam dg Gelang]
 ```
 
 ## 4.2 Super Admin
@@ -116,6 +135,9 @@ Pengelola operasional event. Memiliki akses penuh terhadap fitur sistem untuk me
 - **Invitation Management**: Mengelola pengiriman undangan (link/WhatsApp).
 - **Analytics & Report**: Melihat Dashboard, Real-time Analytics, dan Export data (CSV/Excel).
 - **Note**: Memiliki semua kemampuan operasional seperti Super Admin, namun dilarang mengakses User Management (tidak bisa membuat/mengatur akun Admin dan Staff lain).
+- Mengelola data eksternal dari GForm (Setor ke IT).
+- Menjalankan Spinner Doorprize.
+- Memantau kuota 1000 tamu eksternal.
 
 **Workflow:**
 
@@ -129,31 +151,36 @@ graph TD
 
 ## 4.4 Staff Scanner (Registration Staff)
 
-Petugas di meja registrasi (venue).
-
-**Hak akses:**
-
-- Membuka halaman Scanner.
-- Melakukan Scan QR & Manual Check-in.
-- Melihat daftar tamu (Read-only).
-- *Dilarang* mengubah setting branding atau menghapus data tamu.
-
-**Workflow:**
-
-```mermaid
-graph TD
-    S1[Buka Halaman Scanner] --> S2{Tamu bawa QR?}
-    S2 -- Ya --> S3[Scan QR Guest]
-    S2 -- Tidak --> S4[Cari Nama Tamu Manual]
-    S3 --> S5[Verifikasi Data Tamu]
-    S4 --> S5
-    S5 --> S6[Klik Check-in]
-    S6 --> S7[Data Masuk Real-time Dashboard]
-```
+**Tugas di Venue:**
+1. **Sesi Siang (Internal):** Scan QR -> Beri Gelang.
+2. **Sesi Sore (External - 16:30):** Scan QR -> Beri Gelang (Cek Kuota).
+3. **Sesi Malam:** Scan Gelang/QR untuk akses masuk final.
 
 ---
 
 # 5. Key Features
+
+### Public Registration Page (External Ticketing)
+- **Self-Service:** Tamu eksternal mendaftar sendiri melalui link publik.
+- **Auto-Quota:** Pendaftaran otomatis ditutup jika mencapai 1000 orang.
+- **Instant E-Ticket:** QR Code langsung muncul setelah pendaftaran berhasil tanpa perlu verifikasi admin.
+
+### Dual Session Check-in Logic
+- **Sesi Siang:** Registrasi awal tamu internal, pemberian gelang konser untuk acara malam.
+- **Sesi Malam:** Registrasi ulang menggunakan barcode pada gelang yang sudah diberikan.
+
+### External Guest Management
+- **Open Gate:** Mulai pukul 16:30 (setelah sesi siang selesai).
+- **Kuota:** Dibatasi maksimal 1000 orang.
+- **Data Source:** Pengisian GForm yang datanya disetor ke IT untuk di-import.
+
+### Internal Doorprize Spinner
+- Fitur undian berhadiah (Spinner) yang hanya bisa dimenangkan oleh tamu dengan kategori `internal`.
+- Sistem hanya menarik data tamu internal yang sudah melakukan check-in (hadir di lokasi).
+
+### Concert Bracelet System
+- Gelang fisik dengan barcode unik yang diberikan saat tamu melakukan registrasi pertama kali.
+- Barcode pada gelang tersinkronisasi dengan ID tamu di sistem.
 
 ### WhatsApp Invitation Service (NotifAPI)
 

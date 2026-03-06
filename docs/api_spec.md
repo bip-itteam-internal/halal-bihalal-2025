@@ -62,22 +62,37 @@ Endpoint yang dipanggil oleh scanner QR di venue.
 **Payload:**
 ```json
 {
-  "guest_id": "uuid"
+  "guest_id": "uuid",
+  "session_type": "siang" | "malam",
+  "bracelet_given": boolean
 }
 ```
 **Response Success:** `200 OK`
 ```json
 {
   "status": "success",
-  "guest_name": "Zulhakim"
+  "guest_name": "Zulhakim",
+  "session": "siang"
 }
 ```
-**Response Error (Sudah Check-in):** `400 Bad Request`
+**Response Error (Sudah Check-in di Sesi Ini):** `400 Bad Request`
 ```json
 {
   "status": "error",
-  "message": "Tamu ini sudah melakukan check-in pada pukul 09:15"
+  "message": "Tamu ini sudah melakukan check-in Sesi Siang pada pukul 09:15"
 }
+```
+
+## 4. Doorprize
+### GET /api/admin/doorprize/eligible
+Mengambil daftar tamu internal yang sudah hadir (check-in malam) untuk diundi.
+**Query Params:** `eventId=uuid`
+**Response:** `200 OK`
+```json
+[
+  { "id": "uuid", "full_name": "Zulhakim", "department": "GA" },
+  { "id": "uuid", "full_name": "Endri", "department": "Finance" }
+]
 ```
 
 ## 4. Import & Export
@@ -91,7 +106,34 @@ Endpoint untuk memproses data tamu. Mendukung alur **Review/Preview** di mana da
 ### GET /api/admin/export/[eventId]
 Menghasilkan file CSV/Excel berisi rekap kehadiran.
 
-## 5. Assets (Storage)
+## 5. Public Registration (External Ticketing)
+### POST /api/register/[eventId]
+Pendaftaran mandiri oleh tamu eksternal.
+**Payload:**
+```json
+{
+  "full_name": "string",
+  "company": "string",
+  "phone": "string"
+}
+```
+**Response Success:** `201 Created`
+```json
+{
+  "status": "success",
+  "guest_id": "uuid",
+  "qr_payload": "uuid"
+}
+```
+**Response Error (Quota Full):** `403 Forbidden`
+```json
+{
+  "status": "error",
+  "message": "Quota full"
+}
+```
+
+## 6. Assets (Storage)
 ### POST /api/admin/upload
 Mengunggah logo atau background event. Menggunakan Supabase Storage.
 **Payload:** `multipart/form-data` (file: image)
@@ -100,4 +142,4 @@ Mengunggah logo atau background event. Menggunakan Supabase Storage.
 {
   "public_url": "https://supabase_url/storage/v1/object/public/assets/logo-event-1.png"
 }
-
+```
