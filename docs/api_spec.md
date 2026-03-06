@@ -108,12 +108,12 @@ Menghasilkan file CSV/Excel berisi rekap kehadiran.
 
 ## 5. Public Registration (External Ticketing)
 ### POST /api/register/[eventId]
-Pendaftaran mandiri oleh tamu eksternal.
+Pendaftaran mandiri oleh tamu eksternal (Umum).
 **Payload:**
 ```json
 {
   "full_name": "string",
-  "company": "string",
+  "company": "string", -- e.g. 'Personal' or 'General Public'
   "phone": "string"
 }
 ```

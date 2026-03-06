@@ -59,16 +59,17 @@ CREATE TABLE events (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. Guests Table
+-- 3. Guests Table (Updated for Public Registration flexibility)
 CREATE TABLE guests (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     event_id UUID REFERENCES events(id) ON DELETE CASCADE,
     guest_type TEXT CHECK (guest_type IN ('internal', 'external')),
-    employee_id TEXT,
+    registration_source TEXT DEFAULT 'admin_invite' CHECK (registration_source IN ('admin_invite', 'public_registration')), -- New: distinguish invite vs self-reg
     full_name TEXT NOT NULL,
+    employee_id TEXT,
     department TEXT,
     position TEXT,
-    company TEXT DEFAULT 'PT Bharata Internasional',
+    company TEXT, -- Removed default for flexibility
     phone TEXT,
     rsvp_status TEXT DEFAULT 'pending' CHECK (rsvp_status IN ('pending', 'confirmed', 'declined')),
     wa_sent_at TIMESTAMP WITH TIME ZONE,
@@ -86,7 +87,7 @@ WHERE g.wa_sent_at IS NULL AND g.phone IS NOT NULL;
 CREATE TABLE checkins (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     guest_id UUID REFERENCES guests(id) ON DELETE CASCADE,
-    session_type TEXT CHECK (session_type IN ('siang', 'malam')), -- 'siang' or 'malam'
+    session_type TEXT CHECK (session_type IN ('day', 'night')), -- 'siang' or 'malam'
     bracelet_given BOOLEAN DEFAULT FALSE,
     checkin_time TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     checkin_by UUID, -- Reference to admin user if needed

@@ -161,9 +161,10 @@ graph TD
 # 5. Key Features
 
 ### Public Registration Page (External Ticketing)
-- **Self-Service:** Tamu eksternal mendaftar sendiri melalui link publik.
+- **Self-Service:** Tamu eksternal mendaftar sendiri melalui link publik. Mencakup masyarakat umum, mahasiswa, atau pihak lain di luar daftar undangan resmi.
+- **Easy Registration:** Hanya memerlukan input **Nama Lengkap** dan **Nomor WhatsApp** untuk mempermudah pendaftaran.
 - **Auto-Quota:** Pendaftaran otomatis ditutup jika mencapai 1000 orang.
-- **Instant E-Ticket:** QR Code langsung muncul setelah pendaftaran berhasil tanpa perlu verifikasi admin.
+- **Instant E-Ticket:** QR Code langsung muncul setelah pendaftaran berhasil.
 
 ### Dual Session Check-in Logic
 - **Sesi Siang:** Registrasi awal tamu internal, pemberian gelang konser untuk acara malam.
@@ -175,11 +176,11 @@ graph TD
 - **Data Source:** Pengisian GForm yang datanya disetor ke IT untuk di-import.
 
 ### Internal Doorprize Spinner
-- Fitur undian berhadiah (Spinner) yang hanya bisa dimenangkan oleh tamu dengan kategori `internal`.
-- Sistem hanya menarik data tamu internal yang sudah melakukan check-in (hadir di lokasi).
+- Fitur undian berhadiah (Spinner) yang hanya bisa dimenangkan oleh tamu dengan kategori `internal` yang sudah hadir.
+- Menggunakan filter `registration_source = 'admin_invite'` untuk memastikan hadiah tidak jatuh ke pendaftar publik eksternal (masyarakat umum).
 
 ### Concert Bracelet System
-- Gelang fisik dengan barcode unik yang diberikan saat tamu melakukan registrasi pertama kali.
+- Gelang fisik dengan barcode unik sebagai akses masuk sesi malam.
 - Barcode pada gelang tersinkronisasi dengan ID tamu di sistem.
 
 ### WhatsApp Invitation Service (NotifAPI)
