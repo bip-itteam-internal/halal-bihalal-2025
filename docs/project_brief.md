@@ -116,7 +116,7 @@ Pengelola operasional event. Memiliki akses penuh terhadap fitur sistem untuk me
 **Hak akses:**
 
 - **Full Event Control**: Membuat, mengedit, dan mengelola detil Event serta Branding/Tema.
-- **Guest Operations**: Import daftar tamu (Excel), Edit, dan Delete data tamu.
+- **Guest Operations**: Manajemen tamu (Import Excel & **Input Manual satu per satu**), Edit, dan Delete data tamu.
 - **Invitation Management**: Mengelola pengiriman undangan (link/WhatsApp).
 - **Analytics & Report**: Melihat Dashboard, Real-time Analytics, dan Export data (CSV/Excel).
 - **Note**: Memiliki semua kemampuan operasional seperti Super Admin, namun dilarang mengakses User Management (tidak bisa membuat/mengatur akun Admin dan Staff lain).
@@ -425,51 +425,127 @@ Mencatat riwayat kehadiran tamu di lokasi acara.
 
 ---
 
-# 8. System Flow
+# 8. Detailed Feature Flows
 
-## 8.1 Admin Setup
+## 8.1 Event Preparation & Branding Flow
+Proses awal di mana Admin menyiapkan identitas visual dan informasi dasar event.
 
 ```mermaid
 graph TD
-    A[Admin membuat event] --> B[Admin import Excel]
-    B --> C[Data tamu tersimpan]
-    C --> D[Link undangan dibuat]
+    A[Admin Login] --> B[Buat Event Baru]
+    B --> C[Isi Data: Nama, Tgl, Lokasi, Dresscode]
+    C --> D[Pilih Template/Preset Layout]
+    D --> E[Upload Logo & Background]
+    E --> F[Atur Variabel Warna CSS]
+    F --> G[Sistem Generate Tema Dinamis]
+    G --> H[Event Siap Digunakan]
 ```
 
 ---
 
-## 8.2 Guest RSVP Flow
+## 8.2 Guest Data Management Flow
+Alur penambahan data tamu baik melalui impor massal maupun input manual.
 
 ```mermaid
 graph TD
-    A[Guest membuka link undangan] --> B[System mengambil data guest]
-    B --> C[Guest memilih ukuran kaos]
-    C --> D[RSVP disimpan]
-    D --> E[QR Code ditampilkan]
+    A[Admin Dashboard] --> B{Metode Input?}
+    B -- Massal --> C[Upload File Excel]
+    C --> D[Sistem Parsing & Preview Baris Data]
+    D --> E{Data Valid?}
+    E -- Tidak --> F[Admin Edit Langsung di Preview]
+    F --> D
+    E -- Ya --> G[Konfirmasi Import]
+    
+    B -- Manual --> H[Buka Form Tambah Tamu]
+    H --> I[Isi Data: Nama, WA, Tipe, dll]
+    I --> J[Simpan Data]
+    
+    G --> K[Sistem Generate Unique UUID]
+    J --> K
+    K --> L[Generate Link Personal]
+    L --> M[Data Tersimpan di Supabase]
 ```
 
 ---
 
-## 8.3 Edit Size Flow
+## 8.3 WhatsApp Invitation Distribution Flow
+Proses pengiriman undangan otomatis menggunakan layanan NotifAPI.
 
 ```mermaid
 graph TD
-    A[Guest membuka link undangan] --> B[System cek deadline]
-    B --> C{Status Deadline?}
-    C -- Belum Terlewati --> D[Guest dapat edit ukuran]
-    C -- Sudah Terlewati --> E[Edit dinonaktifkan]
+    A[Admin Pilih Target Tamu] --> B[Admin Pilih Template Pesan]
+    B --> C[Sistem Iterasi Setiap Tamu]
+    C --> D[Mapping Tag: {name}, {link}, {event_name}]
+    D --> E[Panggil NotifAPI via Edge Function]
+    E --> F[Update Status: wa_sent_at]
+    F --> G[Logging Status Pengiriman]
 ```
 
 ---
 
-## 8.4 Event Check-in Flow
+## 8.4 Guest RSVP & QR Code Generation Flow
+Interaksi tamu dari menerima pesan hingga mendapatkan bukti registrasi.
 
 ```mermaid
 graph TD
-    A[Guest datang] --> B[Guest menunjukkan QR]
-    B --> C[Panitia scan QR]
-    C --> D[System menampilkan data tamu]
-    D --> E[Check-in tersimpan]
+    A[Tamu Klik Link di WhatsApp] --> B[Buka Halaman Undangan Personal]
+    B --> C{Cek Requirement Kaos?}
+    C -- Ya --> D[Tampilkan Pilihan Ukuran Kaos]
+    C -- Tidak --> E[Langsung Tampilkan Tombol Konfirmasi]
+    D --> F[Tamu Pilih Ukuran & Klik Simpan]
+    E --> G[Tamu Klik Konfirmasi Hadir]
+    F --> H[Update rsvp_status & shirt_size]
+    G --> H
+    H --> I[Sistem Generate QR Code Guest ID]
+    I --> J[Tampilkan QR Code & Animasi Sukses]
+```
+
+---
+
+## 8.5 Edit Shirt Size Flow (With Deadline Constraint)
+Logika untuk pembatasan waktu perubahan ukuran kaos.
+
+```mermaid
+graph TD
+    A[Tamu Buka Kembali Link Undangan] --> B{Cek current_date vs edit_deadline}
+    B -- Belum Deadline --> C[Tampilkan Tombol 'Ubah Ukuran']
+    C --> D[Tamu Simpan Ukuran Baru]
+    D --> E[Update shirt_updated_at]
+    B -- Sudah Lewat Deadline --> F[Tombol Edit Disembunyikan/Disable]
+    F --> G[Tampilkan Pesan: Batas waktu edit sudah berakhir]
+```
+
+---
+
+## 8.6 Real-time QR Scanner & Check-in Flow
+Proses registrasi di lokasi acara dengan penanganan berbagai skenario.
+
+```mermaid
+graph TD
+    A[Panitia Scan QR Tamu] --> B[Ambil UUID dari QR]
+    B --> C{Cek UUID di Database?}
+    C -- Tidak Ditemukan --> D[Pesan: Undangan Tidak Valid!]
+    C -- Ada --> E{Sudah Check-in?}
+    E -- Ya --> F[Pesan: Tamu Sudah Terdaftar pada Jam XX:XX]
+    E -- Belum --> G[Tampilkan Data: Nama, Dept, Ukuran Kaos]
+    G --> H[Panitia Serahkan Kaos & Klik Check-in]
+    H --> I[Update checkins & checkin_time]
+    I --> J[Trigger Supabase Realtime Broadcast]
+```
+
+---
+
+## 8.7 Real-time Welcome Board & Analytics Flow
+Bagaimana data kehadiran disajikan secara instan di layar monitor.
+
+```mermaid
+graph TD
+    A[Trigger: New Entry in checkins Table] --> B[Supabase Realtime Broadcast]
+    B --> C[Welcome Board: Update Nama Tamu Terakhir]
+    B --> D[Admin Dashboard: Increment Counter Hadir]
+    B --> E[Admin Dashboard: Re-calculate Statistik per Dept]
+    C --> F[Visual Animasi Selamat Datang Muncul di TV]
+    D --> G[Chart Statistik Terupdate Otomatis]
 ```
 
 ---
