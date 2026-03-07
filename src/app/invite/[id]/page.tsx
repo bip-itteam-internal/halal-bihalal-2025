@@ -6,7 +6,9 @@ import { AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import { toast } from 'sonner'
 import { Guest, Event as AppEvent } from '@/types'
-import { decodeUUID } from '@/lib/utils'
+import { decodeUUID, encodeUUID } from '@/lib/utils'
+import slugify from 'slugify'
+import { useRouter, usePathname } from 'next/navigation'
 
 // Define the joined type for invitation
 type GuestInvitation = Guest & {
@@ -25,14 +27,27 @@ export default function GuestInvitePage({
   params: Promise<{ id: string }>
 }) {
   const resolvedParams = use(params)
-  // Extract identifier part before the hyphen and name
-  // If it's the old 36-chars UUID, handle it properly!
-  const rawIdPart =
-    resolvedParams.id.length >= 36 && resolvedParams.id.charAt(8) === '-'
-      ? resolvedParams.id.substring(0, 36)
-      : resolvedParams.id.substring(0, 22)
+  const router = useRouter()
+  const pathname = usePathname()
 
-  const guestId = decodeUUID(rawIdPart)
+  // Extract ID part (either 22 chars short-id or 36 chars UUID)
+  // We split by hyphen and check the first part
+  const idSegments = resolvedParams.id.split('-')
+  let rawIdPart = ''
+
+  if (
+    resolvedParams.id.length >= 36 &&
+    (resolvedParams.id.match(/-/g) || []).length >= 4
+  ) {
+    // Looks like a full UUID (8-4-4-4-12)
+    // We need to take the first 5 segments if they form a UUID
+    rawIdPart = idSegments.slice(0, 5).join('-')
+  } else {
+    // Looks like an obfuscated ID (22 chars)
+    rawIdPart = idSegments[0]
+  }
+
+  const guestId = rawIdPart.length === 36 ? rawIdPart : decodeUUID(rawIdPart)
 
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
@@ -72,6 +87,28 @@ export default function GuestInvitePage({
 
     fetchData()
   }, [guestId, supabase])
+
+  // Pretty URL sync: Update URL to include name/event if it's just a raw ID
+  useEffect(() => {
+    if (!guest || !event || loading) return
+
+    const shortId = encodeUUID(guest.id)
+    const nameSlug = slugify(guest.full_name || '', {
+      lower: true,
+      strict: true,
+    })
+    const eventSlug = slugify(event.name || '', { lower: true, strict: true })
+    const targetPath = `/invite/${shortId}-${nameSlug}-${eventSlug}`
+
+    // Only update if the pathname is different and we are not in a full-UUID URL that already has info
+    // Or if we want to force the short-id format for everyone
+    if (pathname !== targetPath) {
+      window.history.replaceState(null, '', targetPath)
+    }
+
+    // Update document title for better user experience
+    document.title = `Undangan ${guest.full_name} - ${event.name}`
+  }, [guest, event, loading, pathname])
 
   const handleRSVP = async (status: 'confirmed' | 'declined' | 'pending') => {
     try {

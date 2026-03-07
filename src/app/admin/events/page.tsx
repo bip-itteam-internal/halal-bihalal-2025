@@ -180,8 +180,6 @@ export default function EventsPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
             {events.map((event) => {
               const showExternalQuota = event.event_type === 'public'
-              const showDressCode = Boolean(event.dress_code?.trim())
-              const showMetaSection = showExternalQuota || showDressCode
               const publicRegistered = publicRegistrationsByEvent[event.id] ?? 0
               const publicQuotaTotal = event.external_quota ?? 0
               const publicQuotaFilledPercent =
