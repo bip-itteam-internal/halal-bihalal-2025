@@ -105,6 +105,9 @@ export default function AdminScannerPage() {
     }
   }, [])
 
+  // State for pairing process
+  const [pairingGuest, setPairingGuest] = useState<Guest | null>(null)
+
   const startScanner = async () => {
     if (!selectedEventId) {
       setError('Pilih event terlebih dahulu.')
@@ -121,8 +124,13 @@ export default function AdminScannerPage() {
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: 240, height: 240 } },
         async (decodedText) => {
-          await submitCheckin(decodedText)
-          if (autoCloseCamera) {
+          if (pairingGuest) {
+            await handlePairBracelet(decodedText)
+          } else {
+            await submitCheckin(decodedText)
+          }
+
+          if (autoCloseCamera && !pairingGuest) {
             await stopScanner()
           }
         },
@@ -142,6 +150,39 @@ export default function AdminScannerPage() {
       await scannerRef.current.stop()
     }
     setScanning(false)
+  }
+
+  const handlePairBracelet = async (braceletCode: string) => {
+    if (!pairingGuest) return
+
+    try {
+      setSubmitting(true)
+      const res = await fetch('/api/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event_id: selectedEventId,
+          step: 'exchange',
+          guest_id: pairingGuest.id,
+          bracelet_to_pair: braceletCode.trim(),
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message || 'Gagal pairing gelang')
+
+      setLastResult({
+        success: true,
+        message: `Gelang berhasil dipasangkan untuk ${pairingGuest.full_name}`,
+        guest: data.guest,
+      })
+      setPairingGuest(null)
+      if (autoCloseCamera) await stopScanner()
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   const submitCheckin = async (payload: string) => {
@@ -164,6 +205,19 @@ export default function AdminScannerPage() {
       const data = await res.json()
       if (!res.ok) {
         throw new Error(data.message || 'Gagal check-in')
+      }
+
+      // If it was exchange and we need to pair a bracelet
+      if (step === 'exchange' && data.guest && !data.guest.bracelet_code) {
+        setPairingGuest(data.guest)
+        setLastResult({
+          success: true,
+          message: `Undangan ${data.guest.full_name} valid. Silakan SCAN GELANG sekarang.`,
+          guest: data.guest,
+        })
+        // Don't auto-stop scanner if we need to pair
+        if (!scanning) startScanner()
+        return
       }
 
       setLastResult({
@@ -218,7 +272,9 @@ export default function AdminScannerPage() {
               >
                 <SelectTrigger>
                   <SelectValue
-                    placeholder={loadingEvents ? 'Memuat event...' : 'Pilih event'}
+                    placeholder={
+                      loadingEvents ? 'Memuat event...' : 'Pilih event'
+                    }
                   />
                 </SelectTrigger>
                 <SelectContent>
@@ -245,6 +301,21 @@ export default function AdminScannerPage() {
                 </SelectContent>
               </Select>
             </div>
+            {pairingGuest && (
+              <div className="space-y-2 sm:col-span-3">
+                <Button
+                  variant="outline"
+                  className="w-full border-red-200 text-red-500 hover:bg-red-50"
+                  onClick={() => {
+                    setPairingGuest(null)
+                    setLastResult(null)
+                    setError('')
+                  }}
+                >
+                  Batalkan Pairing ({pairingGuest.full_name})
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -262,16 +333,43 @@ export default function AdminScannerPage() {
                 className="bg-muted flex aspect-square min-h-[260px] w-full items-center justify-center overflow-hidden rounded-md border"
               >
                 {!scanning && (
-                  <div className="text-muted-foreground flex flex-col items-center gap-2 text-sm">
-                    <QrCode className="h-10 w-10" />
-                    Kamera belum aktif
+                  <div className="text-muted-foreground flex flex-col items-center gap-2 px-4 text-center text-sm">
+                    {pairingGuest ? (
+                      <>
+                        <Badge
+                          variant="destructive"
+                          className="mb-2 animate-pulse"
+                        >
+                          MODE PAIRING GELANG
+                        </Badge>
+                        <QrCode className="h-10 w-10 text-emerald-500" />
+                        <span className="block font-bold text-emerald-600">
+                          Tamu: {pairingGuest.full_name}
+                        </span>
+                        <span>Klik Mulai untuk Scan Gelang</span>
+                      </>
+                    ) : (
+                      <>
+                        <QrCode className="h-10 w-10" />
+                        <span>Kamera belum aktif</span>
+                      </>
+                    )}
+                  </div>
+                )}
+                {scanning && pairingGuest && (
+                  <div className="absolute top-4 left-4 z-10">
+                    <Badge variant="destructive" className="animate-pulse">
+                      PAIRING: {pairingGuest.full_name}
+                    </Badge>
                   </div>
                 )}
               </div>
 
               <div className="flex flex-col gap-3 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm font-medium">Tutup kamera setelah scan</p>
+                  <p className="text-sm font-medium">
+                    Tutup kamera setelah scan
+                  </p>
                   <p className="text-muted-foreground text-xs">
                     Jika aktif, kamera berhenti otomatis setelah 1 hasil.
                   </p>
@@ -306,7 +404,8 @@ export default function AdminScannerPage() {
             <CardHeader>
               <CardTitle>Input Manual</CardTitle>
               <CardDescription>
-                Gunakan jika QR tidak terbaca (ID tamu/kode undangan/kode gelang).
+                Gunakan jika QR tidak terbaca (ID tamu/kode undangan/kode
+                gelang).
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -343,7 +442,9 @@ export default function AdminScannerPage() {
                 <p className="font-semibold">
                   {lastResult.success ? 'Check-in berhasil' : 'Check-in gagal'}
                 </p>
-                <p className="text-muted-foreground text-sm">{lastResult.message}</p>
+                <p className="text-muted-foreground text-sm">
+                  {lastResult.message}
+                </p>
                 {lastResult.guest && (
                   <p className="text-sm">
                     {lastResult.guest.full_name} ({lastResult.guest.guest_type})
