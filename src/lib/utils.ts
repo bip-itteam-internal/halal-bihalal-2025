@@ -122,3 +122,47 @@ export function generateRandomCode(length: number = 6) {
   }
   return result
 }
+
+/**
+ * Encode a UUID to a shorter, obfuscated Base64URL string (22 characters).
+ */
+export function encodeUUID(uuid: string): string {
+  if (!uuid) return ''
+  const hex = uuid.replace(/-/g, '')
+  if (hex.length !== 32) return uuid // fallback if not standard UUID
+
+  const buffer = new Uint8Array(16)
+  for (let i = 0; i < 16; i++) {
+    buffer[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16)
+  }
+
+  const b64 = btoa(String.fromCharCode.apply(null, Array.from(buffer)))
+  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+/**
+ * Decode an obfuscated Base64URL string back to a UUID.
+ */
+export function decodeUUID(base64url: string): string {
+  if (!base64url || base64url.length !== 22) return base64url // fallback if not encoded properly
+
+  let b64 = base64url.replace(/-/g, '+').replace(/_/g, '/')
+  while (b64.length % 4) {
+    b64 += '='
+  }
+
+  try {
+    const bin = atob(b64)
+    if (bin.length !== 16) return base64url // fallback
+
+    let hex = ''
+    for (let i = 0; i < bin.length; i++) {
+      const charCode = bin.charCodeAt(i).toString(16)
+      hex += charCode.length === 1 ? '0' + charCode : charCode
+    }
+
+    return `${hex.substr(0, 8)}-${hex.substr(8, 4)}-${hex.substr(12, 4)}-${hex.substr(16, 4)}-${hex.substr(20)}`
+  } catch {
+    return base64url
+  }
+}

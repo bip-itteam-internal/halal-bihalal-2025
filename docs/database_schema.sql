@@ -18,23 +18,24 @@ BEGIN
     RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- Trigger: Execute function on every signup
 CREATE OR REPLACE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
 
 -- 2. Event Themes Table (Preset Library)
-CREATE TABLE event_themes (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    name TEXT NOT NULL, 
-    primary_color TEXT DEFAULT '#059669',
-    secondary_color TEXT DEFAULT '#fbbf24',
-    background_url TEXT,
-    template_id TEXT DEFAULT 'modern', 
-    theme_config JSONB DEFAULT '{}'::jsonb, 
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+CREATE TABLE public.event_themes (
+  id uuid NOT NULL DEFAULT extensions.uuid_generate_v4(),
+  name text NOT NULL,
+  primary_color text NULL DEFAULT '#059669'::text,
+  secondary_color text NULL DEFAULT '#fbbf24'::text,
+  background_url text NULL,
+  template_id text NULL DEFAULT 'modern'::text,
+  theme_config jsonb NULL DEFAULT '{}'::jsonb,
+  created_at timestamp with time zone NULL DEFAULT now(),
+  CONSTRAINT event_themes_pkey PRIMARY KEY (id)
+) TABLESPACE pg_default;
+
 
 -- 3. Events Table
 CREATE TABLE events (

@@ -4,26 +4,40 @@ import { createClient } from '@/lib/supabase/server'
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   try {
-    const {
-      guest_id,
-      event_id,
-      step = 'entrance',
-      checkin_by,
-    } = await req.json()
+    const { guest_id, qr_payload, event_id, step = 'entrance' } =
+      await req.json()
 
-    if (!guest_id || !event_id) {
+    if ((!guest_id && !qr_payload) || !event_id) {
       return NextResponse.json(
-        { message: 'Guest ID and Event ID are required.' },
+        { message: 'Kode tamu dan event wajib diisi.' },
         { status: 400 },
       )
     }
 
-    // 1. Verify Guest exists and matches the selected event
+    if (!['exchange', 'entrance'].includes(step)) {
+      return NextResponse.json(
+        { message: 'Step check-in tidak valid.' },
+        { status: 400 },
+      )
+    }
+
+    const token = (guest_id || qr_payload || '').trim()
+    if (!token) {
+      return NextResponse.json(
+        { message: 'Kode tamu tidak boleh kosong.' },
+        { status: 400 },
+      )
+    }
+
+    // 1. Resolve guest by id / invitation_code / bracelet_code
     const { data: guest, error: guestErr } = await supabase
       .from('guests')
-      .select('id, full_name, guest_type, event_id')
-      .eq('id', guest_id)
-      .single()
+      .select('id, full_name, guest_type, event_id, address, metadata')
+      .or(
+        `id.eq.${token},invitation_code.eq.${token},bracelet_code.eq.${token}`,
+      )
+      .limit(1)
+      .maybeSingle()
 
     if (guestErr || !guest) {
       return NextResponse.json(
@@ -43,7 +57,7 @@ export async function POST(req: NextRequest) {
     const { data: existingCheckin } = await supabase
       .from('checkins')
       .select('id')
-      .eq('guest_id', guest_id)
+      .eq('guest_id', guest.id)
       .eq('step', step)
       .maybeSingle()
 
@@ -58,9 +72,8 @@ export async function POST(req: NextRequest) {
     const { data: newCheckin, error: regErr } = await supabase
       .from('checkins')
       .insert({
-        guest_id,
+        guest_id: guest.id,
         step,
-        checkin_by,
       })
       .select()
       .single()

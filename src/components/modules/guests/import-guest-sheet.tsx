@@ -437,15 +437,15 @@ export function ImportGuestSheet({
 
               <div className="max-h-[400px] overflow-auto rounded-md border">
                 <Table>
-                  <TableHeader className="sticky top-0 z-10 bg-slate-50">
-                    <TableRow>
-                      <TableHead className="text-[10px] font-bold uppercase">
+                  <TableHeader className="sticky top-0 z-10">
+                    <TableRow className="bg-slate-50">
+                      <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
                         Nama
                       </TableHead>
-                      <TableHead className="text-[10px] font-bold uppercase">
+                      <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
                         Tipe
                       </TableHead>
-                      <TableHead className="text-[10px] font-bold uppercase">
+                      <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
                         Kontak
                       </TableHead>
                     </TableRow>

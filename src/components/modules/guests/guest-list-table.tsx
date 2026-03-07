@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import {
-  Send,
   Trash2,
   CheckCircle2,
   Clock,
@@ -29,13 +28,22 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { Guest } from '@/types'
+import slugify from 'slugify'
+import { encodeUUID } from '@/lib/utils'
 
 interface GuestListTableProps {
   guests: Guest[]
+  eventName?: string
   onRefresh: () => void
+  startNumber?: number
 }
 
-export function GuestListTable({ guests, onRefresh }: GuestListTableProps) {
+export function GuestListTable({
+  guests,
+  eventName,
+  onRefresh,
+  startNumber = 1,
+}: GuestListTableProps) {
   const supabase = createClient()
   const [loading, setLoading] = useState<string | null>(null)
 
@@ -121,6 +129,9 @@ export function GuestListTable({ guests, onRefresh }: GuestListTableProps) {
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-50/50">
+            <TableHead className="w-[60px] text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
+              No
+            </TableHead>
             <TableHead className="w-[200px] text-[10px] font-black tracking-widest text-slate-400 uppercase">
               Nama Tamu
             </TableHead>
@@ -132,9 +143,6 @@ export function GuestListTable({ guests, onRefresh }: GuestListTableProps) {
             </TableHead>
             <TableHead className="text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
               Status RSVP
-            </TableHead>
-            <TableHead className="text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
-              WA Notif
             </TableHead>
             <TableHead className="pr-6 text-right text-[10px] font-black tracking-widest text-slate-400 uppercase">
               Aksi
@@ -157,11 +165,14 @@ export function GuestListTable({ guests, onRefresh }: GuestListTableProps) {
               </TableCell>
             </TableRow>
           ) : (
-            guests.map((guest) => (
+            guests.map((guest, index) => (
               <TableRow
                 key={guest.id}
                 className="transition-colors hover:bg-slate-50/50"
               >
+                <TableCell className="text-center text-sm font-semibold text-slate-600">
+                  {startNumber + index}
+                </TableCell>
                 <TableCell className="py-3 font-medium">
                   {guest.full_name}
                 </TableCell>
@@ -181,28 +192,6 @@ export function GuestListTable({ guests, onRefresh }: GuestListTableProps) {
                   </div>
                 </TableCell>
                 <TableCell>{getStatusBadge(guest.rsvp_status)}</TableCell>
-                <TableCell>
-                  {guest.wa_sent_at ? (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="flex cursor-help items-center gap-1 text-xs font-medium text-emerald-600">
-                            <CheckCircle2 className="h-3 w-3" />
-                            Sent
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs">
-                            Terkirim pada{' '}
-                            {new Date(guest.wa_sent_at).toLocaleString('id-ID')}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ) : (
-                    <span className="text-xs text-slate-400">Belum</span>
-                  )}
-                </TableCell>
                 <TableCell className="mr-4 py-3 text-right">
                   <div className="flex items-center justify-end gap-1">
                     <TooltipProvider>
@@ -211,26 +200,21 @@ export function GuestListTable({ guests, onRefresh }: GuestListTableProps) {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
-                          >
-                            <Send className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs">Kirim Undangan WA</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
                             className="h-8 w-8 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
                             onClick={() => {
-                              const url = `${window.location.origin}/invite/${guest.id}`
+                              const encodedId = encodeUUID(guest.id)
+                              const nameSlug = slugify(guest.full_name, {
+                                lower: true,
+                                strict: true,
+                              })
+                              const eventSlug = eventName
+                                ? '-' +
+                                  slugify(eventName, {
+                                    lower: true,
+                                    strict: true,
+                                  })
+                                : ''
+                              const url = `${window.location.origin}/invite/${encodedId}-${nameSlug}${eventSlug}`
                               navigator.clipboard.writeText(url)
                               toast.success('Link undangan berhasil disalin!')
                             }}

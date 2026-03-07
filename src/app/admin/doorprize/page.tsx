@@ -80,7 +80,7 @@ export default function DoorprizePage() {
       <main className="bg-background relative flex flex-1 flex-col overflow-hidden">
         <div className="z-10 flex items-center justify-between border-b p-6">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard">
+            <Link href="/admin/dashboard">
               <Button variant="outline" size="icon">
                 <MoveLeft className="h-4 w-4" />
               </Button>
