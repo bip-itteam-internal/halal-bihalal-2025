@@ -11,6 +11,7 @@ import {
   LogOut,
   CalendarDays,
   Users,
+  BookOpen,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -25,9 +26,11 @@ import {
   SidebarMenuItem,
   SidebarHeader,
   SidebarFooter,
+  SidebarRail,
 } from '@/components/ui/sidebar'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { useProfile } from '@/hooks/use-profile'
 import {
   Dialog,
   DialogContent,
@@ -81,6 +84,12 @@ const items = [
     icon: Settings,
     roles: ['super_admin'] as UserRole[],
   },
+  {
+    title: 'Prosedur',
+    url: '/admin/procedures',
+    icon: BookOpen,
+    roles: ['super_admin', 'admin', 'staff'] as UserRole[],
+  },
 ]
 
 export function Sidebar({
@@ -89,31 +98,9 @@ export function Sidebar({
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
-  const [role, setRole] = React.useState<UserRole>('staff')
+  const { role, clear: clearProfile } = useProfile()
   const [isLogoutOpen, setIsLogoutOpen] = React.useState(false)
   const [isLoggingOut, setIsLoggingOut] = React.useState(false)
-
-  React.useEffect(() => {
-    const fetchRole = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (!user) return
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-
-      if (profile?.role) {
-        setRole(profile.role as UserRole)
-      }
-    }
-
-    fetchRole()
-  }, [supabase])
 
   const visibleItems = items.filter((item) => item.roles.includes(role))
 
@@ -122,6 +109,7 @@ export function Sidebar({
       setIsLoggingOut(true)
       const { error } = await supabase.auth.signOut()
       if (error) throw error
+      clearProfile()
       setIsLogoutOpen(false)
       router.push('/login')
       router.refresh()
@@ -200,6 +188,7 @@ export function Sidebar({
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
+        <SidebarRail />
       </ShadcnSidebar>
 
       <Dialog open={isLogoutOpen} onOpenChange={setIsLogoutOpen}>

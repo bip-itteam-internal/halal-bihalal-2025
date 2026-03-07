@@ -45,6 +45,22 @@ const lemonada = Lemonada({
 export const metadata: Metadata = {
   title: 'Halal Bihalal Bharata Group Spesial Konser Wali Band 2026',
   description: 'Spesial Konser Wali Band - QR Check-in & Event Management',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'HalalBihalal',
+  },
+  formatDetection: {
+    telephone: false,
+  },
+}
+
+export const viewport = {
+  themeColor: '#10b981',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({

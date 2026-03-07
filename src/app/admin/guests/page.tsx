@@ -17,6 +17,7 @@ import { MasterGuestTable } from '@/components/modules/guests/master-guest-table
 import { AddGuestSheet } from '@/components/modules/guests/add-guest-sheet'
 import { ImportGuestSheet } from '@/components/modules/guests/import-guest-sheet'
 import { toast } from 'sonner'
+import { PageHeader } from '@/components/shared/page-header'
 
 export default function MasterGuestPage() {
   const supabase = createClient()
@@ -71,17 +72,11 @@ export default function MasterGuestPage() {
   return (
     <AppLayout
       header={
-        <div className="flex items-center gap-3 px-4 py-2">
-          <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-lg">
-            <Users className="h-4 w-4" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold tracking-tight">Master Tamu</h2>
-            <p className="text-muted-foreground text-[10px] leading-tight">
-              Kelola database utama seluruh tamu undangan.
-            </p>
-          </div>
-        </div>
+        <PageHeader
+          title="Master Tamu"
+          subtitle="Kelola database utama seluruh tamu undangan."
+          icon={<Users className="h-4 w-4" />}
+        />
       }
     >
       <div className="flex-1 space-y-4 p-5 pt-4">

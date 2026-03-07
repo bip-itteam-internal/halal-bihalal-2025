@@ -46,10 +46,11 @@ export default function LoginPage() {
     setLoading(true)
     setAuthError('')
 
-    const { error: loginError } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    })
+    const { data: authData, error: loginError } =
+      await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      })
 
     if (loginError) {
       setAuthError(loginError.message)
@@ -57,6 +58,27 @@ export default function LoginPage() {
       return
     }
 
+    // Fetch and cache profile immediately
+    if (authData.user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, role, full_name')
+        .eq('id', authData.user.id)
+        .single()
+
+      if (profile) {
+        const { profileStorage } = await import('@/lib/auth/profile-storage')
+        profileStorage.save({
+          id: profile.id,
+          role: profile.role,
+          full_name: profile.full_name,
+          email: authData.user.email,
+        })
+      }
+    }
+
+    // Set flag to show PWA modal on dashboard
+    sessionStorage.setItem('showPwaModal', 'true')
     router.push('/admin/dashboard')
   }
 

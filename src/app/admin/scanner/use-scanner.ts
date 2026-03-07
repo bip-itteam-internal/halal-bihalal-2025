@@ -33,7 +33,8 @@ export function useScanner() {
   const [scanning, setScanning] = useState(false)
   const [manualCode, setManualCode] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
+  const [cameraError, setCameraError] = useState('')
+  const [manualError, setManualError] = useState('')
   const [lastResult, setLastResult] = useState<ScanResult | null>(null)
 
   const [autoCloseCamera, _setAutoCloseCamera] = useState(true)
@@ -93,13 +94,16 @@ export function useScanner() {
     setScanning(false)
   }
 
-  const submitCheckin = async (payload: string) => {
+  const submitCheckin = async (
+    payload: string,
+    source: 'manual' | 'scan' = 'manual',
+  ) => {
     const eventId = selectedEventIdRef.current
-    if (!payload || !eventId) return
+    if (!payload || !eventId) return false
 
     try {
       setSubmitting(true)
-      setError('')
+      setManualError('')
 
       const res = await fetch('/api/checkin', {
         method: 'POST',
@@ -122,10 +126,14 @@ export function useScanner() {
         guest: data.guest,
       })
       setManualCode('')
+      return true
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Gagal check-in'
       setLastResult({ success: false, message })
-      setError(message)
+      if (source === 'manual') {
+        setManualError(message)
+      }
+      return false
     } finally {
       setSubmitting(false)
     }
@@ -133,7 +141,7 @@ export function useScanner() {
 
   const startScanner = async () => {
     if (!selectedEventId) {
-      setError('Pilih event terlebih dahulu.')
+      setCameraError('Pilih event terlebih dahulu.')
       return
     }
 
@@ -142,10 +150,10 @@ export function useScanner() {
     }
 
     try {
-      setError('')
+      setCameraError('')
 
       if (typeof window !== 'undefined' && !window.isSecureContext) {
-        setError('Akses kamera memerlukan koneksi aman (HTTPS).')
+        setCameraError('Akses kamera memerlukan koneksi aman (HTTPS).')
         return
       }
 
@@ -154,7 +162,7 @@ export function useScanner() {
         !navigator.mediaDevices ||
         !navigator.mediaDevices.getUserMedia
       ) {
-        setError('Browser Anda tidak mendukung akses kamera.')
+        setCameraError('Browser Anda tidak mendukung akses kamera.')
         return
       }
 
@@ -166,9 +174,9 @@ export function useScanner() {
 
       await scannerRef.current.start(
         { facingMode: 'environment' },
-        { fps: 10, qrbox: { width: 240, height: 240 } },
+        { fps: 10 },
         async (decodedText) => {
-          await submitCheckin(decodedText)
+          await submitCheckin(decodedText, 'scan')
           if (autoCloseRef.current) {
             await stopScanner()
           }
@@ -178,7 +186,7 @@ export function useScanner() {
     } catch (err: unknown) {
       console.error('Scanner Error:', err)
       const errorMsg = err instanceof Error ? err.message : String(err)
-      setError(`Gagal mengakses kamera: ${errorMsg}`)
+      setCameraError(`Gagal mengakses kamera: ${errorMsg}`)
       setScanning(false)
       if (scannerRef.current) {
         try {
@@ -204,8 +212,10 @@ export function useScanner() {
     setManualCode,
     submitting,
     submitCheckin,
-    error,
-    setError,
+    cameraError,
+    setCameraError,
+    manualError,
+    setManualError,
     lastResult,
     setLastResult,
     autoCloseCamera,

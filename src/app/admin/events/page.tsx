@@ -19,6 +19,8 @@ import { formatJakartaDate } from '@/lib/utils'
 import Link from 'next/link'
 import Image from 'next/image'
 import { CreateEventSheet } from '@/components/modules/events/create-event-sheet'
+import { PageHeader } from '@/components/shared/page-header'
+import { useProfile } from '@/hooks/use-profile'
 import { UserRole } from '@/types'
 
 interface EventData {
@@ -42,27 +44,12 @@ export default function EventsPage() {
   const [publicRegistrationsByEvent, setPublicRegistrationsByEvent] = useState<
     Record<string, number>
   >({})
-  const [role, setRole] = useState<UserRole>('staff')
+  const { role } = useProfile()
   const [loading, setLoading] = useState(true)
 
   const fetchEvents = useCallback(async () => {
     try {
       setLoading(true)
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single()
-
-        if (profile?.role) {
-          setRole(profile.role as UserRole)
-        }
-      }
 
       const { data, error } = await supabase
         .from('events')
@@ -109,21 +96,19 @@ export default function EventsPage() {
   const canManageEvent = role === 'super_admin' || role === 'admin'
 
   return (
-    <AppLayout>
-      <div className="flex-1 space-y-6 p-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">
-              Manajemen Event
-            </h2>
-            <p className="text-muted-foreground">
-              Buat dan kelola seluruh daftar acara yang terdaftar di sistem.
-            </p>
-          </div>
-
-          {canManageEvent && <CreateEventSheet onSuccess={fetchEvents} />}
-        </div>
-
+    <AppLayout
+      header={
+        <PageHeader
+          title="Manajemen Event"
+          subtitle="Buat dan kelola seluruh daftar acara yang terdaftar di sistem."
+          icon={<CalendarDays className="h-4 w-4" />}
+          actions={
+            canManageEvent && <CreateEventSheet onSuccess={fetchEvents} />
+          }
+        />
+      }
+    >
+      <div className="flex-1 space-y-6 p-5 pt-4">
         {loading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
             {[1, 2, 3].map((i) => (

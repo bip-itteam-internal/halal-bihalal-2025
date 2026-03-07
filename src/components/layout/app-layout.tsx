@@ -2,6 +2,7 @@ import * as React from 'react'
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { Sidebar } from '@/components/layout/sidebar'
 import { cn } from '@/lib/utils'
+import { PWAInstallModal } from '@/components/shared/pwa-install-modal'
 
 interface AppLayoutProps {
   children: React.ReactNode
@@ -20,8 +21,9 @@ export function AppLayout({
 }: AppLayoutProps) {
   return (
     <SidebarProvider>
+      <PWAInstallModal />
       <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-slate-900">
-        <Sidebar />
+        <Sidebar collapsible="icon" />
         <main
           className={cn(
             'flex min-w-0 flex-1 flex-col',
@@ -30,23 +32,25 @@ export function AppLayout({
         >
           <div
             className={cn(
-              'shrink-0 bg-white dark:bg-slate-900',
-              headerSticky && 'sticky top-0 z-30',
+              'bg-background/95 supports-[backdrop-filter]:bg-background/60 shrink-0 border-b backdrop-blur',
+              headerSticky && 'sticky top-0 z-40',
             )}
           >
-            <div className="border-b border-slate-100 p-4 md:hidden dark:border-slate-800">
-              <SidebarTrigger />
-            </div>
-            {header && (
-              <div
-                className={cn(
-                  'border-b border-slate-100 dark:border-slate-800',
-                  headerClassName,
-                )}
-              >
-                {header}
+            <div className="flex min-h-14 items-stretch">
+              <div className="flex items-center border-r px-2 sm:px-4">
+                <SidebarTrigger className="h-8 w-8" />
               </div>
-            )}
+              {header && (
+                <div
+                  className={cn(
+                    'flex min-w-0 flex-1 flex-col justify-center px-3 py-2 sm:px-4 sm:py-0',
+                    headerClassName,
+                  )}
+                >
+                  {header}
+                </div>
+              )}
+            </div>
           </div>
           {children}
         </main>

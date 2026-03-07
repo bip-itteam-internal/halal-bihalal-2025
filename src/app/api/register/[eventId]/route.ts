@@ -150,6 +150,21 @@ export async function POST(
       )
     }
 
+    // 2.5 Check if phone already registered in master guest
+    const { data: existingGuest, error: checkErr } = await supabase
+      .from('guests')
+      .select('id')
+      .eq('phone', phone)
+      .maybeSingle()
+
+    if (checkErr) throw checkErr
+    if (existingGuest) {
+      return NextResponse.json(
+        { message: 'Nomor WhatsApp ini sudah terdaftar di sistem.' },
+        { status: 400 },
+      )
+    }
+
     // 3. Register Guest (Master Profile)
     const invitationCode = `INV-${generateRandomCode(6)}`
 

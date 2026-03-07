@@ -1,12 +1,19 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { CalendarDays, Users, CheckCircle2, Globe } from 'lucide-react'
+import {
+  CalendarDays,
+  Users,
+  CheckCircle2,
+  Globe,
+  LayoutDashboard,
+} from 'lucide-react'
 import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/client'
 import { AppLayout } from '@/components/layout/app-layout'
 import { StatsCard } from '@/components/shared/stats-card'
+import { PageHeader } from '@/components/shared/page-header'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -48,16 +55,19 @@ export default function AdminDashboardPage() {
     try {
       setLoading(true)
 
-      const [eventsRes, eventsCountRes, guestsRes, checkinsRes] = await Promise.all([
-        supabase
-          .from('events')
-          .select('id,name,event_date,event_type,public_reg_status')
-          .order('created_at', { ascending: false })
-          .limit(8),
-        supabase.from('events').select('id', { count: 'exact', head: true }),
-        supabase.from('guests').select('id', { count: 'exact', head: true }),
-        supabase.from('checkins').select('id', { count: 'exact', head: true }),
-      ])
+      const [eventsRes, eventsCountRes, guestsRes, checkinsRes] =
+        await Promise.all([
+          supabase
+            .from('events')
+            .select('id,name,event_date,event_type,public_reg_status')
+            .order('created_at', { ascending: false })
+            .limit(8),
+          supabase.from('events').select('id', { count: 'exact', head: true }),
+          supabase.from('guests').select('id', { count: 'exact', head: true }),
+          supabase
+            .from('checkins')
+            .select('id', { count: 'exact', head: true }),
+        ])
 
       if (eventsRes.error) throw eventsRes.error
       if (eventsCountRes.error) throw eventsCountRes.error
@@ -72,7 +82,8 @@ export default function AdminDashboardPage() {
         totalGuests: guestsRes.count || 0,
         checkedIn: checkinsRes.count || 0,
         openPublicEvents: events.filter(
-          (event) => event.event_type === 'public' && event.public_reg_status === 'open',
+          (event) =>
+            event.event_type === 'public' && event.public_reg_status === 'open',
         ).length,
       })
     } catch (err) {
@@ -89,20 +100,21 @@ export default function AdminDashboardPage() {
   return (
     <AppLayout
       header={
-        <div className="flex items-center justify-between px-8 py-4">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-            <p className="text-muted-foreground text-sm">
-              Ringkasan aktivitas event dan tamu.
-            </p>
-          </div>
-          <Link href="/admin/events">
-            <Button>Lihat Manajemen Event</Button>
-          </Link>
-        </div>
+        <PageHeader
+          title="Dashboard"
+          subtitle="Ringkasan aktivitas event dan tamu."
+          icon={<LayoutDashboard className="h-4 w-4" />}
+          actions={
+            <Link href="/admin/events">
+              <Button size="sm" variant="outline" className="h-8">
+                Lihat Manajemen Event
+              </Button>
+            </Link>
+          }
+        />
       }
     >
-      <div className="flex-1 space-y-6 p-8">
+      <div className="flex-1 space-y-6 p-5 pt-4">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatsCard
             icon={<CalendarDays className="h-4 w-4" />}
@@ -147,20 +159,27 @@ export default function AdminDashboardPage() {
               <TableBody>
                 {recentEvents.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-muted-foreground h-24 text-center">
+                    <TableCell
+                      colSpan={5}
+                      className="text-muted-foreground h-24 text-center"
+                    >
                       {loading ? 'Memuat data...' : 'Belum ada event.'}
                     </TableCell>
                   </TableRow>
                 ) : (
                   recentEvents.map((event) => (
                     <TableRow key={event.id}>
-                      <TableCell className="font-medium">{event.name}</TableCell>
+                      <TableCell className="font-medium">
+                        {event.name}
+                      </TableCell>
                       <TableCell>
                         {event.event_date
                           ? formatJakartaDate(event.event_date, 'PPP p')
                           : '-'}
                       </TableCell>
-                      <TableCell className="capitalize">{event.event_type || '-'}</TableCell>
+                      <TableCell className="capitalize">
+                        {event.event_type || '-'}
+                      </TableCell>
                       <TableCell>
                         {event.public_reg_status === 'open' ? 'Buka' : 'Tutup'}
                       </TableCell>

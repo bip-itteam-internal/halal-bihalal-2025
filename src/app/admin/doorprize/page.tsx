@@ -1,14 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import {
-  MoveLeft,
-  Trophy,
-  Sparkles,
-  RefreshCcw,
-  PartyPopper,
-  User,
-} from 'lucide-react'
+import { Trophy, Sparkles, RefreshCcw, User } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import confetti from 'canvas-confetti'
@@ -17,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { AppLayout } from '@/components/layout/app-layout'
+import { PageHeader } from '@/components/shared/page-header'
 
 export default function DoorprizePage() {
   const [candidates, setCandidates] = useState<Guest[]>([])
@@ -76,33 +70,30 @@ export default function DoorprizePage() {
   }
 
   return (
-    <AppLayout>
-      <main className="bg-background relative flex flex-1 flex-col overflow-hidden">
-        <div className="z-10 flex items-center justify-between border-b p-6">
-          <div className="flex items-center gap-4">
-            <Link href="/admin/dashboard">
-              <Button variant="outline" size="icon">
-                <MoveLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            <div className="flex items-center gap-2">
-              <PartyPopper className="h-5 w-5 text-amber-500" />
-              <h1 className="text-2xl font-bold tracking-tight">Luck Engine</h1>
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchCandidates}
-            disabled={loading || spinning}
-          >
-            <RefreshCcw
-              className={cn('mr-2 h-4 w-4', loading && 'animate-spin')}
-            />
-            {loading ? 'Refreshing...' : 'Refresh Participants'}
-          </Button>
-        </div>
-
+    <AppLayout
+      header={
+        <PageHeader
+          title="Luck Engine"
+          subtitle="Sistem pengundian doorprize otomatis."
+          backHref="/admin/dashboard"
+          actions={
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8"
+              onClick={fetchCandidates}
+              disabled={loading || spinning}
+            >
+              <RefreshCcw
+                className={cn('mr-2 h-3.5 w-3.5', loading && 'animate-spin')}
+              />
+              {loading ? 'Refreshing...' : 'Refresh Participants'}
+            </Button>
+          }
+        />
+      }
+    >
+      <div className="flex flex-1 flex-col overflow-hidden p-5 pt-0">
         <div className="flex flex-1 flex-col items-center justify-center p-8">
           <div className="w-full max-w-2xl space-y-8 text-center">
             <div className="space-y-4">
@@ -179,7 +170,7 @@ export default function DoorprizePage() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </AppLayout>
   )
 }
