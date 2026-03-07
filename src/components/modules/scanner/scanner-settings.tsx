@@ -16,7 +16,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Guest } from '@/types'
-import { EventOption, Step } from '@/app/admin/scanner/use-scanner'
+import { EventOption, Step, ScanResult } from '@/app/admin/scanner/use-scanner'
 
 interface ScannerSettingsProps {
   events: EventOption[]
@@ -27,7 +27,7 @@ interface ScannerSettingsProps {
   setStep: (step: Step) => void
   pairingGuest: Guest | null
   setPairingGuest: (guest: Guest | null) => void
-  setLastResult: (result: any) => void
+  setLastResult: (result: ScanResult | null) => void
   setError: (error: string) => void
 }
 

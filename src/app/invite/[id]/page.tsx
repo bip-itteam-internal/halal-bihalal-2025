@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 import { Guest, Event as AppEvent } from '@/types'
 import { decodeUUID, encodeUUID } from '@/lib/utils'
 import slugify from 'slugify'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 
 // Define the joined type for invitation
 type GuestInvitation = Guest & {
@@ -27,7 +27,6 @@ export default function GuestInvitePage({
   params: Promise<{ id: string }>
 }) {
   const resolvedParams = use(params)
-  const router = useRouter()
   const pathname = usePathname()
 
   // Extract ID part (either 22 chars short-id or 36 chars UUID)

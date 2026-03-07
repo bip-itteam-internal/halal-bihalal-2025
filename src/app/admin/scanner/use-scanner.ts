@@ -134,9 +134,9 @@ export function useScanner() {
         guest: data.guest,
       })
       setPairingGuest(null)
-      if (autoCloseCamera) await stopScanner()
-    } catch (err: any) {
-      setError(err.message)
+      if (autoCloseRef.current) await stopScanner()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Gagal pairing gelang')
     } finally {
       setSubmitting(false)
     }

@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   ShieldCheck,
   LayoutDashboard,
-  Ticket,
   Timer,
   Settings,
   LogOut,

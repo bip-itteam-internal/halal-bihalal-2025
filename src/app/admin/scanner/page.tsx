@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { useScanner } from './use-scanner'
@@ -10,7 +11,7 @@ import { ScannerManualInput } from '@/components/modules/scanner/scanner-manual-
 import { ScannerResultCard } from '@/components/modules/scanner/scanner-result-card'
 import { ScannerSuccessDialog } from '@/components/modules/scanner/scanner-success-dialog'
 
-export default function AdminScannerPage() {
+function ScannerContent() {
   const {
     events,
     loadingEvents,
@@ -50,8 +51,6 @@ export default function AdminScannerPage() {
     if (!open) {
       setSuccessDialogOpen(false)
       setLastResult(null)
-      // Logic from your earlier request: if they close it, we might want camera to resume if not auto-stopped
-      // But usually "OKE" is the primary way.
     }
   }
 
@@ -108,5 +107,19 @@ export default function AdminScannerPage() {
         onConfirm={handleConfirmSuccess}
       />
     </AppLayout>
+  )
+}
+
+export default function AdminScannerPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center">
+          Memuat scanner...
+        </div>
+      }
+    >
+      <ScannerContent />
+    </Suspense>
   )
 }
