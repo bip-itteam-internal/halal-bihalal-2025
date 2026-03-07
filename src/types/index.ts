@@ -45,7 +45,6 @@ export interface Guest {
   address?: string | null
   metadata: GuestMetadata
   invitation_code?: string | null
-  bracelet_code?: string | null
   rsvp_status: RSVPStatus
   wa_sent_at?: string | null
   created_at: string

@@ -131,12 +131,15 @@ export async function POST(
       )
     }
 
-    // 2. Count current public guests (external + tenant)
+    // 2. Count current public guests for this event
     const { count, error: countErr } = await supabase
-      .from('guests')
-      .select('*', { count: 'exact', head: true })
+      .from('guest_events')
+      .select('id, guests!inner(registration_source)', {
+        count: 'exact',
+        head: true,
+      })
       .eq('event_id', eventId)
-      .eq('registration_source', 'public_registration')
+      .eq('guests.registration_source', 'public_registration')
 
     if (countErr) throw countErr
 
@@ -147,13 +150,12 @@ export async function POST(
       )
     }
 
-    // 3. Register Guest
+    // 3. Register Guest (Master Profile)
     const invitationCode = `INV-${generateRandomCode(6)}`
 
     const { data: guest, error: regErr } = await supabase
       .from('guests')
       .insert({
-        event_id: eventId,
         full_name: fullName,
         phone,
         address,
@@ -167,6 +169,14 @@ export async function POST(
       .single()
 
     if (regErr) throw regErr
+
+    // 4. Assign to Event
+    const { error: eventErr2 } = await supabase.from('guest_events').insert({
+      guest_id: guest.id,
+      event_id: eventId,
+    })
+
+    if (eventErr2) throw eventErr2
 
     return NextResponse.json(
       {

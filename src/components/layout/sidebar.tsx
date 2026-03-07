@@ -46,9 +46,21 @@ const items = [
     roles: ['super_admin', 'admin', 'staff'] as UserRole[],
   },
   {
+    title: 'Master Tamu',
+    url: '/admin/guests',
+    icon: Users,
+    roles: ['super_admin', 'admin'] as UserRole[],
+  },
+  {
     title: 'Events',
     url: '/admin/events',
     icon: CalendarDays,
+    roles: ['super_admin', 'admin', 'staff'] as UserRole[],
+  },
+  {
+    title: 'Scanner',
+    url: '/admin/scanner',
+    icon: ShieldCheck,
     roles: ['super_admin', 'admin', 'staff'] as UserRole[],
   },
   {

@@ -60,22 +60,48 @@ export default function GuestInvitePage({
     async function fetchData() {
       try {
         setLoading(true)
+        // 1. Fetch Guest Profile
         const { data: guestData, error: guestError } = await supabase
           .from('guests')
-          .select(
-            `
-            *,
-            event:events (*)
-          `,
-          )
+          .select('*')
           .eq('id', guestId)
           .single()
 
-        if (guestError) throw guestError
-        if (!guestData) throw new Error('Undangan tidak ditemukan.')
+        if (guestError || !guestData)
+          throw new Error('Undangan tidak ditemukan.')
 
-        setGuest(guestData as GuestInvitation)
-        setEvent(guestData.event as AppEvent)
+        // 2. Fetch Events for this Guest via Junction Table
+        const { data: mappingData, error: mapError } = await supabase
+          .from('guest_events')
+          .select('events(*)')
+          .eq('guest_id', guestId)
+
+        if (mapError || !mappingData || mappingData.length === 0) {
+          throw new Error('Tamu tidak terdaftar di acara manapun.')
+        }
+
+        const guestEvents = mappingData
+          .map((m) => m.events)
+          .filter(Boolean) as unknown as AppEvent[]
+
+        // 3. Determine which event to show
+        // Use the slug from URL if possible
+        const urlSegments = resolvedParams.id.split('-')
+        const urlEventSlug =
+          urlSegments.length > 2 ? urlSegments.slice(2).join('-') : ''
+
+        let targetEvent = guestEvents[0] // Default to first
+        if (urlEventSlug) {
+          const matched = guestEvents.find(
+            (e) =>
+              slugify(e.name || '', { lower: true, strict: true }) ===
+              urlEventSlug,
+          )
+          if (matched) targetEvent = matched
+        }
+
+        setGuest({ ...guestData, event: targetEvent } as GuestInvitation)
+        setEvent(targetEvent)
       } catch (err: unknown) {
         const error = err as Error
         setError(error.message || 'Gagal memuat undangan.')

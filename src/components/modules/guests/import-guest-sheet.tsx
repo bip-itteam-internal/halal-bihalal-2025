@@ -193,38 +193,12 @@ export function ImportGuestSheet({
 
     const mapped = rawFileData
       .map((row) => {
-        const rawType = String(
-          row[columnMapping.guest_type] || 'internal',
-        ).toLowerCase()
-
-        // Normalization mapping for the 3 guest types
-        let guestType: 'internal' | 'external' | 'tenant' = 'internal'
-        if (
-          rawType.includes('eks') ||
-          rawType.includes('ext') ||
-          rawType.includes('umum')
-        ) {
-          guestType = 'external'
-        } else if (
-          rawType.includes('ten') ||
-          rawType.includes('ven') ||
-          rawType.includes('umkm')
-        ) {
-          guestType = 'tenant'
-        } else if (
-          rawType.includes('int') ||
-          rawType.includes('peg') ||
-          rawType.includes('staf')
-        ) {
-          guestType = 'internal'
-        }
-
         return {
           full_name: String(row[columnMapping.full_name] || '').trim(),
-          guest_type: guestType,
+          guest_type: 'internal' as const,
           phone: String(row[columnMapping.phone] || '').trim(),
           email: String(row[columnMapping.email] || '').trim(),
-          address: String(row[columnMapping.address] || '').trim(),
+          address: '',
         }
       })
       .filter((g) => g.full_name !== '')
@@ -239,8 +213,9 @@ export function ImportGuestSheet({
 
     try {
       setIsProcessing(true)
+
+      // 1. Insert into Master Guests
       const guestsToInsert = previewData.map((g) => ({
-        event_id: eventId,
         full_name: g.full_name,
         guest_type: ['internal', 'external', 'tenant'].includes(g.guest_type)
           ? g.guest_type
@@ -251,15 +226,34 @@ export function ImportGuestSheet({
         registration_source: 'admin_invite',
         rsvp_status: 'pending',
         invitation_code: `INV-${generateRandomCode(6)}`,
-        bracelet_code: `BRC-${generateRandomCode(6)}`,
       }))
 
-      const { error: insertError } = await supabase
+      const { data: insertedGuests, error: insertError } = await supabase
         .from('guests')
         .insert(guestsToInsert)
+        .select('id')
+
       if (insertError) throw insertError
 
-      toast.success(`${previewData.length} tamu berhasil diimpor.`)
+      // 2. If eventId is provided, link them to the event
+      if (eventId && insertedGuests && insertedGuests.length > 0) {
+        const mappings = insertedGuests.map((ig) => ({
+          guest_id: ig.id,
+          event_id: eventId,
+        }))
+
+        const { error: mapError } = await supabase
+          .from('guest_events')
+          .insert(mappings)
+
+        if (mapError) throw mapError
+      }
+
+      toast.success(
+        eventId
+          ? `${previewData.length} tamu berhasil diimpor ke acara.`
+          : `${previewData.length} tamu berhasil diimpor ke Master.`,
+      )
       setIsOpen(false)
       if (onSuccess) onSuccess()
     } catch (err: unknown) {
@@ -363,13 +357,7 @@ export function ImportGuestSheet({
                 {[
                   { id: 'full_name', label: 'Nama Lengkap', required: true },
                   { id: 'phone', label: 'WhatsApp / HP', required: false },
-                  { id: 'guest_type', label: 'Tipe Tamu', required: false },
                   { id: 'email', label: 'Email', required: false },
-                  {
-                    id: 'address',
-                    label: 'Alamat / Instansi',
-                    required: false,
-                  },
                 ].map((field) => (
                   <div
                     key={field.id}

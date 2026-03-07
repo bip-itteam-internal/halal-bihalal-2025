@@ -18,8 +18,6 @@ function ScannerContent() {
     selectedEventId,
     setSelectedEventId,
     selectedEventName,
-    step,
-    setStep,
     scanning,
     startScanner,
     stopScanner,
@@ -28,13 +26,10 @@ function ScannerContent() {
     submitting,
     submitCheckin,
     error,
-    setError,
     lastResult,
     setLastResult,
     autoCloseCamera,
     setAutoCloseCamera,
-    pairingGuest,
-    setPairingGuest,
     successDialogOpen,
     setSuccessDialogOpen,
   } = useScanner()
@@ -62,18 +57,11 @@ function ScannerContent() {
           loadingEvents={loadingEvents}
           selectedEventId={selectedEventId}
           setSelectedEventId={setSelectedEventId}
-          step={step}
-          setStep={setStep}
-          pairingGuest={pairingGuest}
-          setPairingGuest={setPairingGuest}
-          setLastResult={setLastResult}
-          setError={setError}
         />
 
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <ScannerCamera
             scanning={scanning}
-            pairingGuest={pairingGuest}
             selectedEventId={selectedEventId}
             autoCloseCamera={autoCloseCamera}
             setAutoCloseCamera={setAutoCloseCamera}

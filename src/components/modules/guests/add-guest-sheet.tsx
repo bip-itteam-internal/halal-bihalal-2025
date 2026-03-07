@@ -87,27 +87,46 @@ export function AddGuestSheet({
     try {
       setIsSubmitting(true)
 
-      const { error } = await supabase.from('guests').insert([
-        {
-          event_id: eventId,
-          full_name: values.full_name,
-          guest_type: values.guest_type,
-          phone: values.phone || null,
-          email: values.email || null,
-          address: values.address || null,
-          metadata: values.metadata || {},
-          registration_source: 'admin_invite',
-          rsvp_status: 'pending',
-          invitation_code: `INV-${generateRandomCode(6)}`,
-          bracelet_code: `BRC-${generateRandomCode(6)}`,
-        },
-      ])
+      // 1. Insert into Master Guest list
+      const { data: newGuest, error: guestError } = await supabase
+        .from('guests')
+        .insert([
+          {
+            full_name: values.full_name,
+            guest_type: values.guest_type,
+            phone: values.phone || null,
+            email: values.email || null,
+            address: values.address || null,
+            metadata: values.metadata || {},
+            registration_source: 'admin_invite',
+            rsvp_status: 'pending',
+            invitation_code: `INV-${generateRandomCode(6)}`,
+          },
+        ])
+        .select()
+        .single()
 
-      if (error) throw error
+      if (guestError) throw guestError
+
+      // 2. If called from an event page, assign to that event automatically
+      if (eventId) {
+        const { error: eventError } = await supabase
+          .from('guest_events')
+          .insert({
+            guest_id: newGuest.id,
+            event_id: eventId,
+          })
+
+        if (eventError) throw eventError
+      }
 
       setIsOpen(false)
       form.reset()
-      toast.success('Tamu berhasil ditambahkan.')
+      toast.success(
+        eventId
+          ? 'Tamu berhasil ditambahkan ke acara.'
+          : 'Tamu berhasil ditambahkan ke Master.',
+      )
       if (onSuccess) onSuccess()
     } catch (err: unknown) {
       toast.error(

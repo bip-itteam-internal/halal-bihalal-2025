@@ -1,13 +1,10 @@
 import { QrCode, Camera, CameraOff } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Guest } from '@/types'
 
 interface ScannerCameraProps {
   scanning: boolean
-  pairingGuest: Guest | null
   selectedEventId: string
   autoCloseCamera: boolean
   setAutoCloseCamera: (val: boolean) => void
@@ -18,7 +15,6 @@ interface ScannerCameraProps {
 
 export function ScannerCamera({
   scanning,
-  pairingGuest,
   selectedEventId,
   autoCloseCamera,
   setAutoCloseCamera,
@@ -31,7 +27,7 @@ export function ScannerCamera({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <QrCode className="h-4 w-4" />
-          Scan Kamera
+          Scanner Point
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -56,31 +52,11 @@ export function ScannerCamera({
 
           {!scanning && !error && (
             <div className="bg-muted/90 text-muted-foreground absolute inset-0 z-20 flex flex-col items-center justify-center px-4 text-center text-sm">
-              {pairingGuest ? (
-                <>
-                  <Badge variant="destructive" className="mb-2 animate-pulse">
-                    MODE PAIRING GELANG
-                  </Badge>
-                  <QrCode className="h-10 w-10 text-emerald-500" />
-                  <span className="mt-2 block font-bold text-emerald-600">
-                    Tamu: {pairingGuest.full_name}
-                  </span>
-                  <span>Klik Mulai untuk Scan Gelang</span>
-                </>
-              ) : (
-                <>
-                  <QrCode className="mb-2 h-10 w-10" />
-                  <span>Kamera belum aktif</span>
-                </>
-              )}
-            </div>
-          )}
-
-          {scanning && pairingGuest && (
-            <div className="absolute top-4 left-4 z-10">
-              <Badge variant="destructive" className="animate-pulse">
-                PAIRING: {pairingGuest.full_name}
-              </Badge>
+              <QrCode className="mb-2 h-10 w-10" />
+              <span>
+                Kamera belum aktif. Klik Mulai untuk menscan Barcode 1
+                (Undangan) atau Barcode 2 (Gelang).
+              </span>
             </div>
           )}
         </div>
@@ -89,7 +65,7 @@ export function ScannerCamera({
           <div>
             <p className="text-sm font-medium">Tutup kamera setelah scan</p>
             <p className="text-muted-foreground text-xs">
-              Jika aktif, kamera berhenti otomatis setelah 1 hasil.
+              Membantu efisiensi baterai pada perangkat mobile.
             </p>
           </div>
           <Switch
@@ -101,11 +77,11 @@ export function ScannerCamera({
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <Button onClick={onStart} disabled={scanning || !selectedEventId}>
             <Camera className="mr-2 h-4 w-4" />
-            Mulai
+            Mulai Scan
           </Button>
           <Button variant="outline" onClick={onStop} disabled={!scanning}>
             <CameraOff className="mr-2 h-4 w-4" />
-            Stop
+            Berhenti
           </Button>
         </div>
       </CardContent>
