@@ -1,12 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const { user, response } = await updateSession(request)
 
   const isAuthPath = pathname === '/login'
-  const isProtectedPath = pathname.startsWith('/admin') || pathname.startsWith('/dashboard') || pathname.startsWith('/scanner')
+  const isProtectedPath =
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/dashboard') ||
+    pathname.startsWith('/scanner')
 
   // Not logged in -> Redirect to login if on protected path
   if (!user && isProtectedPath) {
