@@ -27,7 +27,9 @@ async function resolveEventId(
     return normalized
   }
 
-  const { data: events, error } = await supabase.from('events').select('id, name')
+  const { data: events, error } = await supabase
+    .from('events')
+    .select('id, name')
   if (error) throw error
 
   const slug = toEventSlug(normalized)
@@ -51,10 +53,10 @@ export async function POST(
       body.guest_type === 'internal'
         ? 'internal'
         : body.guest_type === 'tenant'
-        ? 'tenant'
-        : body.guest_type === 'external'
-          ? 'external'
-          : null
+          ? 'tenant'
+          : body.guest_type === 'external'
+            ? 'external'
+            : null
 
     if (!phone) {
       return NextResponse.json(
@@ -72,38 +74,82 @@ export async function POST(
       )
     }
 
-    const { data: guests, error } = await supabase
-      .from('guests')
-      .select('id, phone, guest_type, created_at')
+    const { data: eventGuests, error } = await supabase
+      .from('guest_events')
+      .select('guests!inner(id, phone, guest_type, created_at)')
       .eq('event_id', eventId)
       .in(
-        'guest_type',
+        'guests.guest_type',
         guestType ? [guestType] : ['internal', 'external', 'tenant'],
       )
-      .not('phone', 'is', null)
-      .order('created_at', { ascending: false })
-      .limit(200)
+      .not('guests.phone', 'is', null)
+      .order('guests(created_at)', { ascending: false })
+      .limit(500)
 
     if (error) throw error
 
     const normalizedInputPhone = normalizePhone(phone)
 
-    const matchedGuest = (guests || []).find((guest) => {
-      const guestPhone = normalizePhone(guest.phone || '')
-      return guestPhone === normalizedInputPhone
-    })
+    let matchedGuestObject = (eventGuests || []).find((eg) => {
+      const g = eg.guests as any
+      return normalizePhone(g.phone || '') === normalizedInputPhone
+    })?.guests as any
 
-    if (!matchedGuest) {
+    // If not found in this event, check Master Guest list
+    if (!matchedGuestObject) {
+      // Search in master guests using the last 7 digits for a more efficient lookup
+      // This helps narrow down from thousands to just a few candidates
+      const searchSuffix = normalizedInputPhone.slice(-7)
+
+      const { data: masterGuests, error: masterError } = await supabase
+        .from('guests')
+        .select('id, phone, guest_type')
+        .in(
+          'guest_type',
+          guestType ? [guestType] : ['internal', 'external', 'tenant'],
+        )
+        .ilike('phone', `%${searchSuffix}%`)
+        .not('phone', 'is', null)
+        .limit(10) // Should be very few matches for the same suffix
+
+      if (masterError) throw masterError
+
+      const masterMatch = (masterGuests || []).find((mg) => {
+        return normalizePhone(mg.phone || '') === normalizedInputPhone
+      })
+
+      if (masterMatch) {
+        // Auto-assign to this event
+        const { error: assignError } = await supabase
+          .from('guest_events')
+          .insert({
+            guest_id: masterMatch.id,
+            event_id: eventId,
+          })
+
+        if (assignError) {
+          // If it fails because it's already there (race condition), that's fine
+          console.error('Auto-assign error:', assignError)
+        }
+
+        matchedGuestObject = masterMatch
+      }
+    }
+
+    if (!matchedGuestObject) {
       return NextResponse.json(
-        { message: 'Nomor WhatsApp tidak ditemukan pada daftar tamu event ini.' },
+        {
+          message:
+            'Nomor WhatsApp tidak ditemukan pada daftar tamu maupun database master.',
+        },
         { status: 404 },
       )
     }
 
     return NextResponse.json({
       status: 'success',
-      guest_id: matchedGuest.id,
-      guest_type: matchedGuest.guest_type,
+      guest_id: matchedGuestObject.id,
+      guest_type: matchedGuestObject.guest_type,
     })
   } catch (error: unknown) {
     console.error('Guest Login Error:', error)

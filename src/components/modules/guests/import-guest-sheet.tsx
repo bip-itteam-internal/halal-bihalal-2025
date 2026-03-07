@@ -8,6 +8,7 @@ import {
   Loader2,
   Settings2,
   Table as TableIcon,
+  Calendar,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -65,6 +66,11 @@ export function ImportGuestSheet({
   const [step, setStep] = useState<Step>('upload')
   const [error, setError] = useState<string | null>(null)
 
+  // Events Selection state (for Master page import)
+  const [events, setEvents] = useState<{ id: string; name: string }[]>([])
+  const [selectedEventIds, setSelectedEventIds] = useState<string[]>([])
+  const [loadingEvents, setLoadingEvents] = useState(false)
+
   // Data State
   const [rawFileData, setRawFileData] = useState<Record<string, unknown>[]>([])
   const [availableColumns, setAvailableColumns] = useState<string[]>([])
@@ -83,6 +89,24 @@ export function ImportGuestSheet({
     setIsOpen(open)
     if (!open) {
       resetState()
+    } else if (!eventId) {
+      fetchEvents()
+    }
+  }
+
+  const fetchEvents = async () => {
+    try {
+      setLoadingEvents(true)
+      const { data, error } = await supabase
+        .from('events')
+        .select('id, name')
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      setEvents(data || [])
+    } catch (err) {
+      console.error('Error fetching events:', err)
+    } finally {
+      setLoadingEvents(false)
     }
   }
 
@@ -99,6 +123,7 @@ export function ImportGuestSheet({
       address: '',
     })
     setError(null)
+    setSelectedEventIds([])
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -235,23 +260,39 @@ export function ImportGuestSheet({
 
       if (insertError) throw insertError
 
-      // 2. If eventId is provided, link them to the event
-      if (eventId && insertedGuests && insertedGuests.length > 0) {
-        const mappings = insertedGuests.map((ig) => ({
-          guest_id: ig.id,
-          event_id: eventId,
-        }))
+      // 2. Link them to the event (if provided via prop or selected)
+      const targetEventIds = eventId ? [eventId] : selectedEventIds
 
-        const { error: mapError } = await supabase
-          .from('guest_events')
-          .insert(mappings)
+      if (
+        targetEventIds.length > 0 &&
+        insertedGuests &&
+        insertedGuests.length > 0
+      ) {
+        const mappings: { guest_id: string; event_id: string }[] = []
 
-        if (mapError) throw mapError
+        targetEventIds
+          .filter((id) => id !== 'none')
+          .forEach((eid) => {
+            insertedGuests.forEach((ig) => {
+              mappings.push({
+                guest_id: ig.id,
+                event_id: eid,
+              })
+            })
+          })
+
+        if (mappings.length > 0) {
+          const { error: mapError } = await supabase
+            .from('guest_events')
+            .insert(mappings)
+
+          if (mapError) throw mapError
+        }
       }
 
       toast.success(
-        eventId
-          ? `${previewData.length} tamu berhasil diimpor ke acara.`
+        targetEventIds.length > 0
+          ? `${previewData.length} tamu berhasil diimpor dan didaftarkan ke ${targetEventIds.length} acara.`
           : `${previewData.length} tamu berhasil diimpor ke Master.`,
       )
       setIsOpen(false)
@@ -328,6 +369,89 @@ export function ImportGuestSheet({
                   Pilih File
                 </Button>
               </div>
+
+              {!eventId && (
+                <div className="space-y-4 rounded-lg border border-amber-100 bg-amber-50/50 p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm font-bold text-amber-700">
+                      <Calendar className="h-4 w-4" />
+                      Target Acara (Multi-Select)
+                    </div>
+                    {selectedEventIds.length > 0 && (
+                      <Badge
+                        variant="outline"
+                        className="border-amber-200 bg-white text-amber-700"
+                      >
+                        {selectedEventIds.length} terpilih
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-muted-foreground text-[10px] leading-relaxed italic">
+                      Tamu yang diimpor akan otomatis terdaftar ke semua acara
+                      yang dichecklist di bawah ini.
+                    </p>
+                    <div className="max-h-[160px] space-y-1 overflow-y-auto rounded-md border border-amber-200 bg-white/80 p-2">
+                      {loadingEvents ? (
+                        <div className="flex h-12 items-center justify-center gap-2 text-xs text-amber-600">
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Memuat daftar acara...
+                        </div>
+                      ) : (
+                        events.map((ev) => (
+                          <div
+                            key={ev.id}
+                            onClick={() => {
+                              const isSelected = selectedEventIds.includes(
+                                ev.id,
+                              )
+                              if (isSelected) {
+                                setSelectedEventIds((prev) =>
+                                  prev.filter((id) => id !== ev.id),
+                                )
+                              } else {
+                                setSelectedEventIds((prev) => [...prev, ev.id])
+                              }
+                            }}
+                            className={`flex cursor-pointer items-center gap-3 rounded p-2 transition-all hover:bg-amber-100/50 ${
+                              selectedEventIds.includes(ev.id)
+                                ? 'bg-amber-100'
+                                : ''
+                            }`}
+                          >
+                            <div
+                              className={`flex h-4 w-4 items-center justify-center rounded border border-amber-400 transition-colors ${
+                                selectedEventIds.includes(ev.id)
+                                  ? 'border-amber-600 bg-amber-600'
+                                  : 'bg-white'
+                              }`}
+                            >
+                              {selectedEventIds.includes(ev.id) && (
+                                <svg
+                                  className="h-2.5 w-2.5 text-white"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={4}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                              )}
+                            </div>
+                            <span className="text-xs font-medium text-amber-900">
+                              {ev.name}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="flex items-center justify-between rounded-lg border border-blue-100 bg-blue-50 p-3">
                 <div className="flex items-center gap-2 text-blue-700">

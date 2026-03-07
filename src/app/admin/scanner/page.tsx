@@ -5,7 +5,6 @@ import { AppLayout } from '@/components/layout/app-layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { useScanner } from './use-scanner'
 import { ScannerHeader } from '@/components/modules/scanner/scanner-header'
-import { ScannerSettings } from '@/components/modules/scanner/scanner-settings'
 import { ScannerCamera } from '@/components/modules/scanner/scanner-camera'
 import { ScannerManualInput } from '@/components/modules/scanner/scanner-manual-input'
 import { ScannerResultCard } from '@/components/modules/scanner/scanner-result-card'
@@ -52,14 +51,7 @@ function ScannerContent() {
   return (
     <AppLayout header={<ScannerHeader eventName={selectedEventName} />}>
       <div className="mx-auto w-full max-w-4xl space-y-4 p-3 sm:p-4 lg:p-6">
-        <ScannerSettings
-          events={events}
-          loadingEvents={loadingEvents}
-          selectedEventId={selectedEventId}
-          setSelectedEventId={setSelectedEventId}
-        />
-
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
           <ScannerCamera
             scanning={scanning}
             selectedEventId={selectedEventId}

@@ -32,7 +32,9 @@ export default function MasterGuestPage() {
       setLoading(true)
 
       // Fetch Guests with Pagination and Search
-      let query = supabase.from('guests').select('*', { count: 'exact' })
+      let query = supabase
+        .from('guests')
+        .select('*, guest_events(event_id, events(name))', { count: 'exact' })
 
       if (searchQuery) {
         query = query.ilike('full_name', `%${searchQuery}%`)
@@ -123,6 +125,8 @@ export default function MasterGuestPage() {
           <div className="space-y-4">
             <MasterGuestTable
               guests={guests}
+              totalCount={totalCount}
+              searchFilter={searchQuery}
               onRefresh={fetchGuests}
               startNumber={(page - 1) * pageSize + 1}
             />

@@ -36,7 +36,6 @@ export interface Event {
 
 export interface Guest {
   id: string
-  event_id: string
   guest_type: GuestType
   registration_source: RegistrationSource
   full_name: string
@@ -47,6 +46,12 @@ export interface Guest {
   invitation_code?: string | null
   rsvp_status: RSVPStatus
   wa_sent_at?: string | null
+  guest_events?: {
+    event_id: string
+    events: {
+      name: string
+    } | null
+  }[]
   created_at: string
 }
 

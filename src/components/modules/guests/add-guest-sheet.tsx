@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { generateRandomCode } from '@/lib/utils'
 import {
   Sheet,
@@ -76,10 +77,34 @@ export function AddGuestSheet({
     },
   })
 
+  // Event Selection state
+  const [events, setEvents] = useState<{ id: string; name: string }[]>([])
+  const [selectedEventIds, setSelectedEventIds] = useState<string[]>([])
+  const [loadingEvents, setLoadingEvents] = useState(false)
+
+  const fetchEvents = async () => {
+    try {
+      setLoadingEvents(true)
+      const { data, error } = await supabase
+        .from('events')
+        .select('id, name')
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      setEvents(data || [])
+    } catch (err) {
+      console.error('Error fetching events:', err)
+    } finally {
+      setLoadingEvents(false)
+    }
+  }
+
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open)
     if (!open) {
       form.reset()
+      setSelectedEventIds([])
+    } else if (!eventId) {
+      fetchEvents()
     }
   }
 
@@ -108,16 +133,24 @@ export function AddGuestSheet({
 
       if (guestError) throw guestError
 
-      // 2. If called from an event page, assign to that event automatically
-      if (eventId) {
-        const { error: eventError } = await supabase
-          .from('guest_events')
-          .insert({
-            guest_id: newGuest.id,
-            event_id: eventId,
-          })
+      // 2. If called from an event page or events are selected, assign them
+      const targetEventIds = eventId ? [eventId] : selectedEventIds
 
-        if (eventError) throw eventError
+      if (targetEventIds.length > 0) {
+        const mappings = targetEventIds
+          .filter((id) => id !== 'none')
+          .map((eid) => ({
+            guest_id: newGuest.id,
+            event_id: eid,
+          }))
+
+        if (mappings.length > 0) {
+          const { error: eventError } = await supabase
+            .from('guest_events')
+            .insert(mappings)
+
+          if (eventError) throw eventError
+        }
       }
 
       setIsOpen(false)
@@ -209,6 +242,84 @@ export function AddGuestSheet({
                   </FormItem>
                 )}
               />
+
+              {!eventId && (
+                <div className="space-y-3 rounded-lg border border-amber-100 bg-amber-50 p-4">
+                  <div className="flex items-center justify-between">
+                    <FormLabel className="font-bold text-amber-900">
+                      Target Acara (Multi-Select)
+                    </FormLabel>
+                    {selectedEventIds.length > 0 && (
+                      <Badge
+                        variant="secondary"
+                        className="bg-amber-200 text-[9px] text-amber-900"
+                      >
+                        {selectedEventIds.length} dipilih
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="max-h-[150px] space-y-1 overflow-y-auto rounded-md border border-amber-200 bg-white/50 p-2">
+                    {loadingEvents ? (
+                      <div className="flex h-10 items-center justify-center gap-2 text-[10px] text-amber-700">
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        Memuat acara...
+                      </div>
+                    ) : (
+                      events.map((ev) => (
+                        <div
+                          key={ev.id}
+                          onClick={() => {
+                            const isSelected = selectedEventIds.includes(ev.id)
+                            if (isSelected) {
+                              setSelectedEventIds((prev) =>
+                                prev.filter((id) => id !== ev.id),
+                              )
+                            } else {
+                              setSelectedEventIds((prev) => [...prev, ev.id])
+                            }
+                          }}
+                          className={`flex cursor-pointer items-center gap-2 rounded p-1.5 transition-colors hover:bg-amber-100/50 ${
+                            selectedEventIds.includes(ev.id)
+                              ? 'bg-amber-100'
+                              : ''
+                          }`}
+                        >
+                          <div
+                            className={`flex h-3.5 w-3.5 items-center justify-center rounded border border-amber-400 ${
+                              selectedEventIds.includes(ev.id)
+                                ? 'bg-amber-600'
+                                : 'bg-white'
+                            }`}
+                          >
+                            {selectedEventIds.includes(ev.id) && (
+                              <svg
+                                className="h-2.5 w-2.5 text-white"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={4}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            )}
+                          </div>
+                          <span className="text-[11px] font-medium text-amber-900">
+                            {ev.name}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <p className="text-[9px] text-amber-700 italic">
+                    Tamu akan otomatis terdaftar di semua acara yang dicentang.
+                  </p>
+                </div>
+              )}
 
               <FormField
                 control={form.control}

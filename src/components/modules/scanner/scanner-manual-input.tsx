@@ -33,7 +33,7 @@ export function ScannerManualInput({
         <Input
           value={manualCode}
           onChange={(e) => setManualCode(e.target.value)}
-          placeholder="Contoh: UUID tamu atau INV-XXXXXX"
+          placeholder="Contoh: Kode Undangan (INV-XXXXXX)"
         />
         <Button
           className="w-full"
