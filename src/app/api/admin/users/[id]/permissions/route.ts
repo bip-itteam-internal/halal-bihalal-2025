@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 type PermissionInput = {
   event_id: string
@@ -18,7 +19,9 @@ async function assertSuperAdmin() {
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    return { error: NextResponse.json({ message: 'Unauthorized' }, { status: 401 }) }
+    return {
+      error: NextResponse.json({ message: 'Unauthorized' }, { status: 401 }),
+    }
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -28,7 +31,9 @@ async function assertSuperAdmin() {
     .single()
 
   if (profileError || !profile || profile.role !== 'super_admin') {
-    return { error: NextResponse.json({ message: 'Forbidden' }, { status: 403 }) }
+    return {
+      error: NextResponse.json({ message: 'Forbidden' }, { status: 403 }),
+    }
   }
 
   return { userId: user.id }
@@ -59,9 +64,9 @@ export async function PUT(
       )
     }
 
-    const supabase = await createClient()
+    const admin = createAdminClient()
 
-    const { error: deleteError } = await supabase
+    const { error: deleteError } = await admin
       .from('event_permissions')
       .delete()
       .eq('user_id', id)
@@ -75,14 +80,16 @@ export async function PUT(
         role: permission.role,
       }))
 
-      const { error: insertError } = await supabase
+      const { error: insertError } = await admin
         .from('event_permissions')
         .insert(payload)
 
       if (insertError) throw insertError
     }
 
-    return NextResponse.json({ message: 'Permission event berhasil diperbarui.' })
+    return NextResponse.json({
+      message: 'Permission event berhasil diperbarui.',
+    })
   } catch (error: unknown) {
     return NextResponse.json(
       {

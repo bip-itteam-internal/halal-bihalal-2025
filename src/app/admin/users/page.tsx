@@ -83,9 +83,9 @@ export default function UserManagementPage() {
   >({})
   const [activePermissionUser, setActivePermissionUser] =
     useState<ManagedUser | null>(null)
-  const [permissionDraft, setPermissionDraft] = useState<Record<string, string>>(
-    {},
-  )
+  const [permissionDraft, setPermissionDraft] = useState<
+    Record<string, string>
+  >({})
 
   const fetchData = useCallback(async () => {
     try {
@@ -140,7 +140,9 @@ export default function UserManagementPage() {
       })
       await fetchData()
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : 'Gagal membuat akun.')
+      toast.error(
+        error instanceof Error ? error.message : 'Gagal membuat akun.',
+      )
     } finally {
       setSubmitting(false)
     }
@@ -185,7 +187,8 @@ export default function UserManagementPage() {
         },
       )
       const data = (await res.json()) as { message?: string }
-      if (!res.ok) throw new Error(data.message || 'Gagal menyimpan permission.')
+      if (!res.ok)
+        throw new Error(data.message || 'Gagal menyimpan permission.')
 
       toast.success('Permission event berhasil disimpan.')
       setActivePermissionUser(null)
@@ -212,7 +215,9 @@ export default function UserManagementPage() {
             </Button>
           </Link>
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
+            <h2 className="text-3xl font-bold tracking-tight">
+              User Management
+            </h2>
             <p className="text-muted-foreground">
               Buat akun admin/staff dan atur akses event per user.
             </p>
@@ -297,12 +302,22 @@ export default function UserManagementPage() {
               ) : (
                 <Table>
                   <TableHeader>
-                    <TableRow>
-                      <TableHead>User</TableHead>
-                      <TableHead>Role</TableHead>
-                      <TableHead>Akses Event</TableHead>
-                      <TableHead>Dibuat</TableHead>
-                      <TableHead className="text-right">Aksi</TableHead>
+                    <TableRow className="bg-slate-50/50">
+                      <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                        User
+                      </TableHead>
+                      <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                        Role
+                      </TableHead>
+                      <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                        Akses Event
+                      </TableHead>
+                      <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                        Dibuat
+                      </TableHead>
+                      <TableHead className="text-right text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                        Aksi
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -318,7 +333,10 @@ export default function UserManagementPage() {
                         </TableCell>
                         <TableCell className="min-w-[160px]">
                           <Select
-                            value={(roleDraftByUserId[user.id] || user.role) as string}
+                            value={
+                              (roleDraftByUserId[user.id] ||
+                                user.role) as string
+                            }
                             onValueChange={(value: 'admin' | 'staff') =>
                               setRoleDraftByUserId((prev) => ({
                                 ...prev,
@@ -380,7 +398,8 @@ export default function UserManagementPage() {
           <DialogHeader>
             <DialogTitle>Atur Permission Event</DialogTitle>
             <DialogDescription>
-              Pilih role akses untuk setiap event. Kosongkan jika tidak punya akses.
+              Pilih role akses untuk setiap event. Kosongkan jika tidak punya
+              akses.
             </DialogDescription>
           </DialogHeader>
 
