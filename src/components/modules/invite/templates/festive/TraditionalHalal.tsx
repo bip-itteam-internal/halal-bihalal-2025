@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, Clock, MapPin, Stars, Heart, ArrowRight } from 'lucide-react'
+import { Calendar, Clock, MapPin, Heart, ArrowRight } from 'lucide-react'
 import { EventTicket } from '@/components/shared/EventTicket'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'

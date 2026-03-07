@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   ShieldCheck,
   LayoutDashboard,
-  Ticket,
   Timer,
   Settings,
   LogOut,
@@ -57,12 +56,6 @@ const items = [
     url: '/admin/users',
     icon: Users,
     roles: ['super_admin'] as UserRole[],
-  },
-  {
-    title: 'Scanner',
-    url: '/admin/scanner',
-    icon: Ticket,
-    roles: ['super_admin', 'admin', 'staff'] as UserRole[],
   },
   {
     title: 'Doorprize',
