@@ -19,7 +19,7 @@ export async function middleware(request: NextRequest) {
   // Already logged in -> Redirect to dashboard if on login path
   if (user && isAuthPath) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/admin/dashboard'
     return NextResponse.redirect(url)
   }
 
