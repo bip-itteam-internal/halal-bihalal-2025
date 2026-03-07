@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {},
+  allowedDevOrigins: ['10.10.20.210', 'localhost'],
 }
 
 export default nextConfig

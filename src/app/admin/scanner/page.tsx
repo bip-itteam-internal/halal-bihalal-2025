@@ -79,6 +79,7 @@ function ScannerContent() {
             setAutoCloseCamera={setAutoCloseCamera}
             onStart={startScanner}
             onStop={stopScanner}
+            error={error}
           />
 
           <ScannerManualInput

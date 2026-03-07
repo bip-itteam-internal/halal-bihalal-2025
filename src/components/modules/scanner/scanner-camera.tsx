@@ -13,6 +13,7 @@ interface ScannerCameraProps {
   setAutoCloseCamera: (val: boolean) => void
   onStart: () => void
   onStop: () => void
+  error?: string
 }
 
 export function ScannerCamera({
@@ -23,6 +24,7 @@ export function ScannerCamera({
   setAutoCloseCamera,
   onStart,
   onStop,
+  error,
 }: ScannerCameraProps) {
   return (
     <Card>
@@ -36,7 +38,23 @@ export function ScannerCamera({
         <div className="relative aspect-square min-h-[260px] w-full overflow-hidden rounded-md border bg-slate-50">
           <div id="qr-reader" className="h-full w-full" />
 
-          {!scanning && (
+          {error && !scanning && (
+            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-red-50/90 px-6 text-center">
+              <CameraOff className="mb-2 h-10 w-10 text-red-500" />
+              <p className="text-sm font-semibold text-red-700">Error Kamera</p>
+              <p className="mt-1 text-xs text-red-600">{error}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-4 border-red-200 text-red-700 hover:bg-red-100"
+                onClick={onStart}
+              >
+                Coba Lagi
+              </Button>
+            </div>
+          )}
+
+          {!scanning && !error && (
             <div className="bg-muted/90 text-muted-foreground absolute inset-0 z-20 flex flex-col items-center justify-center px-4 text-center text-sm">
               {pairingGuest ? (
                 <>

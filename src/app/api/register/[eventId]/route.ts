@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { generateRandomCode } from '@/lib/utils'
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -23,7 +24,9 @@ async function resolveEventId(
     return normalized
   }
 
-  const { data: events, error } = await supabase.from('events').select('id, name')
+  const { data: events, error } = await supabase
+    .from('events')
+    .select('id, name')
   if (error) throw error
 
   const slug = toEventSlug(normalized)
@@ -100,7 +103,9 @@ export async function POST(
 
     if (guestType === 'tenant' && (!address || !umkmProduct)) {
       return NextResponse.json(
-        { message: 'Data tenant belum lengkap (alamat dan produk UMKM wajib).' },
+        {
+          message: 'Data tenant belum lengkap (alamat dan produk UMKM wajib).',
+        },
         { status: 400 },
       )
     }
@@ -143,6 +148,8 @@ export async function POST(
     }
 
     // 3. Register Guest
+    const invitationCode = `INV-${generateRandomCode(6)}`
+
     const { data: guest, error: regErr } = await supabase
       .from('guests')
       .insert({
@@ -154,6 +161,7 @@ export async function POST(
         metadata: guestType === 'tenant' ? { umkm_product: umkmProduct } : {},
         registration_source: 'public_registration',
         rsvp_status: 'confirmed',
+        invitation_code: invitationCode,
       })
       .select()
       .single()
@@ -164,7 +172,8 @@ export async function POST(
       {
         status: 'success',
         guest_id: guest.id,
-        qr_payload: guest.id,
+        qr_payload: invitationCode,
+        invitation_code: invitationCode,
       },
       { status: 201 },
     )

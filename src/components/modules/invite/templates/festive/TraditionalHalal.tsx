@@ -121,7 +121,7 @@ export function TraditionalHalal({
             eventTime={`${formatJakartaDate(event.event_date, 'p')}`}
             location={event.location || ''}
             guestName={guest.full_name || ''}
-            entryCode={guest.invitation_code || ''}
+            entryCode={guest.invitation_code || guest.id}
             primaryColor="emerald"
             logoUrl={event.logo_url || undefined}
             downloadFileName={`Ticket-${guest.full_name}-${event.name}.png`}

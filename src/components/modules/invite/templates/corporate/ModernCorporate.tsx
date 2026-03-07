@@ -2,13 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import {
-  Calendar,
-  Clock,
-  MapPin,
-  Building2,
-  ChevronRight,
-} from 'lucide-react'
+import { Calendar, Clock, MapPin, Building2, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 import { EventTicket } from '@/components/shared/EventTicket'
 import { Card, CardContent } from '@/components/ui/card'
@@ -190,7 +184,7 @@ export function ModernCorporate({
                   eventTime={`${formatJakartaDate(event.event_date, 'p')} WIB`}
                   location={event.location || 'TBA'}
                   guestName={guest.full_name || ''}
-                  entryCode={guest.invitation_code || ''}
+                  entryCode={guest.invitation_code || guest.id}
                   primaryColor="slate"
                   logoUrl={event.logo_url || undefined}
                   className="w-full"

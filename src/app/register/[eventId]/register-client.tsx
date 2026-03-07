@@ -79,6 +79,7 @@ export function RegisterEventClient({
   const [loginLoading, setLoginLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [guestId, setGuestId] = useState('')
+  const [qrPayload, setQrPayload] = useState('')
   const [registeredName, setRegisteredName] = useState('')
   const [registeredGuestType, setRegisteredGuestType] = useState<
     'external' | 'tenant'
@@ -175,6 +176,7 @@ export function RegisterEventClient({
       }
 
       setGuestId(data.guest_id)
+      setQrPayload(data.qr_payload || data.guest_id)
       setRegisteredName(values.full_name)
       setRegisteredGuestType(registrationType)
       setSuccess(true)
@@ -241,7 +243,7 @@ export function RegisterEventClient({
             <CardContent className="space-y-6">
               <div className="bg-background rounded-lg border p-4">
                 <div className="mx-auto flex w-fit items-center justify-center rounded-md bg-white p-2">
-                  <QRCode value={guestId} size={210} viewBox="0 0 256 256" />
+                  <QRCode value={qrPayload} size={210} viewBox="0 0 256 256" />
                 </div>
               </div>
 

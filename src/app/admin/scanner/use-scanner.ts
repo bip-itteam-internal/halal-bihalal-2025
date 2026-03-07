@@ -210,6 +210,26 @@ export function useScanner() {
 
     try {
       setError('')
+
+      // Periksa Secure Context (HTTPS/Localhost)
+      if (typeof window !== 'undefined' && !window.isSecureContext) {
+        setError(
+          'Akses kamera memerlukan koneksi aman (HTTPS). Jika menggunakan IP (10.10...), pastikan menggunakan HTTPS atau gunakan localhost.',
+        )
+        return
+      }
+
+      if (
+        typeof navigator === 'undefined' ||
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+      ) {
+        setError(
+          'Browser Anda tidak mendukung akses kamera atau diblokir (non-HTTPS).',
+        )
+        return
+      }
+
       setScanning(true) // Set loading state di awal agar tombol disabled
 
       if (!scannerRef.current) {
@@ -234,11 +254,21 @@ export function useScanner() {
       )
     } catch (err: unknown) {
       console.error('Scanner Error:', err)
-      const errorMsg = err instanceof Error ? err.message : 'Unknown error'
+      const errorMsg =
+        err instanceof Error ? err.message : String(err) || 'Unknown error'
 
-      // Jika error karena AbortError, biasanya karena race condition saat unmount/mount
       if (errorMsg.includes('AbortError')) {
-        setError('Kamera terhenti. Silakan coba klik Mulai lagi.')
+        setError('Kamera terhenti (AbortError). Silakan coba klik Mulai lagi.')
+      } else if (
+        errorMsg.includes('NotAllowedError') ||
+        errorMsg.includes('Permission denied')
+      ) {
+        setError('Izin kamera ditolak. Silakan izinkan kamera di browser Anda.')
+      } else if (
+        errorMsg.includes('NotFoundError') ||
+        errorMsg.includes('Requested device not found')
+      ) {
+        setError('Kamera tidak ditemukan pada perangkat ini.')
       } else {
         setError(`Gagal mengakses kamera: ${errorMsg}`)
       }

@@ -4,12 +4,14 @@ import { createClient } from '@/lib/supabase/server'
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
   try {
+    const body = await req.json()
     const {
       guest_id,
       qr_payload,
       event_id,
       step = 'entrance',
-    } = await req.json()
+      bracelet_to_pair,
+    } = body
 
     if ((!guest_id && !qr_payload) || !event_id) {
       return NextResponse.json(
@@ -34,20 +36,31 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Resolve guest by id / invitation_code / bracelet_code
-    // Note: We use a more specific query to know WHICH field matched
-    const { data: guests, error: guestErr } = await supabase
+    // Check if token is a valid UUID to avoid DB error in .or matches
+    const UUID_REGEX =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    const isUUID = UUID_REGEX.test(token)
+
+    let query = supabase
       .from('guests')
       .select(
         'id, full_name, guest_type, event_id, invitation_code, bracelet_code',
       )
-      .or(
+
+    if (isUUID) {
+      query = query.or(
         `id.eq.${token},invitation_code.eq.${token},bracelet_code.eq.${token}`,
       )
-      .limit(1)
+    } else {
+      query = query.or(`invitation_code.eq.${token},bracelet_code.eq.${token}`)
+    }
+
+    const { data: guests, error: guestErr } = await query.limit(1)
 
     const guest = guests?.[0]
 
     if (guestErr || !guest) {
+      console.warn('Guest not found for token:', token, guestErr)
       return NextResponse.json(
         { message: 'Tamu tidak terdaftar.' },
         { status: 404 },
@@ -97,7 +110,6 @@ export async function POST(req: NextRequest) {
       }
 
       // If a new bracelet code is provided in the body (from the pairing scan), update guest
-      const { bracelet_to_pair } = await req.json().catch(() => ({}))
       if (bracelet_to_pair) {
         const { error: updateErr } = await supabase
           .from('guests')
