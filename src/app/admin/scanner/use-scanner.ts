@@ -202,8 +202,16 @@ export function useScanner() {
       return
     }
 
+    // Hindari double start
+    if (scanning || (scannerRef.current && scannerRef.current.isScanning)) {
+      console.log('Scanner sudah berjalan atau sedang memulai...')
+      return
+    }
+
     try {
       setError('')
+      setScanning(true) // Set loading state di awal agar tombol disabled
+
       if (!scannerRef.current) {
         scannerRef.current = new Html5Qrcode('qr-reader')
       }
@@ -224,12 +232,27 @@ export function useScanner() {
         },
         () => undefined,
       )
-      setScanning(true)
     } catch (err: unknown) {
-      setError(
-        `Gagal mengakses kamera: ${err instanceof Error ? err.message : 'Unknown error'}`,
-      )
+      console.error('Scanner Error:', err)
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error'
+
+      // Jika error karena AbortError, biasanya karena race condition saat unmount/mount
+      if (errorMsg.includes('AbortError')) {
+        setError('Kamera terhenti. Silakan coba klik Mulai lagi.')
+      } else {
+        setError(`Gagal mengakses kamera: ${errorMsg}`)
+      }
+
       setScanning(false)
+      // Bersihkan instance jika gagal total agar bisa init ulang
+      if (scannerRef.current) {
+        try {
+          if (scannerRef.current.isScanning) await scannerRef.current.stop()
+        } catch {
+          /* ignore */
+        }
+        scannerRef.current = null
+      }
     }
   }
 
