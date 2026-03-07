@@ -22,9 +22,9 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   return (
-    <div className={cn('flex min-w-0 items-center gap-2 sm:gap-3', className)}>
+    <div className={cn('flex min-w-0 items-start gap-2 sm:gap-3', className)}>
       {backHref && (
-        <Link href={backHref} className="shrink-0">
+        <Link href={backHref} className="mt-1 shrink-0">
           <Button variant="ghost" size="icon" className="-ml-1 h-8 w-8">
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -32,27 +32,29 @@ export function PageHeader({
       )}
 
       {icon && (
-        <div className="text-muted-foreground hidden shrink-0 sm:block">
+        <div className="text-muted-foreground mt-1.5 hidden shrink-0 sm:block">
           {icon}
         </div>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col justify-center">
-        <h2 className="truncate text-sm leading-none font-bold tracking-tight text-slate-900 sm:text-lg">
-          {title}
-        </h2>
-        {subtitle && (
-          <p className="text-muted-foreground mt-0.5 truncate text-[9px] leading-tight font-medium sm:text-[10px]">
-            {subtitle}
-          </p>
+      <div className="flex min-w-0 flex-1 flex-col py-0.5">
+        <div>
+          <h2 className="text-[15px] leading-tight font-extrabold tracking-tight text-slate-900 sm:text-lg">
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="text-muted-foreground mt-0.5 text-[10px] leading-tight font-medium sm:text-[11px]">
+              {subtitle}
+            </p>
+          )}
+        </div>
+
+        {actions && (
+          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+            {actions}
+          </div>
         )}
       </div>
-
-      {actions && (
-        <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
-          {actions}
-        </div>
-      )}
     </div>
   )
 }
