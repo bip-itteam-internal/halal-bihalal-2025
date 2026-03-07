@@ -32,8 +32,8 @@ export function useScanner() {
     _setSelectedEventId(id)
   }
 
-  const [step, _setStep] = useState<Step>('entrance')
-  const stepRef = useRef<Step>('entrance')
+  const [step, _setStep] = useState<Step>('exchange')
+  const stepRef = useRef<Step>('exchange')
   const setStep = (val: Step) => {
     stepRef.current = val
     _setStep(val)
