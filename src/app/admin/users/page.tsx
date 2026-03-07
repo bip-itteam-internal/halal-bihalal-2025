@@ -83,8 +83,8 @@ export default function UserManagementPage() {
   >({})
   const [activePermissionUser, setActivePermissionUser] =
     useState<ManagedUser | null>(null)
-  const [permissionDraft, setPermissionDraft] = useState<
-    Record<string, string>
+  const [permissionDraftByUserId, setPermissionDraftByUserId] = useState<
+    Record<string, Record<string, string>>
   >({})
 
   const fetchData = useCallback(async () => {
@@ -96,9 +96,21 @@ export default function UserManagementPage() {
 
       setUsers(data.users || [])
       setEvents(data.events || [])
-      setRoleDraftByUserId(
-        Object.fromEntries((data.users || []).map((u) => [u.id, u.role])),
-      )
+
+      const roleDrafts: Record<string, UserRole> = {}
+      const permDrafts: Record<string, Record<string, string>> = {}
+
+      ;(data.users || []).forEach((u) => {
+        roleDrafts[u.id] = u.role
+        const userPerms: Record<string, string> = {}
+        u.permissions.forEach((p) => {
+          userPerms[p.event_id] = p.role
+        })
+        permDrafts[u.id] = userPerms
+      })
+
+      setRoleDraftByUserId(roleDrafts)
+      setPermissionDraftByUserId(permDrafts)
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Gagal memuat data.')
     } finally {
@@ -111,11 +123,8 @@ export default function UserManagementPage() {
   }, [fetchData])
 
   const openPermissionDialog = (user: ManagedUser) => {
-    const draft: Record<string, string> = {}
-    user.permissions.forEach((permission) => {
-      draft[permission.event_id] = permission.role
-    })
-    setPermissionDraft(draft)
+    // We still keep the dialog as a backup or for a different view if needed,
+    // but the main editing is now in the table.
     setActivePermissionUser(user)
   }
 
@@ -148,30 +157,51 @@ export default function UserManagementPage() {
     }
   }
 
-  const handleUpdateRole = async (userId: string) => {
+  const handleUpdateUser = async (user: ManagedUser) => {
     try {
-      const role = roleDraftByUserId[userId]
-      if (!role || role === 'super_admin') return
+      setSubmitting(true)
+      const role = roleDraftByUserId[user.id]
+      const permsDraft = permissionDraftByUserId[user.id] || {}
 
-      const res = await fetch(`/api/admin/users/${userId}`, {
+      // 1. Update Role
+      const roleRes = await fetch(`/api/admin/users/${user.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role }),
       })
-      const data = (await res.json()) as { message?: string }
-      if (!res.ok) throw new Error(data.message || 'Gagal update role.')
+      if (!roleRes.ok) throw new Error('Gagal update role.')
 
-      toast.success('Role berhasil diperbarui.')
+      // 2. Update Permissions
+      const permissions = Object.entries(permsDraft)
+        .filter(([, role]) => role === 'manager' || role === 'scanner')
+        .map(([event_id, role]) => ({
+          event_id,
+          role: role as PermissionRole,
+        }))
+
+      const permRes = await fetch(`/api/admin/users/${user.id}/permissions`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ permissions }),
+      })
+      if (!permRes.ok) throw new Error('Gagal update permissions.')
+
+      toast.success('Data user berhasil diperbarui.')
       await fetchData()
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : 'Gagal update role.')
+      toast.error(
+        error instanceof Error ? error.message : 'Gagal update data user.',
+      )
+    } finally {
+      setSubmitting(false)
     }
   }
 
-  const handleSavePermissions = async () => {
+  const handleSavePermissionsFromDialog = async () => {
     if (!activePermissionUser) return
     try {
-      const permissions = Object.entries(permissionDraft)
+      const permsDraft = permissionDraftByUserId[activePermissionUser.id] || {}
+      const permissions = Object.entries(permsDraft)
         .filter(([, role]) => role === 'manager' || role === 'scanner')
         .map(([event_id, role]) => ({
           event_id,
@@ -186,9 +216,7 @@ export default function UserManagementPage() {
           body: JSON.stringify({ permissions }),
         },
       )
-      const data = (await res.json()) as { message?: string }
-      if (!res.ok)
-        throw new Error(data.message || 'Gagal menyimpan permission.')
+      if (!res.ok) throw new Error('Gagal menyimpan permission.')
 
       toast.success('Permission event berhasil disimpan.')
       setActivePermissionUser(null)
@@ -309,13 +337,18 @@ export default function UserManagementPage() {
                       <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
                         Role
                       </TableHead>
-                      <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                        Akses Event
-                      </TableHead>
+                      {events.map((event) => (
+                        <TableHead
+                          key={event.id}
+                          className="text-[10px] font-black tracking-widest text-slate-400 uppercase"
+                        >
+                          {event.name}
+                        </TableHead>
+                      ))}
                       <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
                         Dibuat
                       </TableHead>
-                      <TableHead className="text-right text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                      <TableHead className="text-right text-[10px] font-black tracking-widest whitespace-nowrap text-slate-400 uppercase">
                         Aksi
                       </TableHead>
                     </TableRow>
@@ -324,14 +357,14 @@ export default function UserManagementPage() {
                     {managedUsers.map((user) => (
                       <TableRow key={user.id}>
                         <TableCell>
-                          <div className="font-medium">
+                          <div className="font-medium whitespace-nowrap">
                             {user.full_name || 'Tanpa nama'}
                           </div>
                           <div className="text-muted-foreground text-xs">
                             {user.email || '-'}
                           </div>
                         </TableCell>
-                        <TableCell className="min-w-[160px]">
+                        <TableCell>
                           <Select
                             value={
                               (roleDraftByUserId[user.id] ||
@@ -344,7 +377,7 @@ export default function UserManagementPage() {
                               }))
                             }
                           >
-                            <SelectTrigger>
+                            <SelectTrigger className="w-[110px]">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -353,30 +386,48 @@ export default function UserManagementPage() {
                             </SelectContent>
                           </Select>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">
-                            {user.permissions.length} event
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {formatJakartaDate(user.created_at, 'PPP p')}
+                        {events.map((event) => (
+                          <TableCell key={event.id}>
+                            <Select
+                              value={
+                                permissionDraftByUserId[user.id]?.[event.id] ||
+                                'none'
+                              }
+                              onValueChange={(value) =>
+                                setPermissionDraftByUserId((prev) => ({
+                                  ...prev,
+                                  [user.id]: {
+                                    ...(prev[user.id] || {}),
+                                    [event.id]: value,
+                                  },
+                                }))
+                              }
+                            >
+                              <SelectTrigger className="w-[130px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">None</SelectItem>
+                                <SelectItem value="manager">Manager</SelectItem>
+                                <SelectItem value="scanner">Scanner</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                        ))}
+                        <TableCell className="whitespace-nowrap">
+                          {formatJakartaDate(user.created_at, 'PPP')}
                         </TableCell>
                         <TableCell>
                           <div className="flex justify-end gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleUpdateRole(user.id)}
+                              className="border-slate-800 bg-slate-900 text-white hover:bg-slate-800"
+                              onClick={() => handleUpdateUser(user)}
+                              disabled={submitting}
                             >
                               <ShieldCheck className="h-4 w-4" />
-                              Simpan Role
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => openPermissionDialog(user)}
-                            >
-                              Permission
+                              Simpan
                             </Button>
                           </div>
                         </TableCell>
@@ -404,37 +455,45 @@ export default function UserManagementPage() {
           </DialogHeader>
 
           <div className="space-y-3">
-            {events.map((event) => (
-              <div
-                key={event.id}
-                className="flex items-center justify-between gap-4 rounded-md border p-3"
-              >
-                <div>
-                  <p className="font-medium">{event.name}</p>
-                  <p className="text-muted-foreground text-xs">
-                    {formatJakartaDate(event.event_date, 'PPP p')}
-                  </p>
-                </div>
-                <Select
-                  value={permissionDraft[event.id] || 'none'}
-                  onValueChange={(value) =>
-                    setPermissionDraft((prev) => ({
-                      ...prev,
-                      [event.id]: value,
-                    }))
-                  }
+            {activePermissionUser &&
+              events.map((event) => (
+                <div
+                  key={event.id}
+                  className="flex items-center justify-between gap-4 rounded-md border p-3"
                 >
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Tanpa Akses</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
-                    <SelectItem value="scanner">Scanner</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            ))}
+                  <div>
+                    <p className="font-medium">{event.name}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {formatJakartaDate(event.event_date, 'PPP p')}
+                    </p>
+                  </div>
+                  <Select
+                    value={
+                      permissionDraftByUserId[activePermissionUser.id]?.[
+                        event.id
+                      ] || 'none'
+                    }
+                    onValueChange={(value) =>
+                      setPermissionDraftByUserId((prev) => ({
+                        ...prev,
+                        [activePermissionUser.id]: {
+                          ...(prev[activePermissionUser.id] || {}),
+                          [event.id]: value,
+                        },
+                      }))
+                    }
+                  >
+                    <SelectTrigger className="w-[160px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Tanpa Akses</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="scanner">Scanner</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              ))}
           </div>
 
           <DialogFooter>
@@ -445,7 +504,7 @@ export default function UserManagementPage() {
             >
               Batal
             </Button>
-            <Button type="button" onClick={handleSavePermissions}>
+            <Button type="button" onClick={handleSavePermissionsFromDialog}>
               Simpan Permission
             </Button>
           </DialogFooter>
