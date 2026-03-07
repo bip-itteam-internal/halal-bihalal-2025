@@ -26,7 +26,12 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { cn, formatJakartaDate, getJakartaNow, toJakartaISOString } from '@/lib/utils'
+import {
+  cn,
+  formatJakartaDate,
+  getJakartaNow,
+  toJakartaISOString,
+} from '@/lib/utils'
 import { Calendar } from '@/components/ui/calendar'
 import {
   Popover,
@@ -40,10 +45,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { INVITATION_TEMPLATES as templates } from '@/lib/constants/templates'
+import { Layout } from 'lucide-react'
 
 const eventSchema = z.object({
   name: z.string().min(3, 'Nama event wajib diisi (min 3 karakter)'),
   event_type: z.enum(['internal', 'public']),
+  template_id: z.string().optional().nullable(),
   description: z.string().optional(),
   event_date: z.date({
     required_error: 'Tanggal acara wajib diisi',
@@ -74,6 +82,7 @@ export function CreateEventSheet({
     defaultValues: {
       name: '',
       event_type: 'internal',
+      template_id: null,
       description: '',
       location: '',
       dress_code: '',
@@ -98,6 +107,7 @@ export function CreateEventSheet({
         {
           name: values.name,
           event_type: values.event_type,
+          template_id: values.template_id,
           description: values.description,
           event_date: toJakartaISOString(values.event_date, values.event_time),
           location: values.location,
@@ -145,7 +155,10 @@ export function CreateEventSheet({
 
         <div className="flex-1 overflow-y-auto px-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6 py-4"
+            >
               <FormField
                 control={form.control}
                 name="name"
@@ -197,6 +210,49 @@ export function CreateEventSheet({
                       <SelectContent>
                         <SelectItem value="internal">Internal</SelectItem>
                         <SelectItem value="public">Publik</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="template_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Layout className="h-3.5 w-3.5" /> Template Invitation
+                      (Ready-to-use)
+                    </FormLabel>
+                    <Select
+                      onValueChange={(val) =>
+                        field.onChange(val === 'none' ? null : val)
+                      }
+                      value={field.value || 'none'}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih template siap pakai" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">
+                          Tanpa Template (Default)
+                        </SelectItem>
+                        {templates.map((t) => (
+                          <SelectItem key={t.id} value={t.id}>
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-xs leading-none font-bold">
+                                {t.name}
+                              </span>
+                              <span className="text-[9px] leading-none opacity-60">
+                                {t.description}
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />

@@ -108,26 +108,10 @@ export default function GuestManagementPage({
     <AppLayout
       header={renderPageHeader(
         event ? `Kelola Tamu: ${event.name}` : 'Kelola Tamu',
-        'Daftarkan tamu, kelola RSVP, dan kirim undangan WhatsApp.',
+        'Daftarkan tamu dan kelola RSVP.',
       )}
     >
       <div className="flex-1 space-y-4 p-5 pt-4">
-        {/* Tabs Navigation */}
-        <div className="flex border-b">
-          <Link
-            href={`/admin/events/${eventId}`}
-            className="text-muted-foreground hover:text-foreground px-4 py-2 text-sm font-medium"
-          >
-            Pengaturan
-          </Link>
-          <Link
-            href={`/admin/events/${eventId}/guests`}
-            className="border-primary border-b-2 px-4 py-2 text-sm font-medium"
-          >
-            Daftar Tamu
-          </Link>
-        </div>
-
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="relative max-w-sm flex-1">
             <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
@@ -168,7 +152,12 @@ export default function GuestManagementPage({
           </div>
         ) : (
           <div className="space-y-4">
-            <GuestListTable guests={guests} onRefresh={fetchEventAndGuests} />
+            <GuestListTable
+              guests={guests}
+              eventName={event?.name}
+              onRefresh={fetchEventAndGuests}
+              startNumber={(page - 1) * pageSize + 1}
+            />
 
             {/* Pagination Controls */}
             {totalCount > 0 && (
