@@ -5,20 +5,19 @@ import { createClient } from '@/lib/supabase/client'
 import { AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import { toast } from 'sonner'
-import { Guest, Event as AppEvent, EventTheme } from '@/types'
+import { Guest, Event as AppEvent } from '@/types'
+import { decodeUUID } from '@/lib/utils'
 
 // Define the joined type for invitation
 type GuestInvitation = Guest & {
-  event: AppEvent & {
-    theme: EventTheme | null
-  }
+  event: AppEvent
 }
 
 // Modular Components
-import { InvitationCover } from '@/components/modules/invite/invitation-cover'
-import { InvitationContent } from '@/components/modules/invite/invitation-content'
 import { InvitationStatus } from '@/components/modules/invite/invitation-status'
 import { MosaicBackground } from '@/components/modules/invite/mosaic-background'
+import { TemplateRenderer } from '@/components/modules/invite/TemplateRenderer'
+import { INVITATION_TEMPLATES as templates } from '@/lib/constants/templates'
 
 export default function GuestInvitePage({
   params,
@@ -26,13 +25,19 @@ export default function GuestInvitePage({
   params: Promise<{ id: string }>
 }) {
   const resolvedParams = use(params)
-  const guestId = resolvedParams.id
+  // Extract identifier part before the hyphen and name
+  // If it's the old 36-chars UUID, handle it properly!
+  const rawIdPart =
+    resolvedParams.id.length >= 36 && resolvedParams.id.charAt(8) === '-'
+      ? resolvedParams.id.substring(0, 36)
+      : resolvedParams.id.substring(0, 22)
+
+  const guestId = decodeUUID(rawIdPart)
 
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
   const [guest, setGuest] = useState<GuestInvitation | null>(null)
   const [event, setEvent] = useState<AppEvent | null>(null)
-  const [theme, setTheme] = useState<EventTheme | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -46,10 +51,7 @@ export default function GuestInvitePage({
           .select(
             `
             *,
-            event:events (
-              *,
-              theme:event_themes (*)
-            )
+            event:events (*)
           `,
           )
           .eq('id', guestId)
@@ -60,7 +62,6 @@ export default function GuestInvitePage({
 
         setGuest(guestData as GuestInvitation)
         setEvent(guestData.event as AppEvent)
-        setTheme(guestData.event?.theme as EventTheme | null)
       } catch (err: unknown) {
         const error = err as Error
         setError(error.message || 'Gagal memuat undangan.')
@@ -72,7 +73,7 @@ export default function GuestInvitePage({
     fetchData()
   }, [guestId, supabase])
 
-  const handleRSVP = async (status: 'confirmed' | 'declined') => {
+  const handleRSVP = async (status: 'confirmed' | 'declined' | 'pending') => {
     try {
       setIsUpdating(true)
       const { error: updateError } = await supabase
@@ -89,10 +90,7 @@ export default function GuestInvitePage({
           particleCount: 150,
           spread: 70,
           origin: { y: 0.6 },
-          colors: [
-            theme?.primary_color || '#009262',
-            theme?.secondary_color || '#fbbf24',
-          ],
+          colors: ['#009262', '#fbbf24'],
         })
         toast.success('Konfirmasi kehadiran berhasil disimpan!')
       } else {
@@ -109,43 +107,31 @@ export default function GuestInvitePage({
   if (error || !guest)
     return <InvitationStatus type="error" message={error || undefined} />
 
-  const primaryColor = theme?.primary_color || '#009262'
-  const secondaryColor = theme?.secondary_color || '#fbbf24'
-
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[#fafafa] font-sans selection:bg-emerald-100">
-      {/* Dynamic Theme Styles */}
-      <style jsx global>{`
-        :root {
-          --invite-primary: ${primaryColor};
-          --invite-secondary: ${secondaryColor};
-        }
-      `}</style>
-
       {/* Background Watermark Pattern */}
-      <MosaicBackground logoUrl={event?.logo_url} />
+      <MosaicBackground
+        logoUrl={event?.logo_url}
+        isFullScreen={true}
+        opacity={
+          templates.find((t) => t.id === event?.template_id)?.config
+            .mosaicOpacity ?? 0.1
+        }
+      />
 
-      <AnimatePresence mode="wait">
-        {!isOpen ? (
-          <InvitationCover
-            event={event}
+      <div className="relative z-10">
+        <AnimatePresence mode="wait">
+          <TemplateRenderer
+            templateId={event?.template_id}
+            event={event as unknown as AppEvent}
             guest={guest}
-            primaryColor={primaryColor}
-            secondaryColor={secondaryColor}
-            onOpen={() => setIsOpen(true)}
-          />
-        ) : (
-          <InvitationContent
-            event={event}
-            guest={guest}
-            primaryColor={primaryColor}
-            secondaryColor={secondaryColor}
-            isUpdating={isUpdating}
+            isOpen={isOpen}
+            setIsOpen={setIsOpen}
             onRSVP={handleRSVP}
-            onBack={() => setIsOpen(false)}
+            isUpdating={isUpdating}
           />
-        )}
-      </AnimatePresence>
+        </AnimatePresence>
+      </div>
     </div>
   )
 }

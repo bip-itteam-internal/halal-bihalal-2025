@@ -26,7 +26,7 @@ export function InvitationStatus({ type, message }: InvitationStatusProps) {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
-      <Card className="w-full max-w-sm overflow-hidden rounded-3xl border-none shadow-2xl">
+      <Card className="w-full max-w-sm overflow-hidden p-0 rounded-3xl border-none shadow-2xl">
         <div className="h-1.5 w-full bg-red-400" />
         <CardContent className="space-y-4 pt-8 pb-10 text-center">
           <XCircle className="mx-auto h-12 w-12 text-red-200" />

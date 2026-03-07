@@ -18,30 +18,9 @@ export type GuestMetadata = {
     | unknown[]
 }
 
-export type ThemeFontFamilyToken =
-  | 'inter'
-  | 'outfit'
-  | 'playfair'
-  | 'poppins'
-  | 'space-grotesk'
-  | 'source-serif'
-
-export type ThemeShadowPresetToken =
-  | 'none'
-  | 'soft'
-  | 'card'
-  | 'lifted'
-  | 'dramatic'
-
-export interface ThemeConfigTokens {
-  body_font?: ThemeFontFamilyToken
-  heading_font?: ThemeFontFamilyToken
-  shadow_preset?: ThemeShadowPresetToken
-}
-
 export interface Event {
   id: string
-  theme_id?: string | null
+  template_id?: string | null
   name: string
   event_type?: EventType | null
   description?: string | null
@@ -97,16 +76,5 @@ export interface EventPermission {
   user_id: string
   event_id: string
   role: PermissionRole
-  created_at: string
-}
-
-export interface EventTheme {
-  id: string
-  name: string
-  primary_color: string
-  secondary_color: string
-  background_url?: string | null
-  template_id: string
-  theme_config: ThemeConfigTokens
   created_at: string
 }
