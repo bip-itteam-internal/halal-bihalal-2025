@@ -59,12 +59,6 @@ const items = [
     roles: ['super_admin'] as UserRole[],
   },
   {
-    title: 'Scanner',
-    url: '/admin/scanner',
-    icon: Ticket,
-    roles: ['super_admin', 'admin', 'staff'] as UserRole[],
-  },
-  {
     title: 'Doorprize',
     url: '/admin/doorprize',
     icon: Timer,
