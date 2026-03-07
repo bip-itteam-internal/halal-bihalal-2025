@@ -85,9 +85,9 @@ export function RegisterEventClient({
   >(initialType === 'tenant' ? 'tenant' : 'external')
   const [registerError, setRegisterError] = useState('')
   const [loginError, setLoginError] = useState('')
-  const [registrationType, setRegistrationType] = useState<'external' | 'tenant'>(
-    initialType === 'tenant' ? 'tenant' : 'external',
-  )
+  const [registrationType, setRegistrationType] = useState<
+    'external' | 'tenant'
+  >(initialType === 'tenant' ? 'tenant' : 'external')
   const [activeTab, setActiveTab] = useState<'register' | 'login'>('register')
 
   const form = useForm<RegistrationFormValues>({
@@ -296,6 +296,7 @@ export function RegisterEventClient({
                         src={event.logo_url}
                         alt={`Poster ${event?.name || 'event'}`}
                         fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="object-contain p-5"
                       />
                     ) : (
@@ -387,7 +388,9 @@ export function RegisterEventClient({
                           <Button
                             type="button"
                             variant={
-                              registrationType === 'tenant' ? 'default' : 'ghost'
+                              registrationType === 'tenant'
+                                ? 'default'
+                                : 'ghost'
                             }
                             className="h-9"
                             onClick={() => setRegistrationType('tenant')}

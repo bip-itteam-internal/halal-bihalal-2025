@@ -122,6 +122,7 @@ export default async function EksternalPage() {
                         src={event.logo_url}
                         alt={`Poster ${event.name}`}
                         fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className="object-contain p-4"
                       />
                     ) : (
@@ -199,7 +200,11 @@ export default async function EksternalPage() {
                     ) : (
                       <div className="flex w-full flex-col gap-2">
                         <Link
-                          href={isOpen ? `/register/${eventSlug}?type=external` : '#'}
+                          href={
+                            isOpen
+                              ? `/register/${eventSlug}?type=external`
+                              : '#'
+                          }
                           className="w-full"
                         >
                           <Button
@@ -218,7 +223,9 @@ export default async function EksternalPage() {
                           </Button>
                         </Link>
                         <Link
-                          href={isOpen ? `/register/${eventSlug}?type=tenant` : '#'}
+                          href={
+                            isOpen ? `/register/${eventSlug}?type=tenant` : '#'
+                          }
                           className="w-full"
                         >
                           <Button
@@ -239,7 +246,9 @@ export default async function EksternalPage() {
         ) : (
           <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white py-20 text-center">
             <Ticket className="mb-4 h-12 w-12 text-slate-300" />
-            <h3 className="text-lg font-bold text-slate-700">Belum ada event</h3>
+            <h3 className="text-lg font-bold text-slate-700">
+              Belum ada event
+            </h3>
             <p className="text-sm text-slate-500">
               Saat ini tidak ada event publik yang dibuka.
             </p>

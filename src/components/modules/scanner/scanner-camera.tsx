@@ -33,31 +33,31 @@ export function ScannerCamera({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div
-          id="qr-reader"
-          className="bg-muted relative aspect-square min-h-[260px] w-full items-center justify-center overflow-hidden rounded-md border"
-        >
+        <div className="relative aspect-square min-h-[260px] w-full overflow-hidden rounded-md border bg-slate-50">
+          <div id="qr-reader" className="h-full w-full" />
+
           {!scanning && (
-            <div className="text-muted-foreground flex flex-col items-center gap-2 px-4 text-center text-sm">
+            <div className="bg-muted/90 text-muted-foreground absolute inset-0 z-20 flex flex-col items-center justify-center px-4 text-center text-sm">
               {pairingGuest ? (
                 <>
                   <Badge variant="destructive" className="mb-2 animate-pulse">
                     MODE PAIRING GELANG
                   </Badge>
                   <QrCode className="h-10 w-10 text-emerald-500" />
-                  <span className="block font-bold text-emerald-600">
+                  <span className="mt-2 block font-bold text-emerald-600">
                     Tamu: {pairingGuest.full_name}
                   </span>
                   <span>Klik Mulai untuk Scan Gelang</span>
                 </>
               ) : (
                 <>
-                  <QrCode className="h-10 w-10" />
+                  <QrCode className="mb-2 h-10 w-10" />
                   <span>Kamera belum aktif</span>
                 </>
               )}
             </div>
           )}
+
           {scanning && pairingGuest && (
             <div className="absolute top-4 left-4 z-10">
               <Badge variant="destructive" className="animate-pulse">
