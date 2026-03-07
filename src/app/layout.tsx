@@ -1,16 +1,45 @@
 import type { Metadata } from 'next'
-import { Inter, Outfit } from 'next/font/google'
+import {
+  Inter,
+  Outfit,
+  Amiri,
+  Aref_Ruqaa,
+  Reem_Kufi,
+  Lemonada,
+} from 'next/font/google'
 import { Toaster } from 'sonner'
 import './globals.css'
 
 const inter = Inter({
-  variable: '--font-sans',
+  variable: '--ff-inter',
   subsets: ['latin'],
 })
 
 const outfit = Outfit({
-  variable: '--font-heading',
+  variable: '--ff-outfit',
   subsets: ['latin'],
+})
+
+const amiri = Amiri({
+  weight: ['400', '700'],
+  subsets: ['latin', 'arabic'],
+  variable: '--ff-amiri',
+})
+
+const arefRuqaa = Aref_Ruqaa({
+  weight: ['400', '700'],
+  subsets: ['latin', 'arabic'],
+  variable: '--ff-aref-ruqaa',
+})
+
+const reemKufi = Reem_Kufi({
+  subsets: ['latin'],
+  variable: '--ff-reem-kufi',
+})
+
+const lemonada = Lemonada({
+  subsets: ['latin'],
+  variable: '--ff-lemonada',
 })
 
 export const metadata: Metadata = {
@@ -26,7 +55,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${outfit.variable} font-sans antialiased transition-colors duration-300`}
+        className={`${inter.variable} ${outfit.variable} ${amiri.variable} ${arefRuqaa.variable} ${reemKufi.variable} ${lemonada.variable} font-sans antialiased transition-colors duration-300`}
       >
         <main className="relative flex min-h-screen flex-col">{children}</main>
         <Toaster richColors position="top-right" />

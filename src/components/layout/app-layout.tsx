@@ -8,6 +8,7 @@ interface AppLayoutProps {
   header?: React.ReactNode
   headerSticky?: boolean
   headerClassName?: string
+  contentClassName?: string
 }
 
 export function AppLayout({
@@ -15,12 +16,18 @@ export function AppLayout({
   header,
   headerSticky = true,
   headerClassName,
+  contentClassName,
 }: AppLayoutProps) {
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-slate-900">
         <Sidebar />
-        <main className="flex min-w-0 flex-1 flex-col overflow-x-hidden overflow-y-auto">
+        <main
+          className={cn(
+            'flex min-w-0 flex-1 flex-col',
+            contentClassName || 'overflow-x-hidden overflow-y-auto',
+          )}
+        >
           <div
             className={cn(
               'shrink-0 bg-white dark:bg-slate-900',
