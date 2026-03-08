@@ -14,6 +14,7 @@ interface ImportFooterProps {
   hasDuplicates: boolean
   hasFile: boolean
   previewDataLength: number
+  fileUniqueCount: number
 }
 
 export function ImportFooter({
@@ -26,6 +27,7 @@ export function ImportFooter({
   hasDuplicates,
   hasFile,
   previewDataLength,
+  fileUniqueCount,
 }: ImportFooterProps) {
   return (
     <div className="mt-auto border-t bg-slate-50/50 p-4 px-6 backdrop-blur-md">
@@ -39,7 +41,7 @@ export function ImportFooter({
             else setStep('mapping')
           }}
           disabled={isProcessing}
-          className="h-9 border-slate-200 px-5 text-[10px] font-bold tracking-wider text-slate-500 uppercase hover:bg-slate-100/80"
+          className="h-9 border-slate-200 px-5 text-[10px] font-bold tracking-wider text-slate-500 hover:bg-slate-100/80"
         >
           {step === 'upload' ? 'Batal' : 'Kembali'}
         </Button>
@@ -49,7 +51,7 @@ export function ImportFooter({
             size="sm"
             onClick={() => setStep('mapping')}
             disabled={!hasFile}
-            className="shadow-primary/20 h-9 min-w-[120px] text-[10px] font-bold tracking-widest uppercase shadow-lg transition-all hover:translate-y-[-1px] active:translate-y-0"
+            className="h-9 min-w-[120px] text-[10px] font-bold tracking-widest transition-all hover:translate-y-[-1px] active:translate-y-0"
           >
             Lanjutkan
           </Button>
@@ -59,7 +61,7 @@ export function ImportFooter({
           <Button
             size="sm"
             onClick={onApplyMapping}
-            className="shadow-primary/20 h-9 min-w-[150px] text-[10px] font-bold tracking-widest uppercase shadow-lg transition-all hover:translate-y-[-1px] active:translate-y-0"
+            className="h-9 min-w-[150px] text-[10px] font-bold tracking-widest transition-all hover:translate-y-[-1px] active:translate-y-0"
           >
             Pratinjau Data
           </Button>
@@ -70,19 +72,19 @@ export function ImportFooter({
             size="sm"
             onClick={onSubmit}
             disabled={isProcessing || hasDuplicates || previewDataLength === 0}
-            className={`h-9 min-w-[170px] text-[10px] font-bold tracking-widest uppercase shadow-xl transition-all hover:translate-y-[-1px] active:translate-y-0 ${
+            className={`h-9 min-w-[170px] text-[10px] font-bold tracking-widest transition-all hover:translate-y-[-1px] active:translate-y-0 ${
               hasDuplicates
-                ? 'cursor-not-allowed bg-slate-300 opacity-50 shadow-none'
-                : 'bg-emerald-600 shadow-lg shadow-emerald-200 hover:bg-emerald-700'
+                ? 'cursor-not-allowed bg-slate-300 opacity-50'
+                : 'bg-emerald-600 hover:bg-emerald-700'
             }`}
           >
             {isProcessing ? (
               <div className="flex items-center gap-2">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                MEMPROSES...
+                Memproses...
               </div>
             ) : (
-              `Simpan ${previewDataLength} Tamu`
+              `Simpan ${fileUniqueCount} Tamu`
             )}
           </Button>
         )}

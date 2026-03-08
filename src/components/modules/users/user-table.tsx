@@ -32,9 +32,11 @@ interface UserTableProps {
   loading: boolean
   submitting: boolean
   roleDrafts: Record<string, UserRole>
-  setRoleDrafts: (drafts: any) => void
+  setRoleDrafts: React.Dispatch<React.SetStateAction<Record<string, UserRole>>>
   permissionDrafts: Record<string, Record<string, string>>
-  setPermissionDrafts: (drafts: any) => void
+  setPermissionDrafts: React.Dispatch<
+    React.SetStateAction<Record<string, Record<string, string>>>
+  >
   onUpdateUser: (user: ManagedUser) => void
 }
 
@@ -105,7 +107,7 @@ export function UserTable({
                       <Select
                         value={(roleDrafts[user.id] || user.role) as string}
                         onValueChange={(value: UserRole) =>
-                          setRoleDrafts((prev: any) => ({
+                          setRoleDrafts((prev) => ({
                             ...prev,
                             [user.id]: value,
                           }))
@@ -127,7 +129,7 @@ export function UserTable({
                             permissionDrafts[user.id]?.[event.id] || 'none'
                           }
                           onValueChange={(value) =>
-                            setPermissionDrafts((prev: any) => ({
+                            setPermissionDrafts((prev) => ({
                               ...prev,
                               [user.id]: {
                                 ...(prev[user.id] || {}),

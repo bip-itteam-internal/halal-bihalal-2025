@@ -16,14 +16,16 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 
+interface CreateUserFormValues {
+  email: string
+  password: string
+  full_name: string
+  role: 'admin' | 'staff'
+}
+
 interface CreateUserFormProps {
-  form: {
-    email: string
-    password: string
-    full_name: string
-    role: 'admin' | 'staff'
-  }
-  setForm: (form: any) => void
+  form: CreateUserFormValues
+  setForm: React.Dispatch<React.SetStateAction<CreateUserFormValues>>
   onSubmit: (e: React.FormEvent) => void
   submitting: boolean
 }
@@ -49,16 +51,14 @@ export function CreateUserForm({
             placeholder="Nama lengkap"
             value={form.full_name}
             onChange={(e) =>
-              setForm((v: any) => ({ ...v, full_name: e.target.value }))
+              setForm((v) => ({ ...v, full_name: e.target.value }))
             }
           />
           <Input
             type="email"
             placeholder="email@domain.com"
             value={form.email}
-            onChange={(e) =>
-              setForm((v: any) => ({ ...v, email: e.target.value }))
-            }
+            onChange={(e) => setForm((v) => ({ ...v, email: e.target.value }))}
             required
           />
           <Input
@@ -66,14 +66,14 @@ export function CreateUserForm({
             placeholder="Password minimal 8 karakter"
             value={form.password}
             onChange={(e) =>
-              setForm((v: any) => ({ ...v, password: e.target.value }))
+              setForm((v) => ({ ...v, password: e.target.value }))
             }
             required
           />
           <Select
             value={form.role}
             onValueChange={(value: 'admin' | 'staff') =>
-              setForm((v: any) => ({ ...v, role: value }))
+              setForm((v) => ({ ...v, role: value }))
             }
           >
             <SelectTrigger>

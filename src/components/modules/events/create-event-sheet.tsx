@@ -168,7 +168,7 @@ export function CreateEventSheet({
                       Nama Event <span className="text-destructive">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="cth. Halal Bihalal 2026" {...field} />
+                      <Input placeholder="cth. Bharata Event 2026" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

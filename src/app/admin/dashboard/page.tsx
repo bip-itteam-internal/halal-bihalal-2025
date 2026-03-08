@@ -1,19 +1,14 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import {
-  CalendarDays,
-  Users,
-  CheckCircle2,
-  Globe,
-  LayoutDashboard,
-} from 'lucide-react'
+import { CalendarDays, Users, CheckCircle2, Globe } from 'lucide-react'
 import Link from 'next/link'
 
 import { createClient } from '@/lib/supabase/client'
 import { AppLayout } from '@/components/layout/app-layout'
 import { StatsCard } from '@/components/shared/stats-card'
 import { PageHeader } from '@/components/shared/page-header'
+import { useProfile } from '@/hooks/use-profile'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -50,6 +45,7 @@ export default function AdminDashboardPage() {
     openPublicEvents: 0,
   })
   const [recentEvents, setRecentEvents] = useState<DashboardEvent[]>([])
+  const { role } = useProfile()
 
   const fetchDashboard = useCallback(async () => {
     try {
@@ -103,7 +99,6 @@ export default function AdminDashboardPage() {
         <PageHeader
           title="Dashboard"
           subtitle="Ringkasan aktivitas event dan tamu."
-          icon={<LayoutDashboard className="h-4 w-4" />}
           actions={
             <Link href="/admin/events">
               <Button size="sm" variant="outline" className="h-8">
@@ -153,7 +148,9 @@ export default function AdminDashboardPage() {
                   <TableHead>Tanggal</TableHead>
                   <TableHead>Tipe</TableHead>
                   <TableHead>Status Registrasi</TableHead>
-                  <TableHead className="text-right">Aksi</TableHead>
+                  {role !== 'staff' && (
+                    <TableHead className="text-right">Aksi</TableHead>
+                  )}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -183,13 +180,15 @@ export default function AdminDashboardPage() {
                       <TableCell>
                         {event.public_reg_status === 'open' ? 'Buka' : 'Tutup'}
                       </TableCell>
-                      <TableCell className="text-right">
-                        <Link href={`/admin/events/${event.id}`}>
-                          <Button variant="outline" size="sm">
-                            Detail
-                          </Button>
-                        </Link>
-                      </TableCell>
+                      {role !== 'staff' && (
+                        <TableCell className="text-right">
+                          <Link href={`/admin/events/${event.id}`}>
+                            <Button variant="outline" size="sm">
+                              Detail
+                            </Button>
+                          </Link>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))
                 )}

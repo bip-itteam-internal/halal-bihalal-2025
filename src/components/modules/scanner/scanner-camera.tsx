@@ -2,7 +2,6 @@ import { QrCode, Camera, CameraOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 
 interface ScannerCameraProps {
   scanning: boolean

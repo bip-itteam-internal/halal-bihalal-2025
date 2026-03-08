@@ -48,11 +48,16 @@ export function ImportGuestSheet({
     updatePreviewRow,
     duplicateMap,
     hasDuplicates,
+    defaultGuestType,
+    setDefaultGuestType,
     fileInputRef,
     handleFileUpload,
     applyMapping,
     submitImport,
     resetState,
+    skipDuplicates,
+    setSkipDuplicates,
+    fileUniqueCount,
   } = useImportGuest(eventId, onSuccess)
 
   const handleOpenChange = (open: boolean) => {
@@ -87,7 +92,7 @@ export function ImportGuestSheet({
           Impor Data
         </Button>
       </SheetTrigger>
-      <SheetContent className="flex w-full flex-col border-l bg-white p-0 shadow-2xl sm:max-w-2xl">
+      <SheetContent className="flex w-full flex-col border-l bg-white p-0 sm:max-w-2xl">
         <SheetHeader className="border-b bg-slate-50/50 px-6 py-4 backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <SheetTitle className="border-r border-slate-200 pr-4 text-lg font-bold tracking-tight text-slate-900">
@@ -95,10 +100,10 @@ export function ImportGuestSheet({
             </SheetTitle>
             <Badge
               variant="secondary"
-              className="bg-primary/10 text-primary border-primary/20 px-2 py-0.5 text-[9px] font-bold tracking-widest uppercase"
+              className="bg-primary/10 text-primary border-primary/20 px-2 py-0.5 text-[9px] font-bold tracking-widest"
             >
-              Step {step === 'upload' ? '1' : step === 'mapping' ? '2' : '3'}{' '}
-              <span className="mx-1 opacity-40">OF</span> 3
+              Langkah {step === 'upload' ? '1' : step === 'mapping' ? '2' : '3'}{' '}
+              <span className="mx-1 opacity-40">dari</span> 3
             </Badge>
           </div>
           <SheetDescription className="mt-0.5 text-[12px] font-medium text-slate-500">
@@ -117,7 +122,7 @@ export function ImportGuestSheet({
               className="animate-in zoom-in-95 mb-4 border-red-200 bg-red-50/50"
             >
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle className="text-xs font-bold tracking-widest uppercase">
+              <AlertTitle className="text-xs font-bold tracking-widest">
                 Kesalahan
               </AlertTitle>
               <AlertDescription className="text-xs font-semibold">
@@ -135,17 +140,21 @@ export function ImportGuestSheet({
                 events={events}
                 selectedEventIds={selectedEventIds}
                 setSelectedEventIds={setSelectedEventIds}
+                defaultGuestType={defaultGuestType}
+                setDefaultGuestType={setDefaultGuestType}
                 hasFile={rawFileData.length > 0}
                 rowCount={rawFileData.length}
+                skipDuplicates={skipDuplicates}
+                setSkipDuplicates={setSkipDuplicates}
               />
 
-              <div className="flex items-center justify-between rounded-xl border border-blue-100 bg-blue-50/50 p-4 shadow-sm">
+              <div className="flex items-center justify-between rounded-xl border border-blue-100 bg-blue-50/50 p-4">
                 <div className="flex items-center gap-3 text-blue-700">
                   <div className="rounded-lg bg-blue-100 p-2">
                     <Download className="h-4 w-4" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold tracking-tight uppercase">
+                    <span className="text-xs font-bold tracking-tight">
                       Butuh template?
                     </span>
                     <span className="text-[10px] font-semibold text-blue-600/70">
@@ -179,6 +188,8 @@ export function ImportGuestSheet({
               updatePreviewRow={updatePreviewRow}
               duplicateMap={duplicateMap}
               hasDuplicates={hasDuplicates}
+              skipDuplicates={skipDuplicates}
+              fileUniqueCount={fileUniqueCount}
               onBackToMapping={() => setStep('mapping')}
             />
           )}
@@ -194,6 +205,8 @@ export function ImportGuestSheet({
           hasDuplicates={hasDuplicates}
           hasFile={rawFileData.length > 0}
           previewDataLength={previewData.length}
+          skipDuplicates={skipDuplicates}
+          fileUniqueCount={fileUniqueCount}
         />
       </SheetContent>
     </Sheet>

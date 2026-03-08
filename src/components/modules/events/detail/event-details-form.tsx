@@ -85,7 +85,7 @@ export function EventDetailsForm({
   }
 
   return (
-    <div className="grid grid-cols-2 items-start gap-6">
+    <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
       <div className="space-y-4">
         <div className="space-y-6 rounded-lg border p-4">
           <div className="space-y-4">
@@ -96,7 +96,7 @@ export function EventDetailsForm({
                   Nama Event <span className="text-destructive">*</span>
                 </label>
                 <Input
-                  placeholder="cth. Halal Bihalal 2026"
+                  placeholder="cth. Bharata Event 2026"
                   value={event.name}
                   onChange={(e) => onUpdateEvent({ name: e.target.value })}
                   required
@@ -110,7 +110,9 @@ export function EventDetailsForm({
                   placeholder="Deskripsi singkat event"
                   className="min-h-[90px]"
                   value={event.description || ''}
-                  onChange={(e) => onUpdateEvent({ description: e.target.value })}
+                  onChange={(e) =>
+                    onUpdateEvent({ description: e.target.value })
+                  }
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -239,7 +241,11 @@ export function EventDetailsForm({
               Link Login Internal
             </label>
             <div className="flex items-center gap-2">
-              <Input value={internalLoginUrl} readOnly className="h-9 text-xs" />
+              <Input
+                value={internalLoginUrl}
+                readOnly
+                className="h-9 text-xs"
+              />
               <Button
                 type="button"
                 variant="outline"
@@ -336,7 +342,7 @@ export function EventDetailsForm({
                   </div>
                 )}
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                   <Input
                     id="logo-upload"
                     type="file"
@@ -381,7 +387,6 @@ export function EventDetailsForm({
                 transparan.
               </p>
             </div>
-
           </div>
         </div>
       </div>

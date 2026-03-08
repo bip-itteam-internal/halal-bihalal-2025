@@ -13,8 +13,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { getJakartaNow, toJakartaISOString } from '@/lib/utils'
-import { Users } from 'lucide-react'
-import Link from 'next/link'
+import { Trash2, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Event } from '@/types'
 
@@ -234,20 +233,11 @@ export default function EventDetailPage({
   }
 
   return (
-    <AppLayout
-      header={
-        <EventPageHeader
-          name={event.name}
-          onSave={handleUpdate}
-          onDelete={() => setIsDeleteModalOpen(true)}
-          saving={saving}
-        />
-      }
-    >
+    <AppLayout header={<EventPageHeader name={event.name} />}>
       <div className="flex-1 space-y-4 p-5 pt-4">
         <div className="grid gap-6">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
               <div className="space-y-1.5 font-sans">
                 <div className="flex items-center gap-4">
                   <CardTitle>Pengaturan Event</CardTitle>
@@ -256,12 +246,34 @@ export default function EventDetailPage({
                   Kelola detail informasi dan visual branding event ini.
                 </CardDescription>
               </div>
-              <Link href={`/admin/events/${eventId}/guests`}>
-                <Button variant="outline" className="gap-2">
-                  <Users className="h-4 w-4" />
-                  Daftar Tamu
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="h-8 shadow-none"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Hapus
                 </Button>
-              </Link>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="h-8 shadow-none"
+                  onClick={handleUpdate}
+                  disabled={saving}
+                >
+                  {saving ? (
+                    'Menyimpan...'
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Simpan
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <EventDetailsForm

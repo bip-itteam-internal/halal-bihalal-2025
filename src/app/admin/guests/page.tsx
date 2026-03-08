@@ -5,19 +5,14 @@ import { createClient } from '@/lib/supabase/client'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Search,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-  Users,
-} from 'lucide-react'
+import { Search, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Guest } from '@/types'
 import { MasterGuestTable } from '@/components/modules/guests/master-guest-table'
 import { AddGuestSheet } from '@/components/modules/guests/add-guest-sheet'
 import { ImportGuestSheet } from '@/components/modules/guests/import-guest-sheet'
 import { toast } from 'sonner'
 import { PageHeader } from '@/components/shared/page-header'
+import { useProfile } from '@/hooks/use-profile'
 
 export default function MasterGuestPage() {
   const supabase = createClient()
@@ -27,6 +22,7 @@ export default function MasterGuestPage() {
   const [page, setPage] = useState(1)
   const [pageSize] = useState(10)
   const [totalCount, setTotalCount] = useState(0)
+  const { role } = useProfile()
 
   const fetchGuests = useCallback(async () => {
     try {
@@ -75,7 +71,6 @@ export default function MasterGuestPage() {
         <PageHeader
           title="Master Tamu"
           subtitle="Kelola database utama seluruh tamu undangan."
-          icon={<Users className="h-4 w-4" />}
         />
       }
     >
@@ -90,21 +85,23 @@ export default function MasterGuestPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={fetchGuests}
-              disabled={loading}
-            >
-              <RefreshCw
-                className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
-              />
-            </Button>
-            {/* We need to update these sheets to handle null eventId */}
-            <ImportGuestSheet eventId={''} onSuccess={fetchGuests} />
-            <AddGuestSheet eventId={''} onSuccess={fetchGuests} />
-          </div>
+          {role !== 'staff' && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={fetchGuests}
+                disabled={loading}
+              >
+                <RefreshCw
+                  className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
+                />
+              </Button>
+              {/* We need to update these sheets to handle null eventId */}
+              <ImportGuestSheet eventId={''} onSuccess={fetchGuests} />
+              <AddGuestSheet eventId={''} onSuccess={fetchGuests} />
+            </div>
+          )}
         </div>
 
         {loading ? (
@@ -124,6 +121,7 @@ export default function MasterGuestPage() {
               searchFilter={searchQuery}
               onRefresh={fetchGuests}
               startNumber={(page - 1) * pageSize + 1}
+              role={role || undefined}
             />
 
             {/* Pagination Controls */}

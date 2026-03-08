@@ -57,7 +57,7 @@ export function PWAInstallModal() {
               Pasang Aplikasi Mobile
             </DialogTitle>
             <DialogDescription className="text-[12px] leading-relaxed font-medium text-slate-400">
-              Instal aplikasi Halal Bihalal untuk akses lebih cepat, dan stabil.
+              Instal aplikasi Bharata Event untuk akses lebih cepat, dan stabil.
             </DialogDescription>
           </DialogHeader>
 
@@ -79,18 +79,11 @@ export function PWAInstallModal() {
 
           {/* Compact Action Buttons Container */}
           <div className="flex flex-col gap-4">
-            <Button
-              onClick={() => setOpen(false)}
-              variant="outline"
-            >
+            <Button onClick={() => setOpen(false)} variant="outline">
               Nanti saja
             </Button>
 
-            <Button
-              onClick={handleInstall}
-            >
-              Pasang Sekarang
-            </Button>
+            <Button onClick={handleInstall}>Pasang Sekarang</Button>
           </div>
         </div>
       </DialogContent>

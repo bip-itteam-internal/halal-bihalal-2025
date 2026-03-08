@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
@@ -18,6 +18,9 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
   const [events, setEvents] = useState<EventOption[]>([])
   const [selectedEventIds, setSelectedEventIds] = useState<string[]>([])
   const [loadingEvents, setLoadingEvents] = useState(false)
+  const [defaultGuestType, setDefaultGuestType] =
+    useState<RawGuest['guest_type']>('internal')
+  const [skipDuplicates, setSkipDuplicates] = useState(true)
 
   // Data State
   const [rawFileData, setRawFileData] = useState<Record<string, unknown>[]>([])
@@ -33,13 +36,7 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (isOpen && !eventId) {
-      fetchEvents()
-    }
-  }, [isOpen, eventId])
-
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       setLoadingEvents(true)
       const { data, error } = await supabase
@@ -53,7 +50,13 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
     } finally {
       setLoadingEvents(false)
     }
-  }
+  }, [supabase])
+
+  useEffect(() => {
+    if (isOpen && !eventId) {
+      fetchEvents()
+    }
+  }, [isOpen, eventId, fetchEvents])
 
   const resetState = () => {
     setStep('upload')
@@ -69,6 +72,8 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
     })
     setError(null)
     setSelectedEventIds([])
+    setDefaultGuestType('internal')
+    setSkipDuplicates(true)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -152,7 +157,7 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
         guest_type:
           (String(
             row[columnMapping.guest_type] || '',
-          ).toLowerCase() as RawGuest['guest_type']) || 'internal',
+          ).toLowerCase() as RawGuest['guest_type']) || defaultGuestType,
         phone: String(row[columnMapping.phone] || '').trim(),
         email: String(row[columnMapping.email] || '').trim(),
         address: String(row[columnMapping.address] || '').trim(),
@@ -180,16 +185,76 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
   previewData.forEach((g) => {
     if (g.phone) duplicateMap.set(g.phone, (duplicateMap.get(g.phone) || 0) + 1)
   })
-  const hasDuplicates = Array.from(duplicateMap.values()).some(
-    (count) => count > 1,
-  )
+  const hasDuplicates =
+    !skipDuplicates &&
+    Array.from(duplicateMap.values()).some((count) => count > 1)
+
+  const fileUniqueCount = useMemo(() => {
+    if (!skipDuplicates) return previewData.length
+    const seen = new Set()
+    return previewData.filter((g) => {
+      if (!g.phone) return true
+      const p = g.phone.replace(/\D/g, '')
+      if (seen.has(p)) return false
+      seen.add(p)
+      return true
+    }).length
+  }, [previewData, skipDuplicates])
 
   const submitImport = async () => {
     if (previewData.length === 0 || hasDuplicates) return
 
     try {
       setIsProcessing(true)
-      const guestsToInsert = previewData.map((g) => ({
+
+      let finalPreviewData = [...previewData]
+
+      // Filter duplicates within the file if skipping
+      if (skipDuplicates) {
+        const seen = new Set()
+        finalPreviewData = finalPreviewData.filter((g) => {
+          if (!g.phone) return true
+          const p = g.phone.replace(/\D/g, '')
+          if (seen.has(p)) return false
+          seen.add(p)
+          return true
+        })
+      }
+
+      // Check against database if skipping
+      if (skipDuplicates) {
+        const phonesToCheck = finalPreviewData
+          .map((g) => g.phone?.replace(/\D/g, ''))
+          .filter(Boolean) as string[]
+
+        if (phonesToCheck.length > 0) {
+          const { data: existing } = await supabase
+            .from('guests')
+            .select('phone')
+            .in('phone', phonesToCheck)
+
+          if (existing && existing.length > 0) {
+            const existingPhones = new Set(
+              existing.map((e) => e.phone?.replace(/\D/g, '')),
+            )
+            finalPreviewData = finalPreviewData.filter((g) => {
+              const p = g.phone?.replace(/\D/g, '')
+              return !p || !existingPhones.has(p)
+            })
+          }
+        }
+      }
+
+      if (finalPreviewData.length === 0) {
+        toast.info(
+          'Semua data tamu sudah terdaftar, tidak ada data baru yang ditambahkan.',
+        )
+        setIsOpen(false)
+        resetState()
+        return
+      }
+
+      const guestsToInsert = finalPreviewData.map((g) => ({
         full_name: g.full_name,
         guest_type: ['internal', 'external', 'tenant'].includes(g.guest_type)
           ? g.guest_type
@@ -236,8 +301,10 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
       setIsOpen(false)
       resetState()
       if (onSuccess) onSuccess()
-    } catch (err: any) {
-      toast.error(err.message || 'Gagal mengimpor data tamu.')
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Gagal mengimpor data tamu.'
+      toast.error(message)
     } finally {
       setIsProcessing(false)
     }
@@ -262,6 +329,11 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
     updatePreviewRow,
     duplicateMap,
     hasDuplicates,
+    fileUniqueCount,
+    defaultGuestType,
+    setDefaultGuestType,
+    skipDuplicates,
+    setSkipDuplicates,
     fileInputRef,
     handleFileUpload,
     applyMapping,

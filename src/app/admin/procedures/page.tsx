@@ -2,7 +2,6 @@
 
 import { AppLayout } from '@/components/layout/app-layout'
 import {
-  BookOpen,
   CalendarDays,
   QrCode,
   Crown,
@@ -30,7 +29,6 @@ export default function ProceduresPage() {
           <PageHeader
             title="Loading..."
             subtitle="Menyiapkan panduan prosedur..."
-            icon={<BookOpen className="h-4 w-4" />}
           />
         }
       >
@@ -48,7 +46,6 @@ export default function ProceduresPage() {
         <PageHeader
           title="Prosedur Operasional"
           subtitle={`Panduan tugas untuk peran ${role?.replace('_', ' ').toUpperCase()}`}
-          icon={<BookOpen className="h-4 w-4 text-amber-600" />}
         />
       }
     >
@@ -276,7 +273,7 @@ export default function ProceduresPage() {
                     Jika tamu tidak membawa tiket atau QR Code rusak, Staff
                     dapat mencari nama tamu secara manual melalui tab{' '}
                     <span className="font-bold text-slate-700">
-                      "Input Manual"
+                      &quot;Input Manual&quot;
                     </span>{' '}
                     di halaman Scanner untuk memverifikasi kehadiran.
                   </p>

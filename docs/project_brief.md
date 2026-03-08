@@ -1,4 +1,4 @@
-# Event Invitation & QR Check-in System
+# Bharata Event
 
 ## Project Brief
 
@@ -6,7 +6,7 @@
 
 # 1. Project Overview
 
-Event Invitation & QR Check-in System adalah aplikasi web yang digunakan untuk mengelola undangan event perusahaan seperti **Halal Bi Halal, Gathering, Seminar, atau Townhall**.
+**Bharata Event** adalah aplikasi web yang digunakan untuk mengelola undangan event perusahaan seperti **Gathering, Seminar, Townhall, atau konser**.
 
 Sistem ini memungkinkan panitia untuk:
 
@@ -14,9 +14,9 @@ Sistem ini memungkinkan panitia untuk:
 - **Halaman Registrasi Publik (Self-Ticket)**: Untuk pendaftaran tamu eksternal mandiri
 - Mengirim link undangan digital dengan QR Code 1
 - Mengumpulkan RSVP konfirmasi kehadiran
-- **Sistem Dua Barcode**: 
-    - **QR 1**: Untuk penukaran gelang (Bracelet Exchange)
-    - **QR 2**: Pada gelang untuk akses masuk konser (Entrance Access)
+- **Sistem Dua Barcode**:
+  - **QR 1**: Untuk penukaran gelang (Bracelet Exchange)
+  - **QR 2**: Pada gelang untuk akses masuk konser (Entrance Access)
 - **Tiga Kategori Tamu**: Internal, External, dan Tenant
 - **Manajemen Dua Sesi**: Sesi Siang (Internal) dan Sesi Malam (Puncak Acara)
 - **Fitur Doorprize Spinner**: Khusus untuk tamu internal yang hadir
@@ -90,15 +90,15 @@ graph TD
     I1[Internal/Tenant via WA] --> I2[Konfirmasi RSVP]
     E1[External via Landing Page] --> E2[Isi Data & Submit]
     end
-    
+
     I2 --> G4[Dapat QR Code 1]
     E2 --> G4
-    
+
     subgraph Venue_Step_1
     G4 --> G5[Scanner 1: Tukar Gelang]
     G5 --> G6[Scan QR 1 -> Link ke Barcode Gelang QR 2]
     end
-    
+
     subgraph Venue_Step_2
     G6 --> G7[Scanner 2: Pintu Konser]
     G7 --> G8[Scan QR 2 pada Gelang -> Masuk]
@@ -156,6 +156,7 @@ graph TD
 ## 4.4 Staff Scanner (Registration Staff)
 
 **Tugas di Venue:**
+
 1. **Posisi 1 (Exchange Desk):** Scan QR 1 dari HP Tamu -> Ambil gelang -> Scan Barcode QR 2 di gelang untuk verifikasi & pairing -> Berikan gelang.
 2. **Posisi 2 (Concert Gate):** Scan Barcode QR 2 di gelang untuk izin masuk akses konser sesi malam.
 
@@ -164,25 +165,30 @@ graph TD
 # 5. Key Features
 
 ### Public Registration Page (External Ticketing)
+
 - **Self-Service:** Tamu eksternal mendaftar sendiri melalui link publik. Mencakup masyarakat umum, mahasiswa, atau pihak lain di luar daftar undangan resmi.
 - **Easy Registration:** Hanya memerlukan input **Nama Lengkap** dan **Nomor WhatsApp** untuk mempermudah pendaftaran.
 - **Auto-Quota:** Pendaftaran otomatis ditutup jika mencapai 1000 orang.
 - **Instant E-Ticket:** QR Code langsung muncul setelah pendaftaran berhasil.
 
 ### Two-Step Verification Logic
+
 - **Step 1 (Exchange):** Penukaran E-Ticket (QR 1) dengan gelang fisik. Staff melakukan pairing ID tamu dengan Barcode gelang (QR 2).
 - **Step 2 (Entrance):** Scan Barcode gelang (QR 2) di pintu masuk utama gedung/konser untuk verifikasi akses.
 
 ### External Guest Management
+
 - **Open Gate:** Mulai pukul 16:30 (setelah sesi siang selesai).
 - **Kuota:** Dibatasi maksimal 1000 orang.
 - **Data Source:** Pengisian GForm yang datanya disetor ke IT untuk di-import.
 
 ### Internal Doorprize Spinner
+
 - Fitur undian berhadiah (Spinner) yang hanya bisa dimenangkan oleh tamu dengan kategori `internal` yang sudah hadir.
 - Menggunakan filter `registration_source = 'admin_invite'` untuk memastikan hadiah tidak jatuh ke pendaftar publik eksternal (masyarakat umum).
 
 ### Concert Bracelet System
+
 - Gelang fisik dengan barcode unik sebagai akses masuk sesi malam.
 - Barcode pada gelang tersinkronisasi dengan ID tamu di sistem.
 
@@ -226,21 +232,21 @@ Admin dapat mengimport daftar tamu melalui file Excel dengan tahap **Review & Pr
 
 Format Excel:
 
-| Guest Type | Full Name | Phone | Email | Address | UMKM Product |
-| ---------- | --------- | ----- | ----- | ------- | ------------ |
-| internal   | Zulhakim  | 083...| zul.. |         |              |
-| tenant     | Ani       | 081...|       | Bekasi  | Kripik Singk.|
+| Guest Type | Full Name | Phone  | Email | Address | UMKM Product  |
+| ---------- | --------- | ------ | ----- | ------- | ------------- |
+| internal   | Zulhakim  | 083... | zul.. |         |               |
+| tenant     | Ani       | 081... |       | Bekasi  | Kripik Singk. |
 
 Mapping:
 
-| Excel Column      | Database Field | Category Requirements Mapping                       |
-| ----------------- | -------------- | --------------------------------------------------- |
-| Guest Type        | guest_type     | internal, external, tenant                          |
-| Full Name         | full_name      | All Categories                                      |
-| WA Number         | phone          | All Categories                                      |
-| Email             | email          | Required for: Internal                              |
-| Address           | address        | Required for: Tenant & External                     |
-| UMKM Product Name | metadata       | Required for: Tenant (Stored in metadata JSON)      |
+| Excel Column      | Database Field | Category Requirements Mapping                  |
+| ----------------- | -------------- | ---------------------------------------------- |
+| Guest Type        | guest_type     | internal, external, tenant                     |
+| Full Name         | full_name      | All Categories                                 |
+| WA Number         | phone          | All Categories                                 |
+| Email             | email          | Required for: Internal                         |
+| Address           | address        | Required for: Tenant & External                |
+| UMKM Product Name | metadata       | Required for: Tenant (Stored in metadata JSON) |
 
 ---
 
@@ -267,7 +273,6 @@ Tamu melakukan konfirmasi kehadiran melalui halaman undangan.
 Data RSVP akan disimpan ke database.
 
 ---
-
 
 ## 5.6 QR Code Invitation
 
@@ -323,7 +328,7 @@ Dashboard menggunakan **Supabase Realtime** untuk menyajikan data yang otomatis 
 Halaman khusus untuk ditampilkan di layar besar/TV di area registrasi.
 
 - **Real-time**: Menggunakan **Supabase Realtime** untuk mendengarkan setiap proses scan yang sukses.
-- **Visual**: Menampilkan pesan selamat datang secara dinamis: *"Selamat Datang, [Nama Tamu] - [Departemen/Instansi]"*.
+- **Visual**: Menampilkan pesan selamat datang secara dinamis: _"Selamat Datang, [Nama Tamu] - [Departemen/Instansi]"_.
 - **Branding**: Tampilan menyesuaikan tema event yang aktif.
 
 ---
@@ -348,8 +353,8 @@ Tidak ada dependency ke API eksternal.
 
 Digunakan untuk menyimpan konfigurasi tema dan branding visual untuk setiap event.
 
-| Field                     | Tipe / Deskripsi                           |
-| :------------------------ | :----------------------------------------- |
+| Field               | Tipe / Deskripsi                           |
+| :------------------ | :----------------------------------------- |
 | **id**              | Primary Key (UUID/Serial)                  |
 | **name**            | Nama tema                                  |
 | **primary_color**   | Warna utama tema                           |
@@ -364,17 +369,17 @@ Digunakan untuk menyimpan konfigurasi tema dan branding visual untuk setiap even
 
 Menyimpan data utama setiap acara/event yang dibuat.
 
-| Field                           | Tipe / Deskripsi                      |
-| :------------------------------ | :------------------------------------ |
-| **id**                    | Primary Key (UUID/Serial)             |
-| **theme_id**              | Foreign Key ke `event_themes`       |
-| **name**                  | Nama event                            |
-| **description**           | Deskripsi atau sambutan event         |
-| **event_date**            | Tanggal & jam pelaksanaan             |
-| **location**              | Lokasi acara                          |
-| **dress_code**            | Ketentuan pakaian                     |
-| **logo_url**              | URL logo khusus event                 |
-| **created_at**            | Waktu pembuatan data                  |
+| Field           | Tipe / Deskripsi              |
+| :-------------- | :---------------------------- |
+| **id**          | Primary Key (UUID/Serial)     |
+| **theme_id**    | Foreign Key ke `event_themes` |
+| **name**        | Nama event                    |
+| **description** | Deskripsi atau sambutan event |
+| **event_date**  | Tanggal & jam pelaksanaan     |
+| **location**    | Lokasi acara                  |
+| **dress_code**  | Ketentuan pakaian             |
+| **logo_url**    | URL logo khusus event         |
+| **created_at**  | Waktu pembuatan data          |
 
 ---
 
@@ -382,19 +387,19 @@ Menyimpan data utama setiap acara/event yang dibuat.
 
 Menyimpan daftar tamu undangan beserta status RSVP mereka.
 
-| Field                      | Tipe / Deskripsi                                 |
-| :------------------------- | :----------------------------------------------- |
-| **id**               | Primary Key (UUID)                               |
-| **event_id**         | Foreign Key ke `events`                        |
-| **guest_type**       | `internal`, `external`, atau `tenant`        |
-| **full_name**        | Nama lengkap tamu                                     |
-| **phone**            | Nomor WhatsApp/Telepon                                |
-| **email**            | Email tamu (Khusus Internal)                          |
-| **address**          | Alamat tamu (Khusus Tenant & External)                |
-| **metadata**         | JSONB (e.g. `umkm_product`)                         |
-| **rsvp_status**      | Status konfirmasi kehadiran                           |
-| **wa_sent_at**       | Timestamp pengiriman undangan via WA             |
-| **created_at**       | Waktu data di-import/dibuat                      |
+| Field           | Tipe / Deskripsi                       |
+| :-------------- | :------------------------------------- |
+| **id**          | Primary Key (UUID)                     |
+| **event_id**    | Foreign Key ke `events`                |
+| **guest_type**  | `internal`, `external`, atau `tenant`  |
+| **full_name**   | Nama lengkap tamu                      |
+| **phone**       | Nomor WhatsApp/Telepon                 |
+| **email**       | Email tamu (Khusus Internal)           |
+| **address**     | Alamat tamu (Khusus Tenant & External) |
+| **metadata**    | JSONB (e.g. `umkm_product`)            |
+| **rsvp_status** | Status konfirmasi kehadiran            |
+| **wa_sent_at**  | Timestamp pengiriman undangan via WA   |
+| **created_at**  | Waktu data di-import/dibuat            |
 
 ---
 
@@ -402,12 +407,12 @@ Menyimpan daftar tamu undangan beserta status RSVP mereka.
 
 Mencatat riwayat kehadiran tamu di lokasi acara.
 
-| Field                  | Tipe / Deskripsi                                        |
-| :--------------------- | :------------------------------------------------------ |
-| **id**           | Primary Key (UUID/Serial)                               |
+| Field            | Tipe / Deskripsi                                      |
+| :--------------- | :---------------------------------------------------- |
+| **id**           | Primary Key (UUID/Serial)                             |
 | **guest_id**     | Foreign Key ke `guests` (Unique: 1 tamu = 1 check-in) |
-| **checkin_time** | Waktu saat tamu melakukan scan/check-in                 |
-| **checkin_by**   | Identitas staff yang melakukan proses check-in          |
+| **checkin_time** | Waktu saat tamu melakukan scan/check-in               |
+| **checkin_by**   | Identitas staff yang melakukan proses check-in        |
 
 **Constraint:** satu tamu hanya bisa check-in sekali.
 
@@ -445,11 +450,11 @@ graph TD
     E -- Tidak --> F[Admin Edit Langsung di Preview]
     F --> D
     E -- Ya --> G[Konfirmasi Import]
-  
+
     B -- Manual --> H[Buka Form Tambah Tamu]
     H --> I[Isi Data: Nama, WA, Tipe, dll]
     I --> J[Simpan Data]
-  
+
     G --> K[Sistem Generate Unique UUID]
     J --> K
     K --> L[Generate Link Personal]
@@ -488,7 +493,6 @@ graph TD
 ```
 
 ---
-
 
 ## 8.6 Real-time QR Scanner & Check-in Flow
 
@@ -574,14 +578,14 @@ Manual check-in
 
 # 11. Tech Stack
 
-| Category                     | Technology            | Description                                       |
-| :--------------------------- | :-------------------- | :------------------------------------------------ |
-| **Frontend**           | Next.js 15            | React framework (App Router)                      |
-| **UI Framework**       | Chakra UI v3          | Modern, accessible component library              |
-| **Styling**            | Emotion / CSS-in-JS   | Styling engine for Chakra UI                      |
-| **QR Scanner**         | html5-qrcode          | Library for cross-platform QR code scanning       |
-| **Backend / Database** | Supabase (PostgreSQL) | Open source Firebase alternative                  |
-| **Deployment**         | Vercel                | Platform for frontend frameworks                  |
+| Category               | Technology            | Description                                 |
+| :--------------------- | :-------------------- | :------------------------------------------ |
+| **Frontend**           | Next.js 15            | React framework (App Router)                |
+| **UI Framework**       | Chakra UI v3          | Modern, accessible component library        |
+| **Styling**            | Emotion / CSS-in-JS   | Styling engine for Chakra UI                |
+| **QR Scanner**         | html5-qrcode          | Library for cross-platform QR code scanning |
+| **Backend / Database** | Supabase (PostgreSQL) | Open source Firebase alternative            |
+| **Deployment**         | Vercel                | Platform for frontend frameworks            |
 
 ---
 
@@ -657,24 +661,24 @@ File format:
 
 ## Required Columns
 
-| Column       | Required | Description             |
-| ------------ | -------- | ----------------------- |
+| Column       | Required | Description                  |
+| ------------ | -------- | ---------------------------- |
 | Guest Type   | yes      | internal / external / tenant |
-| Full Name    | yes      | nama lengkap tamu       |
-| Phone        | yes      | nomor WhatsApp          |
-| Email        | optional | khusus tamu internal    |
-| Address      | optional | khusus tenant/external  |
-| UMKM Product | optional | khusus kategori tenant  |
+| Full Name    | yes      | nama lengkap tamu            |
+| Phone        | yes      | nomor WhatsApp               |
+| Email        | optional | khusus tamu internal         |
+| Address      | optional | khusus tenant/external       |
+| UMKM Product | optional | khusus kategori tenant       |
 
 ---
 
 ## Example Excel
 
-| Guest Type | Full Name | WA | Email | Address | UMKM Product |
-| ---------- | --------- | -- | ----- | ------- | ------------ |
-| internal   | Zulhakim  | 08... | zul@.. | | |
-| tenant     | Ani       | 08... | | Bekasi | Kripik |
-| external   | Fauzi     | 08... | | Jakarta | |
+| Guest Type | Full Name | WA    | Email  | Address | UMKM Product |
+| ---------- | --------- | ----- | ------ | ------- | ------------ |
+| internal   | Zulhakim  | 08... | zul@.. |         |              |
+| tenant     | Ani       | 08... |        | Bekasi  | Kripik       |
+| external   | Fauzi     | 08... |        | Jakarta |              |
 
 ---
 

@@ -22,7 +22,9 @@ interface UserPermissionDialogProps {
   events: EventOption[]
   onClose: () => void
   permissionDrafts: Record<string, Record<string, string>>
-  setPermissionDrafts: (drafts: any) => void
+  setPermissionDrafts: React.Dispatch<
+    React.SetStateAction<Record<string, Record<string, string>>>
+  >
   onSave: () => void
 }
 
@@ -62,7 +64,7 @@ export function UserPermissionDialog({
               <Select
                 value={permissionDrafts[user.id]?.[event.id] || 'none'}
                 onValueChange={(value) =>
-                  setPermissionDrafts((prev: any) => ({
+                  setPermissionDrafts((prev) => ({
                     ...prev,
                     [user.id]: {
                       ...(prev[user.id] || {}),

@@ -1,176 +1,117 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { Trophy, Sparkles, RefreshCcw, User } from 'lucide-react'
-import Link from 'next/link'
+import { useDoorprize } from '@/hooks/use-doorprize'
+import { DoorprizeHeader } from '@/components/modules/doorprize/doorprize-header'
+import { DoorprizeGrid } from '@/components/modules/doorprize/doorprize-grid'
+import { WinnerBanner } from '@/components/modules/doorprize/winner-banner'
+import { FloatingParticles } from '@/components/shared/floating-particles'
+import { CountdownOverlay } from '@/components/modules/doorprize/countdown-overlay'
 import { cn } from '@/lib/utils'
-import confetti from 'canvas-confetti'
-import { Guest } from '@/types'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { AppLayout } from '@/components/layout/app-layout'
-import { PageHeader } from '@/components/shared/page-header'
 
 export default function DoorprizePage() {
-  const [candidates, setCandidates] = useState<Guest[]>([])
-  const [spinning, setSpinning] = useState(false)
-  const [winner, setWinner] = useState<Guest | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const {
+    candidates,
+    aliveIds,
+    loading,
+    isEliminating,
+    isAutoRunning,
+    countdown,
+    toggleAutoRun,
+    lastBatch,
+    aliveParticipants,
+    winner,
+    reset,
+    forceRefresh,
+  } = useDoorprize()
 
-  const fetchCandidates = async () => {
-    try {
-      setLoading(true)
-      setError('')
-      const res = await fetch('/api/admin/doorprize/eligible')
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.message)
-      setCandidates(data.candidates || [])
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Gagal memuat peserta')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchCandidates()
-  }, [])
-
-  const startSpin = useCallback(() => {
-    if (candidates.length === 0) return
-
-    setSpinning(true)
-    setWinner(null)
-    setError('')
-
-    const startTime = Date.now()
-    const duration = 3000
-
-    const spinInterval = setInterval(() => {
-      const randomIndex = Math.floor(Math.random() * candidates.length)
-      setWinner(candidates[randomIndex])
-
-      if (Date.now() - startTime > duration) {
-        clearInterval(spinInterval)
-        setSpinning(false)
-        fireConfetti()
-      }
-    }, 100)
-  }, [candidates])
-
-  const fireConfetti = () => {
-    confetti({
-      particleCount: 150,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#059669', '#fbbf24', '#ffffff'],
-    })
-  }
+  const isDangerMode = aliveIds.size <= 10 && aliveParticipants.length > 1
 
   return (
-    <AppLayout
-      header={
-        <PageHeader
-          title="Luck Engine"
-          subtitle="Sistem pengundian doorprize otomatis."
-          backHref="/admin/dashboard"
-          actions={
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8"
-              onClick={fetchCandidates}
-              disabled={loading || spinning}
-            >
-              <RefreshCcw
-                className={cn('mr-2 h-3.5 w-3.5', loading && 'animate-spin')}
-              />
-              {loading ? 'Refreshing...' : 'Refresh Participants'}
-            </Button>
-          }
-        />
-      }
+    <div
+      className={cn(
+        'relative flex h-screen w-screen flex-col overflow-hidden text-white transition-colors duration-1000 select-none',
+        isDangerMode ? 'bg-rose-950' : 'bg-[#0a0a0a]',
+      )}
     >
-      <div className="flex flex-1 flex-col overflow-hidden p-5 pt-0">
-        <div className="flex flex-1 flex-col items-center justify-center p-8">
-          <div className="w-full max-w-2xl space-y-8 text-center">
-            <div className="space-y-4">
-              <h2 className="text-foreground/80 text-xl font-semibold tracking-tight">
-                Ready to find the lucky one?
-              </h2>
-              <Badge variant="secondary" className="px-4 py-1.5 text-sm">
-                {candidates.length} CANDIDATES ELIGIBLE
-              </Badge>
-            </div>
+      <style jsx global>{`
+        @keyframes pulse-red {
+          0%,
+          100% {
+            opacity: 0.1;
+          }
+          50% {
+            opacity: 0.3;
+          }
+        }
+        @keyframes shake {
+          0%,
+          100% {
+            transform: translateX(0);
+          }
+          25% {
+            transform: translateX(-5px) rotate(-0.5deg);
+          }
+          75% {
+            transform: translateX(5px) rotate(0.5deg);
+          }
+        }
+        .animate-pulse-red {
+          animation: pulse-red 2s infinite ease-in-out;
+        }
+        .animate-shake {
+          animation: shake 0.1s infinite;
+        }
+        @keyframes pulse-border {
+          0%,
+          100% {
+            border-color: rgba(239, 68, 68, 0.5);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+          }
+          50% {
+            border-color: rgba(239, 68, 68, 1);
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.5);
+          }
+        }
+        .animate-pulse-border {
+          animation: pulse-border 1.5s infinite ease-in-out;
+        }
+      `}</style>
 
-            <Card className="flex min-h-[300px] items-center justify-center p-8">
-              <CardContent className="flex w-full flex-col items-center justify-center p-0">
-                {winner ? (
-                  <div
-                    className={cn(
-                      'flex w-full flex-col items-center justify-center space-y-8 transition-opacity duration-300',
-                      spinning ? 'opacity-50' : 'opacity-100',
-                    )}
-                  >
-                    <Trophy
-                      className={cn(
-                        'h-24 w-24',
-                        spinning ? 'text-muted-foreground' : 'text-amber-500',
-                      )}
-                    />
+      <div
+        className={cn(
+          'absolute inset-0 transition-opacity duration-1000',
+          isDangerMode
+            ? 'animate-pulse-red bg-[radial-gradient(circle_at_50%_50%,rgba(150,0,0,0.2)_0%,rgba(0,0,0,1)_100%)]'
+            : 'bg-[radial-gradient(circle_at_50%_50%,rgba(15,15,15,1)_0%,rgba(0,0,0,1)_100%)]',
+        )}
+      />
 
-                    <div className="space-y-2 text-center">
-                      <h3 className="text-4xl font-extrabold tracking-tight md:text-5xl">
-                        {winner.full_name}
-                      </h3>
-                      <p className="text-muted-foreground text-lg font-semibold tracking-widest uppercase">
-                        {spinning ? '••••••••' : 'WINNER'}
-                      </p>
-                    </div>
+      <FloatingParticles />
 
-                    {!spinning && (
-                      <div className="flex items-center gap-2 pt-4">
-                        <Sparkles className="h-5 w-5 animate-pulse text-amber-500" />
-                        <span className="text-sm font-bold tracking-widest uppercase">
-                          Congratulations!
-                        </span>
-                        <Sparkles className="h-5 w-5 animate-pulse text-amber-500" />
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-muted-foreground flex flex-col items-center justify-center space-y-4">
-                    <User className="h-16 w-16" />
-                    <p className="text-sm">
-                      Tap the draw button below to initiate the randomization
-                      engine
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+      <DoorprizeHeader
+        aliveCount={aliveIds.size}
+        totalCount={candidates.length}
+        isAutoRunning={isAutoRunning || countdown !== null}
+        isEliminating={isEliminating}
+        loading={loading}
+        hasCandidates={candidates.length > 0}
+        hasWinner={!!winner}
+        onReset={reset}
+        onToggleAutoRun={toggleAutoRun}
+        onForceRefresh={forceRefresh}
+      />
 
-            <div className="pt-8">
-              <Button
-                disabled={spinning || candidates.length === 0}
-                onClick={startSpin}
-                size="lg"
-                className="h-16 w-full text-xl font-bold tracking-wider sm:w-auto sm:px-16"
-              >
-                {spinning ? 'RANDOMIZING...' : 'DRAW NOW'}
-              </Button>
+      <CountdownOverlay count={countdown} />
 
-              {error && (
-                <p className="text-destructive mt-6 text-sm font-medium">
-                  {error}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </AppLayout>
+      <DoorprizeGrid
+        aliveParticipants={aliveParticipants}
+        lastBatch={lastBatch}
+        isDangerMode={isDangerMode}
+        loading={loading}
+        hasCandidates={candidates.length > 0}
+      />
+
+      <WinnerBanner winner={winner} onReset={reset} />
+    </div>
   )
 }

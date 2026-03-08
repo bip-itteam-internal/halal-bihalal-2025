@@ -77,6 +77,7 @@ const items = [
     url: '/admin/doorprize',
     icon: Timer,
     roles: ['super_admin', 'admin'] as UserRole[],
+    newTab: true,
   },
   {
     title: 'Settings',
@@ -133,8 +134,10 @@ export function Sidebar({
                     <ShieldCheck className="size-4" />
                   </div>
                   <div className="flex flex-col gap-0.5 leading-none">
-                    <span className="font-semibold">BIP Panel</span>
-                    <span className="">Event Management</span>
+                    <span className="font-semibold">Bharata Event</span>
+                    <span className="text-[11px] opacity-70">
+                      Management Panel
+                    </span>
                   </div>
                 </Link>
               </SidebarMenuButton>
@@ -162,7 +165,11 @@ export function Sidebar({
                         isActive={isItemActive}
                         tooltip={item.title}
                       >
-                        <Link href={item.url}>
+                        <Link
+                          href={item.url}
+                          target={item.newTab ? '_blank' : undefined}
+                          rel={item.newTab ? 'noopener noreferrer' : undefined}
+                        >
                           <item.icon />
                           <span>{item.title}</span>
                         </Link>

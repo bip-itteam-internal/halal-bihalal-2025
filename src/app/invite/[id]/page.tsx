@@ -111,7 +111,7 @@ export default function GuestInvitePage({
     }
 
     fetchData()
-  }, [guestId, supabase])
+  }, [guestId, supabase, resolvedParams.id])
 
   // Pretty URL sync: Update URL to include name/event if it's just a raw ID
   useEffect(() => {

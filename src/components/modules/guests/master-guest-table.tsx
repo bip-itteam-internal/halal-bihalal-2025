@@ -37,6 +37,7 @@ interface MasterGuestTableProps {
   searchFilter?: string
   onRefresh: () => void
   startNumber?: number
+  role?: string
 }
 
 export function MasterGuestTable({
@@ -45,6 +46,7 @@ export function MasterGuestTable({
   searchFilter = '',
   onRefresh,
   startNumber = 1,
+  role,
 }: MasterGuestTableProps) {
   const supabase = createClient()
   const [loading, setLoading] = useState<string | null>(null)
@@ -163,7 +165,7 @@ export function MasterGuestTable({
 
   return (
     <div className="space-y-4">
-      {selectedIds.length > 0 && (
+      {role !== 'staff' && selectedIds.length > 0 && (
         <div className="animate-in fade-in slide-in-from-top-2 flex flex-col gap-3 rounded-lg border border-emerald-100 bg-emerald-50/50 p-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
@@ -216,16 +218,19 @@ export function MasterGuestTable({
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50/50 text-nowrap">
-              <TableHead className="w-[40px] px-4">
-                <Checkbox
-                  checked={
-                    isAllSelected ||
-                    (guests.length > 0 && selectedIds.length === guests.length)
-                  }
-                  onCheckedChange={toggleSelectAll}
-                  aria-label="Select all"
-                />
-              </TableHead>
+              {role !== 'staff' && (
+                <TableHead className="w-[40px] px-4">
+                  <Checkbox
+                    checked={
+                      isAllSelected ||
+                      (guests.length > 0 &&
+                        selectedIds.length === guests.length)
+                    }
+                    onCheckedChange={toggleSelectAll}
+                    aria-label="Select all"
+                  />
+                </TableHead>
+              )}
               <TableHead className="w-[60px] text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
                 No
               </TableHead>
@@ -244,16 +249,18 @@ export function MasterGuestTable({
               <TableHead className="text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
                 Status RSVP
               </TableHead>
-              <TableHead className="pr-6 text-right text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                Aksi
-              </TableHead>
+              {role !== 'staff' && (
+                <TableHead className="pr-6 text-right text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                  Aksi
+                </TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
             {guests.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={role === 'staff' ? 6 : 8}
                   className="text-muted-foreground h-32 text-center"
                 >
                   <div className="flex flex-col items-center justify-center gap-1">
@@ -276,13 +283,17 @@ export function MasterGuestTable({
                       : ''
                   }`}
                 >
-                  <TableCell className="px-4">
-                    <Checkbox
-                      checked={isAllSelected || selectedIds.includes(guest.id)}
-                      onCheckedChange={() => toggleSelect(guest.id)}
-                      aria-label={`Select ${guest.full_name}`}
-                    />
-                  </TableCell>
+                  {role !== 'staff' && (
+                    <TableCell className="px-4">
+                      <Checkbox
+                        checked={
+                          isAllSelected || selectedIds.includes(guest.id)
+                        }
+                        onCheckedChange={() => toggleSelect(guest.id)}
+                        aria-label={`Select ${guest.full_name}`}
+                      />
+                    </TableCell>
+                  )}
                   <TableCell className="text-center text-sm font-semibold text-slate-600">
                     {startNumber + index}
                   </TableCell>
@@ -318,17 +329,15 @@ export function MasterGuestTable({
                                 Daftar Acara
                               </p>
                               <div className="space-y-1.5">
-                                {guest.guest_events.map(
-                                  (ge: any, i: number) => (
-                                    <div
-                                      key={i}
-                                      className="flex items-center gap-2.5 text-[11px] font-medium text-slate-700"
-                                    >
-                                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
-                                      {ge.events?.name}
-                                    </div>
-                                  ),
-                                )}
+                                {guest.guest_events.map((ge, i) => (
+                                  <div
+                                    key={i}
+                                    className="flex items-center gap-2.5 text-[11px] font-medium text-slate-700"
+                                  >
+                                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                    {ge.events?.name}
+                                  </div>
+                                ))}
                               </div>
                             </div>
                           </TooltipContent>
@@ -353,68 +362,70 @@ export function MasterGuestTable({
                     </div>
                   </TableCell>
                   <TableCell>{getStatusBadge(guest.rsvp_status)}</TableCell>
-                  <TableCell className="mr-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
-                              onClick={() => {
-                                setGuestsToAssign([
-                                  { id: guest.id, name: guest.full_name },
-                                ])
-                                setAssignDialogOpen(true)
-                              }}
-                            >
-                              <CalendarPlus className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-xs">Hubungkan ke Event</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                  {role !== 'staff' && (
+                    <TableCell className="mr-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                                onClick={() => {
+                                  setGuestsToAssign([
+                                    { id: guest.id, name: guest.full_name },
+                                  ])
+                                  setAssignDialogOpen(true)
+                                }}
+                              >
+                                <CalendarPlus className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs">Hubungkan ke Event</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
 
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-primary h-8 w-8"
-                            >
-                              <UserPen className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-xs">Edit Profil</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-primary h-8 w-8"
+                              >
+                                <UserPen className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs">Edit Profil</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
 
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:bg-destructive/10 h-8 w-8"
-                              onClick={() => handleDelete(guest.id)}
-                              disabled={loading === guest.id}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="text-xs">Hapus dari Master</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </TableCell>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-destructive hover:bg-destructive/10 h-8 w-8"
+                                onClick={() => handleDelete(guest.id)}
+                                disabled={loading === guest.id}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs">Hapus dari Master</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             )}

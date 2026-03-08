@@ -4,6 +4,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
+import { Guest } from '@/types'
+
 function normalizePhone(value: string) {
   return value.replace(/[^\d]/g, '')
 }
@@ -90,10 +92,14 @@ export async function POST(
 
     const normalizedInputPhone = normalizePhone(phone)
 
-    let matchedGuestObject = (eventGuests || []).find((eg) => {
-      const g = eg.guests as any
+    let matchedGuestObject: {
+      id: string
+      phone: string
+      guest_type: string
+    } | null = (eventGuests || []).find((eg) => {
+      const g = eg.guests as unknown as Guest
       return normalizePhone(g.phone || '') === normalizedInputPhone
-    })?.guests as any
+    })?.guests as unknown as { id: string; phone: string; guest_type: string }
 
     // If not found in this event, check Master Guest list
     if (!matchedGuestObject) {

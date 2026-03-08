@@ -34,7 +34,7 @@ export const INVITATION_TEMPLATES: AppTemplate[] = [
   },
   {
     id: 'festive-halal',
-    name: 'Halal Bihalal Festive',
+    name: 'Bharata Event Festive',
     description:
       'Nuansa hangat dengan dekorasi Islami. Cocok untuk acara silaturahmi.',
     icon: Stars,

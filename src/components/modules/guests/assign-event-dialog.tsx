@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -9,13 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -48,13 +41,7 @@ export function AssignEventDialog({
   const [selectedEventIds, setSelectedEventIds] = useState<string[]>([])
   const [fetchingEvents, setFetchingEvents] = useState(false)
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchEvents()
-    }
-  }, [isOpen])
-
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       setFetchingEvents(true)
       const { data, error } = await supabase
@@ -70,7 +57,13 @@ export function AssignEventDialog({
     } finally {
       setFetchingEvents(false)
     }
-  }
+  }, [supabase])
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchEvents()
+    }
+  }, [isOpen, fetchEvents])
 
   const handleAssign = async () => {
     if ((!isAllMode && guestIds.length === 0) || selectedEventIds.length === 0)
@@ -172,9 +165,11 @@ export function AssignEventDialog({
       onOpenChange(false)
       setSelectedEventIds([])
       if (onSuccess) onSuccess()
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Gagal mendaftarkan tamu ke acara.'
       console.error('Error assigning event:', err)
-      toast.error(err.message || 'Gagal mendaftarkan tamu ke acara.')
+      toast.error(message)
     } finally {
       setLoading(false)
     }

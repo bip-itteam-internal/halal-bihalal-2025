@@ -21,7 +21,6 @@ import Image from 'next/image'
 import { CreateEventSheet } from '@/components/modules/events/create-event-sheet'
 import { PageHeader } from '@/components/shared/page-header'
 import { useProfile } from '@/hooks/use-profile'
-import { UserRole } from '@/types'
 
 interface EventData {
   id: string
@@ -101,7 +100,6 @@ export default function EventsPage() {
         <PageHeader
           title="Manajemen Event"
           subtitle="Buat dan kelola seluruh daftar acara yang terdaftar di sistem."
-          icon={<CalendarDays className="h-4 w-4" />}
           actions={
             canManageEvent && <CreateEventSheet onSuccess={fetchEvents} />
           }

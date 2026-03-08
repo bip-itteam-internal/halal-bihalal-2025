@@ -2,14 +2,13 @@ import { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Halal Bihalal Bharata Group 2026',
-    short_name: 'HalalBihalal',
-    description:
-      'QR Check-in & Event Management System for Halal Bihalal Bharata Group 2026',
+    name: 'Bharata Event',
+    short_name: 'BharataEvent',
+    description: 'QR Check-in & Event Management System',
     start_url: '/',
     display: 'standalone',
     background_color: '#ffffff',
-    theme_color: '#10b981',
+    theme_color: '#0b74de',
     icons: [
       {
         src: '/logo/logo_512.png',

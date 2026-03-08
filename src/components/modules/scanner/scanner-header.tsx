@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
 
 export function ScannerHeader() {

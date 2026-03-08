@@ -1,6 +1,6 @@
 ﻿import Link from 'next/link'
 import Image from 'next/image'
-import { MoveRight, Ticket, CalendarDays, MapPin } from 'lucide-react'
+import { Ticket, CalendarDays, MapPin, Users, Store, LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -150,7 +150,6 @@ export default async function EksternalPage() {
                       {event.event_date
                         ? formatJakartaDate(event.event_date, 'PPP p')
                         : 'TBA'}{' '}
-                      WIB
                     </div>
                     <div className="text-muted-foreground flex items-center text-sm">
                       <MapPin className="mr-2 h-4 w-4" />
@@ -193,6 +192,7 @@ export default async function EksternalPage() {
                           className="w-full"
                         >
                           <Button variant="outline" className="w-full">
+                            <LogIn className="mr-2 h-4 w-4" />
                             Login Tamu
                           </Button>
                         </Link>
@@ -214,8 +214,8 @@ export default async function EksternalPage() {
                           >
                             {isOpen ? (
                               <>
-                                Daftar untuk umum{' '}
-                                <MoveRight className="ml-2 h-4 w-4" />
+                                <Users className="mr-2 h-4 w-4" />
+                                Daftar untuk umum
                               </>
                             ) : (
                               'Pendaftaran Ditutup'
@@ -233,6 +233,7 @@ export default async function EksternalPage() {
                             className="w-full"
                             disabled={!isOpen}
                           >
+                            <Store className="mr-2 h-4 w-4" />
                             Daftar untuk tenant
                           </Button>
                         </Link>
