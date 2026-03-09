@@ -1,17 +1,20 @@
 'use client'
 
-import React, { useState } from 'react'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import slugify from 'slugify'
 import { motion } from 'framer-motion'
-import { Users, Store, Star } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RegistrationForm } from '../registration-form'
 import { GuestLoginForm } from '../../auth/guest-login-form'
 import { RegistrationSuccess } from '../registration-success'
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { EventGuestRule } from '@/types'
+import Link from 'next/link'
 
 interface RegistrationProps {
   eventId: string
+  eventName?: string
   regData: {
     external: number
     tenant: number
@@ -22,15 +25,18 @@ interface RegistrationProps {
   }
   activeTab: 'external' | 'tenant'
   onTabChange: (tab: 'external' | 'tenant') => void
+  guestRules?: EventGuestRule[]
 }
 
 export function Registration({
   eventId,
+  eventName,
   regData,
   quotas,
   activeTab,
-  onTabChange,
+  guestRules,
 }: RegistrationProps) {
+  const router = useRouter()
   const [authMode, setAuthMode] = useState<'register' | 'login'>('register')
   const [successData, setSuccessData] = useState<{
     guest_id: string
@@ -43,12 +49,6 @@ export function Registration({
     quotas.external > 0
       ? Math.min(100, Math.round((regData.external / quotas.external) * 100))
       : 0
-
-  const handleTabChange = (v: string) => {
-    onTabChange(v as 'external' | 'tenant')
-    setSuccessData(null)
-    setAuthMode('register')
-  }
 
   const renderAuthContent = (type: 'external' | 'tenant') => {
     if (successData) {
@@ -84,7 +84,7 @@ export function Registration({
                   CATEGORY
                 </span>
               </div>
-              <h2 className="mb-4 text-4xl font-black tracking-tight text-white uppercase md:text-6xl">
+              <h2 className="font-outfit mb-4 text-4xl font-black tracking-tight text-white uppercase md:text-6xl">
                 {type === 'external' ? 'DAFTAR ' : 'BOOTH '}
                 <span className="text-halal-primary">
                   {type === 'external' ? 'UMUM' : 'UMKM'}
@@ -95,6 +95,27 @@ export function Registration({
                   ? 'Registrasi masyarakat umum untuk menghadiri konser akbar.'
                   : 'Dapatkan kesempatan ekspansi bisnis dan jangkau ribuan pengunjung di lokasi acara.'}
               </p>
+
+              {/* Open Gate Info */}
+              {guestRules?.find((r) => r.guest_type === type) && (
+                <div className="border-halal-primary/20 bg-halal-primary/5 mt-8 flex items-center gap-4 rounded-2xl border p-5 backdrop-blur-xl md:mt-12">
+                  <div className="bg-halal-primary/20 text-halal-primary flex h-12 w-12 items-center justify-center rounded-xl shadow-inner">
+                    <Clock className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <span className="text-halal-primary block text-[10px] font-black tracking-[0.3em] uppercase opacity-70">
+                      OPEN GATE
+                    </span>
+                    <p className="text-xl font-bold text-white md:text-2xl">
+                      {guestRules
+                        ?.find((r) => r.guest_type === type)
+                        ?.open_gate?.substring(0, 5)
+                        .replace(':', '.') || '--.--'}{' '}
+                      WIB
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {type === 'external' ? (
@@ -121,39 +142,26 @@ export function Registration({
                 </div>
               </div>
             ) : (
-              <>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {[
-                    'Akses Listrik',
-                    'Fasilitas Air',
-                    'Stand Exclusive',
-                    'Tiket Konser',
-                  ].map((benefit, i) => (
-                    <div
-                      key={i}
-                      className="group flex items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:bg-white/[0.05]"
-                    >
-                      <div className="bg-halal-primary/10 text-halal-primary flex h-8 w-8 items-center justify-center rounded-full">
-                        <Star className="h-4 w-4 fill-current" />
-                      </div>
-                      <span className="text-xs font-bold tracking-wide text-zinc-300 uppercase">
-                        {benefit}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <p className="mt-6 text-xs font-medium text-zinc-500 italic">
-                  Informasi lebih lanjut mengenai booth? Hubungi{' '}
-                  <a
-                    href="https://wa.me/6289676258026"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-halal-primary not-italic hover:underline"
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {[
+                  'Akses Listrik',
+                  'Fasilitas Air',
+                  'Stand Exclusive',
+                  'Tiket Konser',
+                ].map((benefit, i) => (
+                  <div
+                    key={i}
+                    className="group flex items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:bg-white/[0.05]"
                   >
-                    0896-7625-8026 (FARIZ)
-                  </a>
-                </p>
-              </>
+                    <div className="bg-halal-primary/20 text-halal-primary flex h-8 w-8 items-center justify-center rounded-full">
+                      <div className="bg-halal-primary h-1 w-1 rounded-full" />
+                    </div>
+                    <span className="text-xs font-bold tracking-wide text-zinc-300 uppercase">
+                      {benefit}
+                    </span>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
@@ -185,7 +193,19 @@ export function Registration({
               <RegistrationForm
                 eventIdentifier={eventId}
                 forcedGuestType={type}
-                onSuccess={(data) => setSuccessData(data)}
+                onSuccess={(data) => {
+                  const nameSlug = slugify(data.registeredName || '', {
+                    lower: true,
+                    strict: true,
+                  })
+                  const eventSlug = slugify(eventName || '', {
+                    lower: true,
+                    strict: true,
+                  })
+                  router.push(
+                    `/invite/${data.guest_id}-${nameSlug}-${eventSlug}`,
+                  )
+                }}
                 hideHeader
               />
             ) : (
@@ -211,7 +231,7 @@ export function Registration({
               JOIN THE CELEBRATION
             </span>
           </motion.div>
-          <h2 className="text-4xl font-black tracking-tighter text-white uppercase md:text-6xl">
+          <h2 className="font-outfit text-4xl font-black tracking-tighter text-white uppercase md:text-6xl">
             RESERVASI <span className="text-halal-primary">TEMPAT</span>
           </h2>
           <p className="mx-auto max-w-xl text-zinc-400">
@@ -220,53 +240,24 @@ export function Registration({
           </p>
         </div>
 
-        <Tabs
-          value={activeTab}
-          onValueChange={handleTabChange}
-          className="w-full"
-        >
-          <div
-            id="register-section"
-            className="mx-auto mb-16 max-w-sm scroll-mt-24"
-          >
-            <TabsList className="grid h-16 w-full grid-cols-2 rounded-2xl border border-white/5 bg-black/40 p-1.5 backdrop-blur-xl">
-              <TabsTrigger
-                value="external"
-                className="group data-[state=active]:bg-halal-primary data-[state=active]:text-halal-secondary flex items-center gap-2 rounded-xl text-xs font-black tracking-widest uppercase transition-all"
-              >
-                <Users className="h-4 w-4 transition-transform group-active:scale-90" />
-                Umum
-              </TabsTrigger>
-              <TabsTrigger
-                value="tenant"
-                className="group data-[state=active]:bg-halal-primary data-[state=active]:text-halal-secondary flex items-center gap-2 rounded-xl text-xs font-black tracking-widest uppercase transition-all"
-              >
-                <Store className="h-4 w-4 transition-transform group-active:scale-90" />
-                UMKM
-              </TabsTrigger>
-            </TabsList>
+        <div className="relative overflow-hidden rounded-[3rem] border border-white/5 bg-[#0d1f1e]/60 p-8 shadow-[0_40px_100px_rgba(0,0,0,0.5)] backdrop-blur-3xl md:p-12 lg:p-16">
+          {renderAuthContent(activeTab)}
+
+          <div className="mt-12 border-t border-white/5 pt-8 text-center">
+            <p className="mb-4 text-sm text-zinc-500">
+              Ingin mendaftar sebagai tenant atau booth UMKM?
+            </p>
+            <Link
+              href={`/register/${eventId}/tenant`}
+              className="text-halal-primary group inline-flex items-center gap-2 text-xs font-black tracking-widest uppercase hover:underline"
+            >
+              Klik di sini untuk Pendaftaran Tenant
+              <span className="transition-transform group-hover:translate-x-1">
+                &rarr;
+              </span>
+            </Link>
           </div>
-
-          <TabsContent value="external" className="mt-0 outline-none">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="relative overflow-hidden rounded-[3rem] border border-white/5 bg-[#0d1f1e]/60 p-8 shadow-[0_40px_100px_rgba(0,0,0,0.5)] backdrop-blur-3xl md:p-12 lg:p-16"
-            >
-              {renderAuthContent('external')}
-            </motion.div>
-          </TabsContent>
-
-          <TabsContent value="tenant" className="mt-0 outline-none">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="relative overflow-hidden rounded-[3rem] border border-white/5 bg-[#0d1f1e]/60 p-8 shadow-[0_40px_100px_rgba(0,0,0,0.5)] backdrop-blur-3xl md:p-12 lg:p-16"
-            >
-              {renderAuthContent('tenant')}
-            </motion.div>
-          </TabsContent>
-        </Tabs>
+        </div>
       </div>
     </section>
   )

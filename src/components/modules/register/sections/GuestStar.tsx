@@ -28,7 +28,7 @@ export function GuestStar() {
         className="border-halal-primary/20 relative aspect-[16/9] w-full overflow-hidden rounded-[4rem] border shadow-2xl md:aspect-[21/9]"
       >
         <Image
-          src="/wali.webp"
+          src="/wali.png"
           alt="Wali Band"
           fill
           className="object-contain transition-all duration-1000 hover:scale-105"

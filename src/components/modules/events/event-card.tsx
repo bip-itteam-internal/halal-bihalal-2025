@@ -9,7 +9,6 @@ import {
   Card,
   CardHeader,
   CardTitle,
-  CardDescription,
   CardContent,
   CardFooter,
 } from '@/components/ui/card'
@@ -90,21 +89,8 @@ export function EventCard({
             <CardTitle className="text-xl leading-tight">
               {event.name}
             </CardTitle>
-            {event.public_name && (
-              <p className="text-muted-foreground mt-1 text-sm font-medium italic">
-                Publik: {event.public_name}
-              </p>
-            )}
-            {event.company_name && (
-              <p className="text-muted-foreground text-xs uppercase">
-                {event.company_name}
-              </p>
-            )}
           </div>
         </div>
-        <CardDescription className="mt-1.5 line-clamp-2">
-          {event.description || 'Tidak ada deskripsi.'}
-        </CardDescription>
       </CardHeader>
       <CardContent className="flex-1 space-y-3 px-4 pb-3">
         <div className="text-muted-foreground flex items-center text-sm">

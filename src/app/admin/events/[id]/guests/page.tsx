@@ -14,7 +14,7 @@ import {
   Filter,
 } from 'lucide-react'
 import Link from 'next/link'
-import { Guest } from '@/types'
+import { Guest, PaymentStatus } from '@/types'
 import { GuestListTable } from '@/components/modules/guests/guest-list-table'
 import { AddGuestSheet } from '@/components/modules/guests/add-guest-sheet'
 import { ImportGuestSheet } from '@/components/modules/guests/import-guest-sheet'
@@ -65,7 +65,9 @@ export default function GuestManagementPage({
       // Fetch Guests via Junction Table with Pagination and Search
       let query = supabase
         .from('guest_events')
-        .select('id, guests!inner(*)', { count: 'exact' })
+        .select('id, payment_proof_url, payment_status, guests!inner(*)', {
+          count: 'exact',
+        })
         .eq('event_id', eventId)
 
       if (searchQuery) {
@@ -91,10 +93,15 @@ export default function GuestManagementPage({
 
       if (guestError) throw guestError
 
-      // Extract guest data from the join
-      const guestsData = (mappingData || []).map(
-        (m) => m.guests,
-      ) as unknown as Guest[]
+      // Extract guest data and merge with payment info from junction table
+      const guestsData: Guest[] = (mappingData || []).map((m) => {
+        const guestObj = m.guests as unknown as Guest
+        return {
+          ...guestObj,
+          payment_proof_url: m.payment_proof_url || undefined,
+          payment_status: m.payment_status as PaymentStatus,
+        }
+      })
 
       setGuests(guestsData)
       setTotalCount(count || 0)

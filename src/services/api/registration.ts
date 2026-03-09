@@ -4,6 +4,7 @@ export interface RegisterGuestPayload {
   guest_type: 'external' | 'tenant'
   address: string
   metadata?: Record<string, unknown>
+  payment_proof_url?: string
 }
 
 export interface RegisterGuestResponse {

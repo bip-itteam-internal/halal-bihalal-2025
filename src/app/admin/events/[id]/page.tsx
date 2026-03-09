@@ -13,6 +13,7 @@ import { createClient } from '@/lib/supabase/client'
 import { EventPageHeader } from '@/components/modules/events/detail/event-page-header'
 import { EventDetailsForm } from '@/components/modules/events/detail/event-details-form'
 import { EventDeleteDialog } from '@/components/modules/events/detail/event-delete-dialog'
+import { EventGuestRulesManager } from '@/components/modules/events/detail/event-guest-rules-manager'
 
 export default function EventDetailPage({
   params,
@@ -90,19 +91,23 @@ export default function EventDetailPage({
 
     try {
       setSaving(true)
-      await updateEvent(eventId, {
-        name: event.name,
-        event_type: event.event_type,
-        description: event.description,
+      const updated = await updateEvent(eventId, {
+        name: event.name.trim(),
+        event_type: event.event_type || 'internal',
         event_date: toJakartaISOString(eventDateInput, eventTimeInput),
-        location: event.location,
-        dress_code: event.dress_code,
-        external_quota: event.external_quota,
-        tenant_quota: event.tenant_quota,
-        public_reg_status: event.public_reg_status,
-        logo_url: event.logo_url,
+        location: event.location || '',
+        external_quota: Number(event.external_quota) || 0,
+        tenant_quota: Number(event.tenant_quota) || 0,
+        public_reg_status: event.public_reg_status || 'closed',
+        logo_url: event.logo_url || null,
+        is_paid: !!event.is_paid,
+        is_tenant_paid: !!event.is_tenant_paid,
+        price_external: Number(event.price_external) || 0,
+        payment_info: event.payment_info || '',
         template_id: event.template_id,
       })
+
+      setEvent(updated)
 
       toast.success('Perubahan berhasil disimpan!')
       router.refresh()
@@ -144,14 +149,14 @@ export default function EventDetailPage({
       const filePath = `event-logos/${fileName}`
 
       const { error: uploadError } = await supabase.storage
-        .from('assets')
+        .from('event-assets')
         .upload(filePath, file)
 
       if (uploadError) throw uploadError
 
       const {
         data: { publicUrl },
-      } = supabase.storage.from('assets').getPublicUrl(filePath)
+      } = supabase.storage.from('event-assets').getPublicUrl(filePath)
 
       setEvent({ ...event, logo_url: publicUrl })
       toast.success('Logo berhasil diunggah.')
@@ -188,6 +193,12 @@ export default function EventDetailPage({
             isUploadingLogo={isUploadingLogo}
             onLogoUpload={handleLogoUpload}
           />
+        )}
+
+        {event && (
+          <div className="grid grid-cols-1 gap-6">
+            <EventGuestRulesManager eventId={eventId} />
+          </div>
         )}
       </div>
 

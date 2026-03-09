@@ -13,6 +13,10 @@ interface TemplateRendererProps {
   setIsOpen: (open: boolean) => void
   onRSVP: (status: 'confirmed' | 'declined' | 'pending') => void
   isUpdating: boolean
+  paymentStatus?: 'pending' | 'verified' | 'rejected'
+  paymentProofUrl?: string | null
+  openGate?: string | null
+  startTime?: string | null
 }
 
 export function TemplateRenderer({
@@ -23,6 +27,10 @@ export function TemplateRenderer({
   setIsOpen,
   onRSVP,
   isUpdating,
+  paymentStatus,
+  paymentProofUrl,
+  openGate,
+  startTime,
 }: TemplateRendererProps) {
   // If templateId is not set, or it's a legacy ID that doesn't match our new ones,
   // we can either show a default new template or the legacy one (if we want to keep it).
@@ -38,6 +46,10 @@ export function TemplateRenderer({
           setIsOpen={setIsOpen}
           onRSVP={onRSVP}
           isUpdating={isUpdating}
+          paymentStatus={paymentStatus}
+          paymentProofUrl={paymentProofUrl}
+          openGate={openGate}
+          startTime={startTime}
         />
       )
     case 'festive-halal':
@@ -49,6 +61,8 @@ export function TemplateRenderer({
           setIsOpen={setIsOpen}
           onRSVP={onRSVP}
           isUpdating={isUpdating}
+          openGate={openGate}
+          startTime={startTime}
         />
       )
     default:
@@ -61,6 +75,10 @@ export function TemplateRenderer({
           setIsOpen={setIsOpen}
           onRSVP={onRSVP}
           isUpdating={isUpdating}
+          paymentStatus={paymentStatus}
+          paymentProofUrl={paymentProofUrl}
+          openGate={openGate}
+          startTime={startTime}
         />
       )
   }

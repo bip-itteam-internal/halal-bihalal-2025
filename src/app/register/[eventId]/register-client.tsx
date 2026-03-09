@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import slugify from 'slugify'
 import { MoveLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Event } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { RegistrationSuccess } from '@/components/modules/register/registration-success'
 import { EventInfo } from '@/components/modules/register/event-info'
 import { RegistrationForm } from '@/components/modules/register/registration-form'
 
@@ -21,23 +21,7 @@ export function RegisterEventClient({
   event,
   initialType,
 }: RegisterEventClientProps) {
-  const [successData, setSuccessData] = useState<{
-    guest_id: string
-    qr_payload: string
-    registeredName: string
-    registrationType: 'external' | 'tenant'
-  } | null>(null)
-
-  if (successData) {
-    return (
-      <RegistrationSuccess
-        guestId={successData.guest_id}
-        qrPayload={successData.qr_payload}
-        registeredName={successData.registeredName}
-        registeredGuestType={successData.registrationType}
-      />
-    )
-  }
+  const router = useRouter()
 
   return (
     <div className="bg-muted/40 min-h-screen px-4 py-8">
@@ -60,7 +44,19 @@ export function RegisterEventClient({
                 <RegistrationForm
                   eventIdentifier={eventIdentifier}
                   forcedGuestType={initialType}
-                  onSuccess={(data) => setSuccessData(data)}
+                  onSuccess={(data) => {
+                    const nameSlug = slugify(data.registeredName || '', {
+                      lower: true,
+                      strict: true,
+                    })
+                    const eventSlug = slugify(event.name || '', {
+                      lower: true,
+                      strict: true,
+                    })
+                    router.push(
+                      `/invite/${data.guest_id}-${nameSlug}-${eventSlug}`,
+                    )
+                  }}
                 />
               </div>
             </div>

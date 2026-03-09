@@ -27,6 +27,8 @@ export interface EventTicketProps {
   className?: string
   showDownloadButton?: boolean
   downloadFileName?: string
+  openGate?: string
+  guestType?: string
 }
 
 export function EventTicket({
@@ -41,6 +43,8 @@ export function EventTicket({
   className,
   showDownloadButton = true,
   downloadFileName,
+  openGate,
+  guestType,
 }: EventTicketProps) {
   const ticketRef = useRef<HTMLDivElement>(null)
   const [isDownloading, setIsDownloading] = useState(false)
@@ -116,12 +120,12 @@ export function EventTicket({
       >
         {/* Top Part */}
         <div className="rounded-t-[2.5rem] bg-white p-8 pb-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between">
             <div className="space-y-1">
               <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                 Event
               </p>
-              <p className={cn('text-lg leading-tight font-bold', colors.text)}>
+              <p className="max-w-[300px] text-lg leading-tight font-bold">
                 {eventName}
               </p>
             </div>
@@ -163,46 +167,68 @@ export function EventTicket({
             </div>
           </div>
 
-          {/* Event Details */}
-          <div className="mt-8 grid grid-cols-2 gap-4 border-t border-dashed border-slate-100 pt-6">
+          {/* Middle Section: Event Details */}
+          <div className="mt-6 space-y-6 border-t border-dashed border-slate-100 pt-6">
+            {/* Full Date - Large & Prominent */}
             <div className="space-y-1">
-              <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                Waktu & Tanggal
+              <p className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">
+                Hari & Tanggal
               </p>
-              <p className="text-sm leading-relaxed font-bold text-slate-800">
-                {eventDate}
-                {eventTime && (
-                  <>
-                    <br />
-                    {eventTime}
-                  </>
-                )}
-              </p>
+              <p className="text-base font-black text-slate-900">{eventDate}</p>
             </div>
-            <div className="space-y-1 text-right">
-              <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                Lokasi
-              </p>
-              <p className="line-clamp-2 text-sm font-bold text-slate-800">
-                {location}
-              </p>
+
+            {/* Time Grid (Open Gate & Start Time) */}
+            <div className="grid grid-cols-2 gap-4 rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
+              <div className="space-y-1">
+                <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                  Open Gate
+                </p>
+                <p className="text-sm font-black text-slate-900 italic">
+                  {openGate
+                    ? openGate.substring(0, 5).replace(':', '.') + ' WIB'
+                    : '-'}
+                </p>
+              </div>
+
+              <div className="space-y-1 text-right">
+                <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                  Waktu Mulai
+                </p>
+                <p className="inline-block border-l border-slate-200 pl-4 text-sm font-black text-slate-900">
+                  {eventTime}
+                </p>
+              </div>
+            </div>
+
+            {/* Info Grid (Location & Category) */}
+            <div className="grid grid-cols-2 gap-x-4">
+              <div className="space-y-1">
+                <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                  Lokasi
+                </p>
+                <p className="text-[11px] leading-tight font-bold text-slate-900">
+                  {location}
+                </p>
+              </div>
+              <div className="space-y-1 text-right">
+                <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                  Kategori
+                </p>
+                <p className="text-[11px] font-black tracking-wider text-blue-600 uppercase">
+                  {guestType || '-'}
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Guest Info */}
-          <div className="mt-6 grid grid-cols-2 gap-4 border-t border-dashed border-slate-100 pt-6">
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+          {/* Bottom Section: Guest Info */}
+          <div className="mt-8 grid grid-cols-2 gap-x-4 border-t border-dashed border-slate-100 pt-6">
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
                 Nama Tamu
               </p>
-              <p className="text-sm font-bold text-slate-800">{guestName}</p>
-            </div>
-            <div className="space-y-1 text-right">
-              <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                Kode Masuk
-              </p>
-              <p className="font-mono text-sm font-black tracking-widest text-slate-800">
-                {entryCode}
+              <p className="text-xl leading-tight font-black tracking-tight text-slate-900">
+                {guestName}
               </p>
             </div>
           </div>
@@ -231,6 +257,16 @@ export function EventTicket({
               bgColor="#ffffff"
               level="H"
             />
+          </div>
+          <div className="mt-6 flex flex-col items-center gap-1">
+            <p className="font-mono text-2xl font-black tracking-[0.4em] text-slate-900">
+              {entryCode}
+            </p>
+          </div>
+          <div className="mt-6 flex flex-col items-center gap-1">
+            <p className="text-xs text-slate-900">
+              Tunjukkan QR ini kepada petugas
+            </p>
           </div>
         </div>
       </div>

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 
 type PermissionInput = {
   event_id: string
@@ -64,9 +63,9 @@ export async function PUT(
       )
     }
 
-    const admin = createAdminClient()
+    const admin = createClient()
 
-    const { error: deleteError } = await admin
+    const { error: deleteError } = await (await admin)
       .from('event_permissions')
       .delete()
       .eq('user_id', id)
@@ -80,7 +79,7 @@ export async function PUT(
         role: permission.role,
       }))
 
-      const { error: insertError } = await admin
+      const { error: insertError } = await (await admin)
         .from('event_permissions')
         .insert(payload)
 

@@ -37,10 +37,17 @@ export default async function EksternalPage() {
     return acc
   }, {})
 
+  // Fetch event guest rules
+  const { data: guestRules } = await supabase
+    .from('event_guest_rules')
+    .select('*')
+    .in('event_id', eventIds)
+
   return (
-    <LandingClient 
-      events={(events || []) as unknown as Event[]} 
-      registrationsByEvent={registrationsByEvent} 
+    <LandingClient
+      events={(events || []) as unknown as Event[]}
+      registrationsByEvent={registrationsByEvent}
+      guestRules={guestRules || []}
     />
   )
 }

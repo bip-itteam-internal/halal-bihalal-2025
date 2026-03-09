@@ -4,13 +4,15 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Calendar, MapPin, Mic2 } from 'lucide-react'
 import { formatJakartaDate } from '@/lib/utils'
+import { EventGuestRule } from '@/types'
 
 interface EventInfoProps {
   date?: string | Date
   location?: string
+  guestRules?: EventGuestRule[]
 }
 
-export function EventInfo({ date, location }: EventInfoProps) {
+export function EventInfo({ date, location, guestRules }: EventInfoProps) {
   // No local formatDate needed as we'll use formatJakartaDate directly
 
   return (
@@ -43,7 +45,7 @@ export function EventInfo({ date, location }: EventInfoProps) {
           {
             icon: Mic2,
             label: 'MASTER OF CEREMONY',
-            value: 'TARMIN',
+            value: 'TARMIN & SAMIDI',
             sub: 'Professional MC',
             image: '/TARMIN.png',
             color: 'from-amber-400 to-halal-primary',
@@ -100,6 +102,37 @@ export function EventInfo({ date, location }: EventInfoProps) {
                   <p className="min-h-[1.5em] text-sm font-semibold text-zinc-400 transition-colors group-hover:text-zinc-300 md:text-lg">
                     {item.sub}
                   </p>
+
+                  {/* Add Guest Rules here if it's the Date card */}
+                  {item.label === 'WAKTU PELAKSANAAN' &&
+                    guestRules &&
+                    guestRules.length > 0 && (
+                      <div className="mt-4 space-y-2 border-t border-white/5 pt-4">
+                        {guestRules
+                          .filter((rule) => rule.guest_type !== 'internal')
+                          .map((rule) => (
+                            <div
+                              key={rule.guest_type}
+                              className="flex items-center justify-between text-xs md:text-sm"
+                            >
+                              <span className="font-medium text-zinc-500">
+                                {rule.guest_type === 'tenant'
+                                  ? 'Booth UMKM'
+                                  : 'Umum'}
+                              </span>
+                              <span className="text-halal-primary font-bold">
+                                Open Gate:{' '}
+                                {rule.open_gate
+                                  ? rule.open_gate
+                                      .substring(0, 5)
+                                      .replace(':', '.')
+                                  : '--.--'}{' '}
+                                WIB
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    )}
                 </div>
               </div>
 

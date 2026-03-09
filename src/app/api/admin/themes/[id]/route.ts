@@ -1,4 +1,4 @@
-import { createAdminClient } from '@/lib/supabase/admin'
+import { adminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 
 export async function PUT(
@@ -6,7 +6,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const supabase = createAdminClient()
+  const supabase = adminClient
   const body = await request.json()
 
   // Remove id and created_at from body to avoid potential primary key/metadata errors
@@ -33,7 +33,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
-  const supabase = createAdminClient()
+  const supabase = adminClient
 
   const { error } = await supabase.from('event_themes').delete().eq('id', id)
 

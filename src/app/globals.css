@@ -8,19 +8,36 @@
   --font-sans: 'Inter', ui-sans-serif, system-ui;
   --font-heading: 'Outfit', ui-sans-serif, system-ui;
 
-  --color-primary: #0b74de;
-  --color-primary-dark: #085cb0;
-  --color-secondary: #f59e0b;
-  --color-glass: rgba(255, 255, 255, 0.08);
-  --color-glass-border: rgba(255, 255, 255, 0.12);
-
-  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-
-  --primary-color: #0b74de;
-  --secondary-color: #f59e0b;
-  --selection-bg: rgba(11, 116, 222, 0.26);
+  --background: #ffffff;
+  --foreground: #020617;
+  --card: #ffffff;
+  --card-foreground: #020617;
+  --popover: #ffffff;
+  --popover-foreground: #020617;
+  --primary: #0b74de;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #0b74de;
   --radius: 0.625rem;
-  /* Halal Bihalal Event Theme - Base */
+
+  /* Halal Bihalal Event Theme - Tokens only */
+  --halal-primary: #dfae46;
+  --halal-secondary: #102726;
+  --halal-secondary-dark: #0a1b1a;
+  --halal-accent: #163533;
+}
+
+/* Specific class for the dark landing page theme */
+.theme-halal {
   --background: #102726;
   --foreground: #ffffff;
   --primary: #dfae46;
@@ -32,28 +49,12 @@
   --border: rgba(223, 174, 70, 0.2);
   --input: rgba(223, 174, 70, 0.1);
   --ring: #dfae46;
-
-  --halal-primary: #dfae46;
-  --halal-secondary: #102726;
-  --halal-secondary-dark: #0a1b1a;
-  --halal-accent: #163533;
-
-  /* Custom Transitions */
-  --transition-all: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-[data-theme='dark'] {
-  --foreground: #f8fafc;
-  --background: #020617;
-  --selection-bg: rgba(59, 148, 236, 0.4);
-}
+/* Dark mode inherits from light mode by default unless .theme-halal is explicitly applied */
 
 * {
   box-sizing: border-box;
-}
-
-::selection {
-  background-color: var(--selection-bg);
 }
 
 body {
@@ -63,16 +64,13 @@ body {
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition-property: background-color, color;
-  transition-duration: 300ms;
 }
 
 .glass {
-  background: var(--color-glass);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--color-glass-border);
-  box-shadow: var(--shadow-glass);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .glass-dark {
@@ -82,22 +80,12 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.text-gradient {
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  background-image: linear-gradient(to right, #34d399, #22d3ee);
-  /* from-emerald-400 to-cyan-400 */
-}
-
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -116,62 +104,11 @@ body {
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
 
   --color-halal-primary: #dfae46;
   --color-halal-secondary: #102726;
   --color-halal-secondary-dark: #0a1b1a;
   --color-halal-accent: #163533;
-
-  --grid-cols-15: repeat(15, minmax(0, 1fr));
-  --grid-cols-20: repeat(20, minmax(0, 1fr));
-  --grid-cols-25: repeat(25, minmax(0, 1fr));
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: #3b94ec;
-  --primary-foreground: #001833;
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: #3b94ec;
-  --sidebar-primary-foreground: #001833;
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
 }
 
 @keyframes meteor {

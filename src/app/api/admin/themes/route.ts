@@ -1,8 +1,8 @@
-import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
+import { adminClient } from '@/lib/supabase/admin'
 
 export async function GET() {
-  const supabase = createAdminClient()
+  const supabase = adminClient
 
   const { data, error } = await supabase
     .from('event_themes')
@@ -17,7 +17,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = createAdminClient()
+  const supabase = adminClient
   const body = await request.json()
 
   const { data, error } = await supabase

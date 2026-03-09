@@ -32,6 +32,7 @@ import {
   getJakartaNow,
   toJakartaISOString,
 } from '@/lib/utils'
+import { Switch } from '@/components/ui/switch'
 import { Calendar } from '@/components/ui/calendar'
 import {
   Popover,
@@ -52,15 +53,17 @@ const eventSchema = z.object({
   name: z.string().min(3, 'Nama event wajib diisi (min 3 karakter)'),
   event_type: z.enum(['internal', 'public']),
   template_id: z.string().optional().nullable(),
-  description: z.string().optional(),
   event_date: z.date({
     required_error: 'Tanggal acara wajib diisi',
   }),
   event_time: z.string().optional().default('08:00'),
   location: z.string().optional(),
-  dress_code: z.string().optional(),
-  external_quota: z.coerce.number().optional().default(1000),
-  tenant_quota: z.coerce.number().optional().default(200),
+  external_quota: z.number().min(0),
+  tenant_quota: z.number().min(0),
+  is_paid: z.boolean().default(false),
+  is_tenant_paid: z.boolean().default(false),
+  price_external: z.number().optional().default(0),
+  payment_info: z.string().optional(),
 })
 
 type EventFormValues = z.infer<typeof eventSchema>
@@ -84,12 +87,13 @@ export function CreateEventSheet({
       name: '',
       event_type: 'internal',
       template_id: null,
-      description: '',
       location: '',
-      dress_code: '',
       external_quota: 1000,
       tenant_quota: 50,
-      event_time: '08:00',
+      is_paid: false,
+      is_tenant_paid: false,
+      price_external: 0,
+      payment_info: '',
     },
   })
 
@@ -110,13 +114,15 @@ export function CreateEventSheet({
           name: values.name,
           event_type: values.event_type,
           template_id: values.template_id,
-          description: values.description,
           event_date: toJakartaISOString(values.event_date, values.event_time),
           location: values.location,
-          dress_code: values.dress_code,
           external_quota: values.external_quota,
           tenant_quota: values.tenant_quota,
           public_reg_status: 'closed',
+          is_paid: values.is_paid,
+          is_tenant_paid: values.is_tenant_paid,
+          price_external: values.price_external,
+          payment_info: values.payment_info,
         },
       ])
 
@@ -172,24 +178,6 @@ export function CreateEventSheet({
                     </FormLabel>
                     <FormControl>
                       <Input placeholder="cth. Bharata Event 2026" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Deskripsi</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Berikan deskripsi singkat tentang acara..."
-                        className="min-h-[80px]"
-                        {...field}
-                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -314,22 +302,106 @@ export function CreateEventSheet({
                     </FormItem>
                   )}
                 />
+              </div>
 
+              <div className="bg-muted/30 space-y-4 rounded-lg border p-4">
                 <FormField
                   control={form.control}
-                  name="event_time"
+                  name="is_paid"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col pt-2">
-                      <FormLabel>
-                        Waktu Acara <span className="text-destructive">*</span>
-                      </FormLabel>
+                    <FormItem className="flex items-center justify-between space-y-0">
+                      <div>
+                        <FormLabel className="text-primary/80 text-sm font-semibold">
+                          Pengaturan Pembayaran
+                        </FormLabel>
+                        <p className="text-muted-foreground text-[10px] italic">
+                          Aktifkan jika pendaftaran memerlukan biaya
+                        </p>
+                      </div>
                       <FormControl>
-                        <Input type="time" {...field} className="w-full" />
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
                       </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
+
+                {form.watch('is_paid') && (
+                  <div className="mt-2 space-y-4 border-t pt-2">
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="price_external"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs">
+                              Harga Umum (Rp)
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min="0"
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(parseInt(e.target.value) || 0)
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="is_tenant_paid"
+                        render={({ field }) => (
+                          <FormItem className="mt-2 flex flex-col space-y-2">
+                            <FormLabel className="text-xs">
+                              Tenant/Booth UMKM
+                            </FormLabel>
+                            <div className="flex items-center gap-2">
+                              <FormControl>
+                                <Switch
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <span className="text-[11px] font-medium text-slate-500">
+                                {field.value ? 'Berbayar' : 'Gratis'}
+                              </span>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <FormField
+                      control={form.control}
+                      name="payment_info"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-xs font-semibold">
+                            Info Rekening & Instruksi
+                          </FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="cth. Silakan transfer ke BCA 123456789 a/n PT Bharata Group. Sertakan screenshot bukti transfer."
+                              className="min-h-[80px] bg-black/5 text-xs"
+                              {...field}
+                              value={field.value || ''}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                          <p className="text-muted-foreground text-[10px] leading-tight opacity-70">
+                            * Instruksi ini akan muncul setelah calon tamu
+                            memilih tipe peserta di form pendaftaran.
+                          </p>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
               </div>
 
               <FormField
@@ -375,23 +447,6 @@ export function CreateEventSheet({
                   )}
                 />
               </div>
-
-              <FormField
-                control={form.control}
-                name="dress_code"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Dress Code (Opsional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="cth. Smart Casual / Batik"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </form>
           </Form>
         </div>

@@ -28,8 +28,16 @@ import {
 } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
 import { cn, formatJakartaDate } from '@/lib/utils'
+import { Switch } from '@/components/ui/switch'
 import Image from 'next/image'
 import { Event } from '@/types'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from '@/components/ui/card'
 
 function toEventSlug(value: string) {
   return value
@@ -87,14 +95,18 @@ export function EventDetailsForm({
   return (
     <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-2">
       <div className="space-y-4">
-        <div className="space-y-6 rounded-lg border p-4">
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold">Informasi Event</h3>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Informasi Event</CardTitle>
+          </CardHeader>
+
+          <CardContent className="space-y-4">
             <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-sm leading-none font-medium">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
                   Nama Event <span className="text-destructive">*</span>
                 </label>
+
                 <Input
                   placeholder="cth. Bharata Event 2026"
                   value={event.name}
@@ -102,24 +114,14 @@ export function EventDetailsForm({
                   required
                 />
               </div>
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-sm leading-none font-medium">
-                  Deskripsi
-                </label>
-                <Textarea
-                  placeholder="Deskripsi singkat event"
-                  className="min-h-[90px]"
-                  value={event.description || ''}
-                  onChange={(e) =>
-                    onUpdateEvent({ description: e.target.value })
-                  }
-                />
-              </div>
+
               <div className="grid grid-cols-2 gap-4">
+                {/* Tanggal */}
                 <div className="space-y-2">
-                  <label className="text-sm leading-none font-medium">
+                  <label className="text-sm font-medium">
                     Tanggal Acara <span className="text-destructive">*</span>
                   </label>
+
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
@@ -131,13 +133,13 @@ export function EventDetailsForm({
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {eventDateInput ? (
-                          formatJakartaDate(eventDateInput, 'PPP')
-                        ) : (
-                          <span>Pilih tanggal</span>
-                        )}
+
+                        {eventDateInput
+                          ? formatJakartaDate(eventDateInput, 'PPP')
+                          : 'Pilih tanggal'}
                       </Button>
                     </PopoverTrigger>
+
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
@@ -148,21 +150,13 @@ export function EventDetailsForm({
                     </PopoverContent>
                   </Popover>
                 </div>
+
+                {/* Tipe Event */}
                 <div className="space-y-2">
-                  <label className="text-sm leading-none font-medium">
-                    Waktu Acara <span className="text-destructive">*</span>
-                  </label>
-                  <Input
-                    type="time"
-                    value={eventTimeInput}
-                    onChange={(e) => setEventTimeInput(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm leading-none font-medium">
+                  <label className="text-sm font-medium">
                     Tipe Event <span className="text-destructive">*</span>
                   </label>
+
                   <Select
                     value={event.event_type ?? undefined}
                     onValueChange={(val: 'internal' | 'public') =>
@@ -172,16 +166,20 @@ export function EventDetailsForm({
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih tipe event" />
                     </SelectTrigger>
+
                     <SelectContent>
                       <SelectItem value="internal">Internal</SelectItem>
                       <SelectItem value="public">Publik</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* Kuota External */}
                 <div className="space-y-2">
-                  <label className="text-sm leading-none font-medium">
+                  <label className="text-sm font-medium">
                     Kuota Eksternal <span className="text-destructive">*</span>
                   </label>
+
                   <Input
                     type="number"
                     min={0}
@@ -194,10 +192,13 @@ export function EventDetailsForm({
                     required
                   />
                 </div>
+
+                {/* Kuota Tenant */}
                 <div className="space-y-2">
-                  <label className="text-sm leading-none font-medium">
+                  <label className="text-sm font-medium">
                     Kuota Tenant <span className="text-destructive">*</span>
                   </label>
+
                   <Input
                     type="number"
                     min={0}
@@ -211,72 +212,69 @@ export function EventDetailsForm({
                   />
                 </div>
               </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm leading-none font-medium">Lokasi</label>
-              <Input
-                placeholder="cth. Grand Ballroom"
-                value={event.location || ''}
-                onChange={(e) => onUpdateEvent({ location: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm leading-none font-medium">
-                Dress Code
-              </label>
-              <Input
-                placeholder="cth. Smart Casual / Batik"
-                value={event.dress_code || ''}
-                onChange={(e) => onUpdateEvent({ dress_code: e.target.value })}
-              />
-            </div>
-          </div>
-        </div>
 
-        <div className="space-y-3 rounded-lg border p-4">
-          <h3 className="text-sm font-semibold">Status Registrasi</h3>
-          <p className="text-muted-foreground text-xs">
-            Atur apakah pendaftaran publik dibuka atau ditutup.
-          </p>
-          <Select
-            value={event.public_reg_status}
-            onValueChange={(val: 'open' | 'closed') =>
-              onUpdateEvent({ public_reg_status: val })
-            }
-          >
-            <SelectTrigger className="h-9 w-full">
-              <SelectValue placeholder="Pilih status registrasi" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="closed">Ditutup (Offline)</SelectItem>
-              <SelectItem value="open">Dibuka (Publik)</SelectItem>
-            </SelectContent>
-          </Select>
-          <div className="space-y-2 pt-2">
-            <label className="text-sm leading-none font-medium">
-              Link Login Internal
-            </label>
-            <div className="flex items-center gap-2">
-              <Input
-                value={internalLoginUrl}
-                readOnly
-                className="h-9 text-xs"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-9 shrink-0"
-                onClick={handleCopyInternalLink}
-              >
-                <Copy className="mr-2 h-3.5 w-3.5" />
-                {copied ? 'Copied' : 'Copy'}
-              </Button>
+              {/* Lokasi */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Lokasi</label>
+
+                <Input
+                  placeholder="cth. Grand Ballroom"
+                  value={event.location || ''}
+                  onChange={(e) => onUpdateEvent({ location: e.target.value })}
+                />
+              </div>
             </div>
-            <p className="text-muted-foreground text-[11px]">
-              Bagikan link ini ke tamu internal untuk login langsung.
-            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Status Registrasi</CardTitle>
+            <CardDescription className="text-xs">
+              Atur apakah pendaftaran publik dibuka atau ditutup.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <Select
+              value={event.public_reg_status}
+              onValueChange={(val: 'open' | 'closed') =>
+                onUpdateEvent({ public_reg_status: val })
+              }
+            >
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue placeholder="Pilih status registrasi" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="closed">Ditutup (Offline)</SelectItem>
+                <SelectItem value="open">Dibuka (Publik)</SelectItem>
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+
+        
+        <div className="space-y-2 pt-2">
+          <label className="text-sm leading-none font-medium">
+            Link Login Internal
+          </label>
+          <div className="flex items-center gap-2">
+            <Input value={internalLoginUrl} readOnly className="h-9 text-xs" />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-9 shrink-0"
+              onClick={handleCopyInternalLink}
+            >
+              <Copy className="mr-2 h-3.5 w-3.5" />
+              {copied ? 'Copied' : 'Copy'}
+            </Button>
           </div>
+          <p className="text-muted-foreground text-[11px]">
+            Bagikan link ini ke tamu internal untuk login langsung.
+          </p>
         </div>
       </div>
 

@@ -14,6 +14,8 @@ interface TemplateProps {
   setIsOpen: (open: boolean) => void
   onRSVP: (status: 'confirmed' | 'declined' | 'pending') => void
   isUpdating: boolean
+  openGate?: string | null
+  startTime?: string | null
 }
 
 export function TraditionalHalal({
@@ -23,49 +25,11 @@ export function TraditionalHalal({
   setIsOpen,
   onRSVP,
   isUpdating,
+  openGate,
+  startTime,
 }: TemplateProps) {
-  // If tenant or external, we skip the cover
-  const isAutoOpen =
-    guest.guest_type === 'tenant' || guest.guest_type === 'external'
-  const effectOpen = isOpen || isAutoOpen
-
-  // 3. Confirmed View (Ticket) - Prioritize this screen if confirmed
-  if (guest.rsvp_status === 'confirmed') {
-    return (
-      <motion.div
-        key="ticket-view"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-[480px] p-4"
-      >
-        <div className="space-y-6">
-          <EventTicket
-            eventName={event.name}
-            eventDate={formatJakartaDate(event.event_date, 'PPP')}
-            eventTime={`${formatJakartaDate(event.event_date, 'p')}`}
-            location={event.location || ''}
-            guestName={guest.full_name || ''}
-            entryCode={guest.invitation_code || guest.id}
-            primaryColor="emerald"
-            logoUrl={event.logo_url || undefined}
-            downloadFileName={`Ticket-${guest.full_name}-${event.name}.png`}
-          />
-
-          <div className="px-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-              className="h-12 w-full rounded-2xl border-slate-200 bg-white text-[10px] font-bold text-slate-600 uppercase transition-all hover:bg-slate-50"
-            >
-              Tutup Rincian
-            </Button>
-          </div>
-        </div>
-      </motion.div>
-    )
-  }
-
-  if (!effectOpen) {
+  // 3. Cover Screen (Hidden if isOpen)
+  if (!isOpen) {
     return (
       <motion.div
         key="cover-halal"
@@ -113,7 +77,7 @@ export function TraditionalHalal({
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <h1 className="font-serif text-3xl leading-tight font-bold text-amber-50">
+                <h1 className="font-serif text-2xl leading-tight font-bold text-amber-50">
                   {event.name}
                 </h1>
                 <div className="mx-auto h-px w-12 bg-amber-400/30" />
@@ -145,6 +109,54 @@ export function TraditionalHalal({
     )
   }
 
+  // 4. Confirmed View (Ticket) - Prioritize this screen if confirmed and open
+  if (guest.rsvp_status === 'confirmed') {
+    return (
+      <motion.div
+        key="ticket-view"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-[480px] p-4"
+      >
+        <div className="space-y-6">
+          <EventTicket
+            eventName={event.name}
+            eventDate={formatJakartaDate(event.event_date, 'PPPP')}
+            location={event.location || ''}
+            guestName={guest.full_name || ''}
+            entryCode={guest.invitation_code || guest.id}
+            primaryColor="emerald"
+            logoUrl={event.logo_url || undefined}
+            openGate={openGate || undefined}
+            guestType={
+              guest.guest_type === 'tenant'
+                ? 'Booth UMKM'
+                : guest.guest_type === 'external'
+                  ? 'Umum'
+                  : 'Internal'
+            }
+            eventTime={
+              startTime
+                ? startTime.substring(0, 5).replace(':', '.') + ' WIB'
+                : formatJakartaDate(event.event_date, 'p')
+            }
+            downloadFileName={`Ticket-${guest.full_name}-${event.name}.png`}
+          />
+
+          <div className="px-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+              className="h-12 w-full rounded-2xl border-slate-200 bg-white text-[10px] font-bold text-slate-600 uppercase transition-all hover:bg-slate-50"
+            >
+              Tutup Rincian
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
+
   // 4. Invitation View (Pending/Declined)
   return (
     <motion.div
@@ -158,44 +170,71 @@ export function TraditionalHalal({
         style={{ borderRadius: '2.5rem' }}
       >
         <div className="relative flex h-32 items-center justify-center overflow-hidden bg-gradient-to-r from-[#0a2f33] via-[#0f3a3f] to-[#0a2f33] px-8">
-          <h2 className="relative z-10 text-center font-serif text-2xl font-bold text-amber-200">
+          <h2 className="relative z-10 max-w-md text-center font-serif text-2xl font-bold text-amber-200">
             {event.name}
           </h2>
         </div>
 
         <CardContent className="space-y-8">
           <div className="space-y-6">
-            {[
-              {
-                icon: Calendar,
-                label: 'Hari & Tanggal',
-                value: formatJakartaDate(event.event_date, 'PPP'),
-              },
-              {
-                icon: Clock,
-                label: 'Waktu Pelaksanaan',
-                value: `${formatJakartaDate(event.event_date, 'p')} WIB`,
-              },
-              {
-                icon: MapPin,
-                label: 'Lokasi Acara',
-                value: event.location || 'Lokasi menyusul',
-              },
-            ].map((item, id) => (
-              <div key={id} className="flex items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
-                  <item.icon className="h-5 w-5" />
-                </div>
+            {/* Hari & Tanggal */}
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+                <Calendar className="h-5 w-5" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold tracking-widest text-amber-700/60 uppercase">
+                  Hari & Tanggal
+                </p>
+                <p className="text-sm font-bold text-slate-800">
+                  {formatJakartaDate(event.event_date, 'PPPP')}
+                </p>
+              </div>
+            </div>
+
+            {/* Baris Gabungan Waktu (Satu Ikon, Dua Info) */}
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+                <Clock className="h-5 w-5" />
+              </div>
+              <div className="flex flex-1 gap-4 ">
                 <div className="space-y-1">
                   <p className="text-[10px] font-bold tracking-widest text-amber-700/60 uppercase">
-                    {item.label}
+                    Open Gate
                   </p>
-                  <p className="text-sm font-bold text-slate-800">
-                    {item.value}
+                  <p className="text-sm font-bold text-slate-800 tabular-nums">
+                    {openGate
+                      ? openGate.substring(0, 5).replace(':', '.') + ' WIB'
+                      : '-'}
+                  </p>
+                </div>
+                <div className="space-y-1 border-l border-amber-100 pl-4">
+                  <p className="text-[10px] font-bold tracking-widest text-amber-700/60 uppercase">
+                    Waktu Mulai
+                  </p>
+                  <p className="text-sm font-bold text-slate-800 tabular-nums">
+                    {startTime
+                      ? startTime.substring(0, 5).replace(':', '.') + ' WIB'
+                      : '-'}
                   </p>
                 </div>
               </div>
-            ))}
+            </div>
+
+            {/* Lokasi */}
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+                <MapPin className="h-5 w-5" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold tracking-widest text-amber-700/60 uppercase">
+                  Lokasi Acara
+                </p>
+                <p className="text-sm leading-tight font-bold text-slate-800">
+                  {event.location || 'Lokasi menyusul'}
+                </p>
+              </div>
+            </div>
           </div>
 
           <div className="rounded-3xl border border-amber-200 bg-[#0b2d30] p-6">
@@ -247,7 +286,7 @@ export function TraditionalHalal({
           <Button
             variant="ghost"
             onClick={() => setIsOpen(false)}
-            className="w-full text-[10px] mb-4 font-bold tracking-[0.3em] text-amber-700/60 uppercase"
+            className="mb-4 w-full text-[10px] font-bold tracking-[0.3em] text-amber-700/60 uppercase"
           >
             Tutup Rincian
           </Button>

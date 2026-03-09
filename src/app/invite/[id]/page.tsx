@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import { toast } from 'sonner'
-import { Guest, Event as AppEvent } from '@/types'
+import { Guest, Event as AppEvent, PaymentStatus } from '@/types'
 import { decodeUUID } from '@/lib/utils'
 import slugify from 'slugify'
 import { usePathname } from 'next/navigation'
@@ -13,6 +13,11 @@ import { usePathname } from 'next/navigation'
 // Define the joined type for invitation
 type GuestInvitation = Guest & {
   event: AppEvent
+}
+
+type GuestEventMapping = {
+  payment_status: 'pending' | 'verified' | 'rejected'
+  payment_proof_url: string | null
 }
 
 // Modular Components
@@ -65,6 +70,9 @@ export default function GuestInvitePage({
   const [loading, setLoading] = useState(true)
   const [guest, setGuest] = useState<GuestInvitation | null>(null)
   const [event, setEvent] = useState<AppEvent | null>(null)
+  const [guestEvent, setGuestEvent] = useState<GuestEventMapping | null>(null)
+  const [openGate, setOpenGate] = useState<string | null>(null)
+  const [startTime, setStartTime] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
@@ -94,7 +102,7 @@ export default function GuestInvitePage({
         // 2. Fetch Events for this Guest via Junction Table
         const { data: mappingData, error: mapError } = await supabase
           .from('guest_events')
-          .select('events(*)')
+          .select('payment_status, payment_proof_url, events(*)')
           .eq('guest_id', guestId)
 
         if (mapError || !mappingData || mappingData.length === 0) {
@@ -129,6 +137,39 @@ export default function GuestInvitePage({
 
         setGuest({ ...guestData, event: targetEvent } as GuestInvitation)
         setEvent(targetEvent)
+
+        // Find the mapping for the selected event
+        const selectedMapping = (
+          mappingData as unknown as Array<{
+            payment_status: PaymentStatus
+            payment_proof_url: string | null
+            events: { id: string } | null
+          }>
+        ).find((m) => m.events?.id === targetEvent.id)
+        if (selectedMapping) {
+          setGuestEvent({
+            payment_status: selectedMapping.payment_status,
+            payment_proof_url: selectedMapping.payment_proof_url,
+          })
+        }
+
+        // 4. Fetch Event Guest Rules (Open Gate)
+        const { data: rulesData } = await supabase
+          .from('event_guest_rules')
+          .select('*')
+          .eq('event_id', targetEvent.id)
+
+        if (rulesData && rulesData.length > 0) {
+          const matchingRule = rulesData.find(
+            (r) => r.guest_type === guestData.guest_type,
+          )
+          if (matchingRule?.open_gate) {
+            setOpenGate(matchingRule.open_gate)
+          }
+          if (matchingRule?.start_time) {
+            setStartTime(matchingRule.start_time)
+          }
+        }
 
         // Automatically open the invitation for Tenant or External guests
         if (
@@ -224,6 +265,10 @@ export default function GuestInvitePage({
             setIsOpen={setIsOpen}
             onRSVP={handleRSVP}
             isUpdating={isUpdating}
+            paymentStatus={guestEvent?.payment_status}
+            paymentProofUrl={guestEvent?.payment_proof_url}
+            openGate={openGate}
+            startTime={startTime}
           />
         </AnimatePresence>
       </div>

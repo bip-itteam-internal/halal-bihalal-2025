@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { PermissionRole, UserRole } from '@/types'
 
 type CreateUserPayload = {
@@ -18,7 +17,9 @@ async function assertSuperAdmin() {
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    return { error: NextResponse.json({ message: 'Unauthorized' }, { status: 401 }) }
+    return {
+      error: NextResponse.json({ message: 'Unauthorized' }, { status: 401 }),
+    }
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -28,7 +29,9 @@ async function assertSuperAdmin() {
     .single()
 
   if (profileError || !profile || profile.role !== 'super_admin') {
-    return { error: NextResponse.json({ message: 'Forbidden' }, { status: 403 }) }
+    return {
+      error: NextResponse.json({ message: 'Forbidden' }, { status: 403 }),
+    }
   }
 
   return { userId: user.id }
@@ -40,15 +43,27 @@ export async function GET() {
     if (auth.error) return auth.error
 
     const supabase = await createClient()
-    const admin = createAdminClient()
+    const admin = createClient()
 
-    const [{ data: profiles, error: profilesError }, { data: permissions, error: permissionsError }, { data: events, error: eventsError }, usersResponse] =
-      await Promise.all([
-        supabase.from('profiles').select('id, full_name, role, created_at').order('created_at', { ascending: false }),
-        supabase.from('event_permissions').select('id, user_id, event_id, role, created_at'),
-        supabase.from('events').select('id, name, event_date').order('event_date', { ascending: false }),
-        admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
-      ])
+    const [
+      { data: profiles, error: profilesError },
+      { data: permissions, error: permissionsError },
+      { data: events, error: eventsError },
+      usersResponse,
+    ] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('id, full_name, role, created_at')
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('event_permissions')
+        .select('id, user_id, event_id, role, created_at'),
+      supabase
+        .from('events')
+        .select('id, name, event_date')
+        .order('event_date', { ascending: false }),
+      (await admin).auth.admin.listUsers({ page: 1, perPage: 1000 }),
+    ])
 
     if (profilesError) throw profilesError
     if (permissionsError) throw permissionsError
@@ -60,7 +75,10 @@ export async function GET() {
     )
 
     const groupedPermissions = (permissions || []).reduce<
-      Record<string, Array<{ id: string; event_id: string; role: PermissionRole }>>
+      Record<
+        string,
+        Array<{ id: string; event_id: string; role: PermissionRole }>
+      >
     >((acc, permission) => {
       if (!acc[permission.user_id]) acc[permission.user_id] = []
       acc[permission.user_id].push({
@@ -124,23 +142,28 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const admin = createAdminClient()
+    const admin = createClient()
     const supabase = await createClient()
 
-    const { data: created, error: createError } = await admin.auth.admin.createUser({
+    const { data: created, error: createError } = await (
+      await admin
+    ).auth.admin.createUser({
       email,
       password,
       email_confirm: true,
       user_metadata: { full_name: fullName || null },
     })
 
-    if (createError || !created.user) throw createError || new Error('Gagal membuat user.')
+    if (createError || !created.user)
+      throw createError || new Error('Gagal membuat user.')
 
-    const { error: upsertProfileError } = await supabase.from('profiles').upsert({
-      id: created.user.id,
-      full_name: fullName || null,
-      role,
-    })
+    const { error: upsertProfileError } = await supabase
+      .from('profiles')
+      .upsert({
+        id: created.user.id,
+        full_name: fullName || null,
+        role,
+      })
 
     if (upsertProfileError) throw upsertProfileError
 

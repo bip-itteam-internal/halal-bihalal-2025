@@ -1,119 +1,69 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { NextResponse } from 'next/server'
+import { adminClient as supabase } from '@/lib/supabase/admin'
 import { generateRandomCode } from '@/lib/utils'
 
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
-function toEventSlug(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-}
-
-async function resolveEventId(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  identifier: string,
-) {
-  const normalized = identifier.trim()
-
-  if (UUID_REGEX.test(normalized)) {
-    return normalized
-  }
-
-  const { data: events, error } = await supabase
-    .from('events')
-    .select('id, name')
-  if (error) throw error
-
-  const slug = toEventSlug(normalized)
-  const matched = (events || []).find(
-    (event) => toEventSlug(event.name || '') === slug,
-  )
-
-  return matched?.id || null
-}
-
 export async function GET(
-  req: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ eventId: string }> },
 ) {
-  const supabase = await createClient()
-  const { eventId: identifier } = await params
-  const eventId = await resolveEventId(supabase, identifier)
-
-  if (!eventId) {
-    return NextResponse.json(
-      { message: 'Event tidak ditemukan.' },
-      { status: 404 },
-    )
-  }
-
-  const { data: event, error } = await supabase
-    .from('events')
-    .select('*')
-    .eq('id', eventId)
-    .single()
-
-  if (error || !event) {
-    return NextResponse.json(
-      { message: 'Event tidak ditemukan.' },
-      { status: 404 },
-    )
-  }
-
-  return NextResponse.json(event)
-}
-
-export async function POST(
-  req: NextRequest,
-  { params }: { params: Promise<{ eventId: string }> },
-) {
-  const supabase = await createClient()
   try {
-    const { eventId: identifier } = await params
-    const eventId = await resolveEventId(supabase, identifier)
-    const body = await req.json()
-    const fullName =
-      typeof body.full_name === 'string' ? body.full_name.trim() : ''
-    const phone = typeof body.phone === 'string' ? body.phone.trim() : ''
-    const address = typeof body.address === 'string' ? body.address.trim() : ''
-    const guestType = body.guest_type === 'tenant' ? 'tenant' : 'external'
-    const umkmProduct =
-      typeof body.metadata?.umkm_product === 'string'
-        ? body.metadata.umkm_product.trim()
-        : ''
+    const resolvedParams = await params
+    const eventId = resolvedParams.eventId
 
-    if (!eventId) {
+    const { data: event, error } = await supabase
+      .from('events')
+      .select('*')
+      .eq('id', eventId)
+      .single()
+
+    if (error || !event) {
       return NextResponse.json(
-        { message: 'Event tidak ditemukan.' },
+        { message: 'Event tidak ditemukan' },
         { status: 404 },
       )
     }
 
-    if (!fullName || !phone || !address) {
+    return NextResponse.json(event)
+  } catch (error: unknown) {
+    console.error('GET Event Error:', error)
+    return NextResponse.json(
+      { message: 'Internal Server Error' },
+      { status: 500 },
+    )
+  }
+}
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ eventId: string }> },
+) {
+  try {
+    const resolvedParams = await params
+    const eventId = resolvedParams.eventId
+    const body = await request.json()
+    const {
+      full_name: fullName,
+      phone,
+      guest_type: guestType,
+      address,
+      metadata,
+    } = body
+
+    const umkmProduct = metadata?.umkm_product || ''
+
+    if (!fullName || !phone) {
       return NextResponse.json(
-        { message: 'Nama, nomor WhatsApp, dan alamat wajib diisi.' },
+        { message: 'Nama dan Nomor WhatsApp wajib diisi.' },
         { status: 400 },
       )
     }
 
-    if (guestType === 'tenant' && (!address || !umkmProduct)) {
-      return NextResponse.json(
-        {
-          message: 'Data tenant belum lengkap (alamat dan produk UMKM wajib).',
-        },
-        { status: 400 },
-      )
-    }
-
-    // 1. Get Event Quota and Current Public Registration Count
+    // 1. Check Event Status and Quota
     const { data: event, error: eventErr } = await supabase
       .from('events')
-      .select('external_quota, tenant_quota, public_reg_status')
+      .select(
+        'public_reg_status, external_quota, tenant_quota, is_paid, is_tenant_paid, price_external',
+      )
       .eq('id', eventId)
       .single()
 
@@ -124,78 +74,117 @@ export async function POST(
       )
     }
 
-    if (event.public_reg_status === 'closed') {
+    if (event.public_reg_status !== 'open') {
       return NextResponse.json(
-        { message: 'Registrasi publik sudah ditutup.' },
+        { message: 'Pendaftaran untuk event ini sudah ditutup.' },
         { status: 403 },
       )
     }
 
-    // 2. Count current registrants for this event BASED ON GUEST TYPE
-    const { count, error: countErr } = await supabase
-      .from('guest_events')
-      .select('id, guests!inner(registration_source, guest_type)', {
-        count: 'exact',
-        head: true,
-      })
-      .eq('event_id', eventId)
-      .eq('guests.registration_source', 'public_registration')
-      .eq('guests.guest_type', guestType)
-
-    if (countErr) throw countErr
-
-    const quotaLimit =
+    // 2. Check if payment required
+    const isPaymentRequired =
       guestType === 'tenant'
-        ? (event.tenant_quota ?? 0)
-        : (event.external_quota ?? 0)
+        ? event.is_tenant_paid
+        : event.is_paid && (event.price_external || 0) > 0
 
-    if (count !== null && count >= quotaLimit) {
-      const typeLabel = guestType === 'tenant' ? 'Tenant' : 'Umum'
+    const paymentProofUrl = body.payment_proof_url || null
+
+    if (isPaymentRequired && !paymentProofUrl) {
       return NextResponse.json(
-        { message: `Mohon maaf, kuota pendaftaran ${typeLabel} sudah penuh.` },
-        { status: 403 },
-      )
-    }
-
-    // 2.5 Check if phone already registered in master guest
-    const { data: existingGuest, error: checkErr } = await supabase
-      .from('guests')
-      .select('id')
-      .eq('phone', phone)
-      .maybeSingle()
-
-    if (checkErr) throw checkErr
-    if (existingGuest) {
-      return NextResponse.json(
-        { message: 'Nomor WhatsApp ini sudah terdaftar di sistem.' },
+        {
+          message:
+            'Bukti pembayaran wajib diunggah untuk pendaftaran kategori ini.',
+        },
         { status: 400 },
       )
     }
 
-    // 3. Register Guest (Master Profile)
-    const invitationCode = `INV-${generateRandomCode(6)}`
+    // Check Quota
+    const { count: currentGuests } = await supabase
+      .from('guest_events')
+      .select('id, guests!inner(guest_type)', { count: 'exact' })
+      .eq('event_id', eventId)
+      .eq('guests.guest_type', guestType)
 
-    const { data: guest, error: regErr } = await supabase
+    const limit =
+      guestType === 'tenant' ? event.tenant_quota : event.external_quota
+    if (currentGuests && currentGuests >= (limit || 0)) {
+      return NextResponse.json(
+        { message: 'Kuota pendaftaran untuk tipe ini sudah penuh.' },
+        { status: 403 },
+      )
+    }
+
+    // Check Duplicate
+    const { data: existingGuest } = await supabase
       .from('guests')
-      .insert({
-        full_name: fullName,
-        phone,
-        address,
-        guest_type: guestType,
-        metadata: guestType === 'tenant' ? { umkm_product: umkmProduct } : {},
-        registration_source: 'public_registration',
-        rsvp_status: 'confirmed',
-        invitation_code: invitationCode,
-      })
-      .select()
+      .select('id, metadata')
+      .eq('phone', phone)
       .single()
 
-    if (regErr) throw regErr
+    if (existingGuest) {
+      // Check if already in this event
+      const { data: existingMap } = await supabase
+        .from('guest_events')
+        .select('id')
+        .eq('guest_id', existingGuest.id)
+        .eq('event_id', eventId)
+        .single()
+
+      if (existingMap) {
+        return NextResponse.json(
+          { message: 'Nomor WhatsApp ini sudah terdaftar di sistem.' },
+          { status: 400 },
+        )
+      }
+    }
+
+    // 3. Register Guest (Master Profile)
+    const invitationCode = `${generateRandomCode(6)}`
+
+    let guestId: string
+    if (!existingGuest) {
+      const { data: guest, error: regErr } = await supabase
+        .from('guests')
+        .insert({
+          full_name: fullName,
+          phone,
+          address: address || '',
+          guest_type: guestType,
+          metadata: guestType === 'tenant' ? { umkm_product: umkmProduct } : {},
+          registration_source: 'public_registration',
+          rsvp_status: isPaymentRequired ? 'pending' : 'confirmed',
+          invitation_code: invitationCode,
+        })
+        .select()
+        .single()
+
+      if (regErr) throw regErr
+      guestId = guest.id
+    } else {
+      guestId = existingGuest.id
+      // Update existing guest info if needed
+      await supabase
+        .from('guests')
+        .update({
+          full_name: fullName,
+          address: address || '',
+          rsvp_status: isPaymentRequired ? 'pending' : 'confirmed',
+          guest_type: guestType,
+          metadata:
+            guestType === 'tenant'
+              ? { umkm_product: umkmProduct }
+              : existingGuest.metadata,
+        })
+        .eq('id', guestId)
+    }
 
     // 4. Assign to Event
     const { error: eventErr2 } = await supabase.from('guest_events').insert({
-      guest_id: guest.id,
+      guest_id: guestId,
       event_id: eventId,
+      payment_proof_url: paymentProofUrl,
+      payment_status: isPaymentRequired ? 'pending' : 'verified',
     })
 
     if (eventErr2) throw eventErr2
@@ -203,7 +192,7 @@ export async function POST(
     return NextResponse.json(
       {
         status: 'success',
-        guest_id: guest.id,
+        guest_id: guestId,
         qr_payload: invitationCode,
         invitation_code: invitationCode,
       },
@@ -213,8 +202,8 @@ export async function POST(
     console.error('Registration Error:', error)
     return NextResponse.json(
       {
-        message: 'Terjadi kesalahan sistem.',
-        detail: error instanceof Error ? error.message : 'Unknown error',
+        message:
+          error instanceof Error ? error.message : 'Terjadi kesalahan sistem',
       },
       { status: 500 },
     )

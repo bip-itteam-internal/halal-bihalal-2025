@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { adminClient } from '@/lib/supabase/admin'
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -20,7 +20,7 @@ function toEventSlug(value: string) {
 }
 
 async function resolveEventId(
-  supabase: ReturnType<typeof createAdminClient>,
+  supabase: typeof adminClient,
   identifier: string,
 ) {
   const normalized = identifier.trim()
@@ -67,7 +67,7 @@ export async function POST(
       )
     }
 
-    const supabase = createAdminClient()
+    const supabase = adminClient
     const eventId = await resolveEventId(supabase, identifier)
     if (!eventId) {
       return NextResponse.json(

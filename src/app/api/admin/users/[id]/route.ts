@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 
 type UpdateUserPayload = {
   full_name?: string
@@ -15,7 +14,9 @@ async function assertSuperAdmin() {
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    return { error: NextResponse.json({ message: 'Unauthorized' }, { status: 401 }) }
+    return {
+      error: NextResponse.json({ message: 'Unauthorized' }, { status: 401 }),
+    }
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -25,7 +26,9 @@ async function assertSuperAdmin() {
     .single()
 
   if (profileError || !profile || profile.role !== 'super_admin') {
-    return { error: NextResponse.json({ message: 'Forbidden' }, { status: 403 }) }
+    return {
+      error: NextResponse.json({ message: 'Forbidden' }, { status: 403 }),
+    }
   }
 
   return { userId: user.id }
@@ -43,7 +46,10 @@ export async function PATCH(
     const body = (await req.json()) as UpdateUserPayload
 
     if (!id) {
-      return NextResponse.json({ message: 'User ID tidak valid.' }, { status: 400 })
+      return NextResponse.json(
+        { message: 'User ID tidak valid.' },
+        { status: 400 },
+      )
     }
 
     const updates: Record<string, unknown> = {}
@@ -68,7 +74,7 @@ export async function PATCH(
     }
 
     const supabase = await createClient()
-    const admin = createAdminClient()
+    const admin = createClient()
 
     const { error: profileError } = await supabase
       .from('profiles')
@@ -78,11 +84,14 @@ export async function PATCH(
     if (profileError) throw profileError
 
     if (Object.prototype.hasOwnProperty.call(updates, 'full_name')) {
-      const { error: metadataError } = await admin.auth.admin.updateUserById(id, {
-        user_metadata: {
-          full_name: updates.full_name,
+      const { error: metadataError } = await (await admin).auth.admin.updateUserById(
+        id,
+        {
+          user_metadata: {
+            full_name: updates.full_name,
+          },
         },
-      })
+      )
       if (metadataError) throw metadataError
     }
 

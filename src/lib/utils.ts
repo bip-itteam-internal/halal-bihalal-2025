@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-type JakartaFormat = 'PPP' | 'p' | 'PPP p'
+type JakartaFormat = 'PPP' | 'p' | 'PPP p' | 'PPPP'
 
 /**
  * Format date to Jakarta timezone (Asia/Jakarta)
@@ -15,37 +15,57 @@ export function formatJakartaDate(
   formatStr: JakartaFormat = 'PPP p',
 ) {
   const d = new Date(date)
-  const baseOptions: Intl.DateTimeFormatOptions = { timeZone: 'Asia/Jakarta' }
 
+  const baseOptions: Intl.DateTimeFormatOptions = {
+    timeZone: 'Asia/Jakarta',
+  }
+
+  // 8 April 2026
   if (formatStr === 'PPP') {
     return new Intl.DateTimeFormat('id-ID', {
       ...baseOptions,
-      dateStyle: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
     }).format(d)
   }
 
-  if (formatStr === 'p') {
+  // Selasa, 8 April 2026
+  if (formatStr === 'PPPP') {
     return new Intl.DateTimeFormat('id-ID', {
       ...baseOptions,
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(d)
+  }
+
+  // 16.00 WIB
+  if (formatStr === 'p') {
+    return (
+      new Intl.DateTimeFormat('id-ID', {
+        ...baseOptions,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).format(d) + ' WIB'
+    )
+  }
+
+  // 8 April 2026 16.00 WIB
+  return (
+    new Intl.DateTimeFormat('id-ID', {
+      ...baseOptions,
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
-      timeZoneName: 'short',
-    }).format(d)
-  }
-
-  return new Intl.DateTimeFormat('id-ID', {
-    ...baseOptions,
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZoneName: 'short',
-  }).format(d)
+    }).format(d) + ' WIB'
+  )
 }
-
 /**
  * Get current date object in Jakarta timezone
  */

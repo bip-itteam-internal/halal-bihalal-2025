@@ -1,5 +1,6 @@
 export type GuestType = 'internal' | 'external' | 'tenant'
 export type RSVPStatus = 'pending' | 'confirmed' | 'declined'
+export type PaymentStatus = 'pending' | 'verified' | 'rejected'
 export type RegistrationSource = 'admin_invite' | 'public_registration'
 export type EventType = 'internal' | 'public'
 export type PublicRegistrationStatus = 'open' | 'closed'
@@ -20,20 +21,20 @@ export type GuestMetadata = {
 
 export interface Event {
   id: string
-  template_id?: string | null
   name: string
-  event_type?: EventType | null
-  description?: string | null
   event_date: string
   location?: string | null
-  dress_code?: string | null
   logo_url?: string | null
   wa_template?: string | null
   external_quota: number
   tenant_quota: number
   public_reg_status: PublicRegistrationStatus
-  public_name?: string | null
-  company_name?: string | null
+  event_type?: EventType | null
+  template_id?: string | null
+  is_paid: boolean
+  is_tenant_paid: boolean
+  price_external: number
+  payment_info?: string | null
   created_at: string
 }
 
@@ -51,10 +52,13 @@ export interface Guest {
   wa_sent_at?: string | null
   guest_events?: {
     event_id: string
+    payment_status: PaymentStatus
     events: {
       name: string
     } | null
   }[]
+  payment_proof_url?: string
+  payment_status?: PaymentStatus
   created_at: string
 }
 
@@ -83,5 +87,15 @@ export interface EventPermission {
   user_id: string
   event_id: string
   role: PermissionRole
+  created_at: string
+}
+
+export interface EventGuestRule {
+  id: string
+  event_id: string
+  guest_type: GuestType
+  open_gate: string | null
+  close_gate: string | null
+  start_time: string | null
   created_at: string
 }
