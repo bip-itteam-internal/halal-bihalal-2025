@@ -37,7 +37,11 @@ export async function getUsersData(): Promise<UsersResponse> {
   return data as UsersResponse
 }
 
-export async function createUser(payload: any) {
+export async function createUser(payload: {
+  email: string
+  full_name: string
+  role: UserRole
+}) {
   const res = await fetch('/api/admin/users', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -67,7 +71,7 @@ export async function updateUserRole(userId: string, role: UserRole) {
 
 export async function updateUserPermissions(
   userId: string,
-  permissions: any[],
+  permissions: Partial<ManagedPermission>[],
 ) {
   const res = await fetch(`/api/admin/users/${userId}/permissions`, {
     method: 'PUT',

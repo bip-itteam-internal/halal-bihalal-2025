@@ -7,9 +7,11 @@ import { Users, Store } from 'lucide-react'
 
 export function Hero({
   logoUrl,
+  title,
   onAction,
 }: {
   logoUrl?: string
+  title?: string
   onAction: (type: 'external' | 'tenant') => void
 }) {
   return (
@@ -32,13 +34,13 @@ export function Hero({
             src="/wali.png"
             alt="Wali Band"
             fill
-            className="translate-x-[20%] object-contain object-center"
+            className="translate-x-[20%] translate-y-10 scale-110 object-contain object-center"
             priority
           />
         </div>
 
         {/* Golden Aura Glow */}
-        <div className="bg-halal-primary/20 absolute right-1/2 bottom-20 -z-10 h-[300px] w-[300px] translate-x-1/2 -translate-y-0 rounded-full opacity-30 blur-[100px] md:top-1/2 md:right-0 md:h-[600px] md:w-[600px] md:translate-x-[10%] md:-translate-y-1/2 md:blur-[180px]" />
+        <div className="bg-halal-primary/20 absolute right-1/2 bottom-20 -z-10 h-[300px] w-[300px] translate-x-1/2 -translate-y-0 rounded-full opacity-30 blur-[100px] md:top-1/2 md:right-0 md:h-[600px] md:w-[600px] md:translate-x-[15%] md:-translate-y-1/2 md:blur-[180px]" />
       </motion.div>
 
       {/* Content Container */}
@@ -107,13 +109,19 @@ export function Hero({
             className="w-full space-y-8 md:w-auto"
           >
             <div className="space-y-6">
-              <h1 className="text-4xl leading-[1.1] font-black tracking-tighter uppercase drop-shadow-2xl md:text-7xl lg:text-9xl">
-                <span className="text-white">SPESIAL</span>{' '}
-                <br className="hidden md:block" />
-                <span className="text-white">KONSER</span> <br />
-                <span className="from-halal-primary via-halal-primary bg-gradient-to-b to-[#b88a2e] bg-clip-text text-transparent drop-shadow-[0_4px_25px_rgba(223,174,70,0.5)]">
-                  WALI BAND
-                </span>
+              <h1 className="max-w-2xl text-3xl leading-[1.1] font-black tracking-tighter uppercase drop-shadow-2xl md:text-5xl lg:text-7xl">
+                {title?.toUpperCase().includes('BHARATA GROUP') ? (
+                  <>
+                    <span className="block text-white">BHARATA GROUP</span>
+                    <span className="from-halal-primary via-halal-primary block bg-gradient-to-b to-[#b88a2e] bg-clip-text text-transparent drop-shadow-[0_4px_25px_rgba(223,174,70,0.5)]">
+                      {title.toUpperCase().replace('BHARATA GROUP', '').trim()}
+                    </span>
+                  </>
+                ) : (
+                  <span className="from-halal-primary via-halal-primary bg-gradient-to-b to-[#b88a2e] bg-clip-text text-transparent drop-shadow-[0_4px_25px_rgba(223,174,70,0.5)]">
+                    {title || 'HALAL BIHALAL'}
+                  </span>
+                )}
               </h1>
               <p className="mx-auto max-w-sm text-sm font-medium tracking-wide text-slate-300 md:mx-0 md:max-w-md md:text-xl">
                 Malam silaturahmi akbar dan perayaan kemenangan bersama grup

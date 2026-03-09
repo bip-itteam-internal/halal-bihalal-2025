@@ -15,7 +15,6 @@ interface ImportFooterProps {
   hasFile: boolean
   previewDataLength: number
   fileUniqueCount: number
-  skipDuplicates: boolean
 }
 
 export function ImportFooter({
@@ -29,7 +28,6 @@ export function ImportFooter({
   hasFile,
   previewDataLength,
   fileUniqueCount,
-  skipDuplicates,
 }: ImportFooterProps) {
   return (
     <div className="mt-auto border-t bg-slate-50/50 p-4 px-6 backdrop-blur-md">

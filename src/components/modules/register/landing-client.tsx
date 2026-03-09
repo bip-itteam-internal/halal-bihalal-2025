@@ -8,6 +8,7 @@ import { Hero } from './sections/Hero'
 import { EventInfo } from './sections/EventInfo'
 import { Registration } from './sections/Registration'
 import { Footer } from './sections/Footer'
+import { ScrollToTop } from '@/components/ui/scroll-to-top'
 
 export interface LandingClientProps {
   events: Event[]
@@ -59,6 +60,7 @@ export function LandingClient({
       <main className="relative z-10">
         <Hero
           logoUrl={mainEvent?.logo_url || undefined}
+          title={mainEvent?.name || undefined}
           onAction={scrollToRegister}
         />
 
@@ -84,6 +86,7 @@ export function LandingClient({
       </main>
 
       <Footer logoUrl={mainEvent?.logo_url || undefined} />
+      <ScrollToTop />
     </div>
   )
 }

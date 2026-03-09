@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import confetti from 'canvas-confetti'
 import { Guest } from '@/types'
 import { audioManager } from '@/lib/audio-manager'
-import { getDoorprizeCandidates } from '@/services/api/doorprize'
 
 export function useDoorprize() {
   const [candidates, setCandidates] = useState<Guest[]>([])

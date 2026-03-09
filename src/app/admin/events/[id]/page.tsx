@@ -25,7 +25,6 @@ export default function EventDetailPage({
   const router = useRouter()
   const supabase = createClient()
 
-  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [event, setEvent] = useState<Event | null>(null)
@@ -55,7 +54,6 @@ export default function EventDetailPage({
 
   const fetchEventDetails = useCallback(async () => {
     try {
-      setLoading(true)
       const data = await getEventById(eventId)
       setEvent(data)
 
@@ -76,8 +74,6 @@ export default function EventDetailPage({
     } catch (err: unknown) {
       console.error(err)
       toast.error('Gagal memuat detail kegiatan.')
-    } finally {
-      setLoading(false)
     }
   }, [eventId])
 
@@ -159,8 +155,11 @@ export default function EventDetailPage({
 
       setEvent({ ...event, logo_url: publicUrl })
       toast.success('Logo berhasil diunggah.')
-    } catch (error: any) {
-      toast.error('Gagal mengunggah logo: ' + error.message)
+    } catch (error: unknown) {
+      toast.error(
+        'Gagal mengunggah logo: ' +
+          (error instanceof Error ? error.message : 'Unknown error'),
+      )
     } finally {
       setIsUploadingLogo(false)
     }

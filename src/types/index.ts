@@ -32,6 +32,8 @@ export interface Event {
   external_quota: number
   tenant_quota: number
   public_reg_status: PublicRegistrationStatus
+  public_name?: string | null
+  company_name?: string | null
   created_at: string
 }
 

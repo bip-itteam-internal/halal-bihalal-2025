@@ -3,7 +3,7 @@ export interface RegisterGuestPayload {
   phone: string
   guest_type: 'external' | 'tenant'
   address: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface RegisterGuestResponse {

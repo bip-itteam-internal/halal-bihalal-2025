@@ -1,7 +1,8 @@
 'use client'
 
+import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { Calendar, MapPin } from 'lucide-react'
+import { Calendar, MapPin, Mic2 } from 'lucide-react'
 import { formatJakartaDate } from '@/lib/utils'
 
 interface EventInfoProps {
@@ -13,13 +14,13 @@ export function EventInfo({ date, location }: EventInfoProps) {
   // No local formatDate needed as we'll use formatJakartaDate directly
 
   return (
-    <section className="relative z-20 mx-auto -mt-12 w-full max-w-6xl px-6">
+    <section className="relative z-20 mx-auto -mt-8 w-full max-w-6xl px-6 md:-mt-12">
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.8, ease: 'easeOut' }}
-        className="flex flex-col gap-5 md:flex-row md:justify-center md:gap-8"
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8"
       >
         {[
           {
@@ -30,44 +31,81 @@ export function EventInfo({ date, location }: EventInfoProps) {
               ? `Pukul ${formatJakartaDate(date, 'p')} - Selesai`
               : 'TBA',
             color: 'from-amber-400 to-halal-primary',
+            glow: 'rgba(234, 179, 8, 0.1)',
           },
           {
             icon: MapPin,
             label: 'TEMPAT ACARA',
             value: location || 'TBA',
-            color: 'from-emerald-400 to-teal-500',
+            color: 'from-amber-400 to-halal-primary',
+            glow: 'rgba(234, 179, 8, 0.1)',
+          },
+          {
+            icon: Mic2,
+            label: 'MASTER OF CEREMONY',
+            value: 'TARMIN',
+            sub: 'Professional MC',
+            image: '/tarmin.png',
+            color: 'from-amber-400 to-halal-primary',
+            glow: 'rgba(234, 179, 8, 0.1)',
+            span: 'md:col-span-2',
           },
         ].map((item, i) => (
           <motion.div
             key={i}
-            whileHover={{ y: -8, scale: 1.02 }}
-            className="group hover:border-halal-primary/30 relative flex-1 overflow-hidden rounded-[3rem] border border-white/5 bg-[#0d1f1e]/80 p-12 shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-2xl transition-all"
+            whileHover={{ y: -10 }}
+            className={`group hover:border-halal-primary/40 relative flex flex-col items-start overflow-hidden rounded-[2.5rem] border border-white/10 bg-[#0a1a19] p-10 shadow-2xl transition-all duration-500 ${
+              item.span || ''
+            } ${item.image ? 'min-h-[280px]' : 'min-h-[320px]'}`}
           >
-            {/* Animated Glow Backdrop */}
-            <div className="bg-halal-primary/5 group-hover:bg-halal-primary/15 absolute -top-12 -right-12 h-32 w-32 rounded-full blur-3xl transition-all" />
+            {/* Background Glow Effect */}
+            <div
+              className="absolute -top-20 -right-20 h-64 w-64 rounded-full opacity-10 blur-[100px] transition-opacity duration-500 group-hover:opacity-30"
+              style={{ backgroundColor: 'rgba(234, 179, 8, 0.3)' }}
+            />
 
-            <div className="relative z-10 space-y-8">
-              <div className="text-halal-primary flex h-20 w-20 items-center justify-center rounded-[2rem] bg-white/5 shadow-xl transition-transform group-hover:rotate-6">
-                <item.icon className="h-10 w-10" />
+            {/* Image Layer for MC - Positioned Right on Desktop */}
+            {item.image && (
+              <div className="absolute inset-0 z-0 overflow-hidden transition-all duration-700 group-hover:scale-[1.02]">
+                <div className="absolute inset-x-0 top-0 h-full opacity-40 transition-opacity duration-700 group-hover:opacity-60 md:right-0 md:left-auto md:w-1/2">
+                  <Image
+                    src={item.image}
+                    alt={item.value}
+                    fill
+                    className="object-cover object-top contrast-110"
+                  />
+                  {/* Desktop Side Fade */}
+                  <div className="absolute inset-0 hidden bg-gradient-to-r from-[#0a1a19] via-transparent to-transparent md:block" />
+                </div>
+                {/* Global Bottom Fade */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a19] via-[#0a1a19]/40 to-transparent" />
+              </div>
+            )}
+
+            <div className="relative z-10 w-full max-w-xl space-y-6">
+              {/* Consistent Icon Container */}
+              <div className="text-halal-primary group-hover:bg-halal-primary/20 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 shadow-inner backdrop-blur-md transition-all duration-500">
+                <item.icon className="h-7 w-7" />
               </div>
 
-              <div className="space-y-3">
-                <p className="text-halal-primary text-xs font-black tracking-[0.4em] uppercase opacity-70">
+              {/* Standardized Text Content */}
+              <div className="space-y-2">
+                <span className="text-halal-primary block text-[10px] font-black tracking-[0.4em] uppercase opacity-70">
                   {item.label}
-                </p>
-                <h3 className="group-hover:text-halal-primary text-3xl leading-tight font-bold text-white transition-colors">
+                </span>
+                <h3 className="text-2xl leading-tight font-bold text-white transition-colors duration-300 md:text-5xl">
                   {item.value}
                 </h3>
-                <p className="text-base font-medium text-zinc-500">
+                <p className="min-h-[1.5em] text-sm font-semibold text-zinc-400 transition-colors group-hover:text-zinc-300 md:text-lg">
                   {item.sub}
                 </p>
               </div>
             </div>
 
-            {/* Bottom Accent Line */}
-            <div
-              className={`absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r ${item.color} transition-all duration-500 group-hover:w-full`}
-            />
+            {/* Decorative Bottom Bar */}
+            <div className="absolute right-0 bottom-0 left-0 h-[4px] overflow-hidden opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+              <div className="to-halal-primary h-full w-full bg-gradient-to-r from-amber-400" />
+            </div>
           </motion.div>
         ))}
       </motion.div>

@@ -90,14 +90,14 @@ export function EventCard({
             <CardTitle className="text-xl leading-tight">
               {event.name}
             </CardTitle>
-            {(event as any).public_name && (
+            {event.public_name && (
               <p className="text-muted-foreground mt-1 text-sm font-medium italic">
-                Publik: {(event as any).public_name}
+                Publik: {event.public_name}
               </p>
             )}
-            {(event as any).company_name && (
+            {event.company_name && (
               <p className="text-muted-foreground text-xs uppercase">
-                {(event as any).company_name}
+                {event.company_name}
               </p>
             )}
           </div>
