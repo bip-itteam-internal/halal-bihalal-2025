@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
+import { Users, Store } from 'lucide-react'
 
 export function Hero({
   logoUrl,
@@ -127,9 +128,11 @@ export function Hero({
                 className="w-full sm:w-auto"
               >
                 <Button
-                  className="bg-halal-primary text-halal-secondary hover:bg-halal-primary/90 h-14 w-full rounded-full px-12 text-xs font-black tracking-widest uppercase shadow-[0_25px_50px_rgba(223,174,70,0.3)] transition-all sm:w-auto md:h-20 md:text-base"
+                  className="bg-halal-primary text-halal-secondary hover:bg-halal-primary/90 flex w-full items-center justify-center gap-3 rounded-full text-xs font-black tracking-[0.1em] uppercase shadow-[0_25px_50px_rgba(223,174,70,0.3)] transition-all sm:w-auto md:text-sm"
                   onClick={() => onAction('external')}
+                  size="lg"
                 >
+                  <Users className="h-5 w-5 md:h-6 md:w-6" />
                   Daftar Umum
                 </Button>
               </motion.div>
@@ -141,9 +144,11 @@ export function Hero({
               >
                 <Button
                   variant="outline"
-                  className="border-halal-primary/40 text-halal-primary hover:bg-halal-primary hover:text-halal-secondary h-14 w-full rounded-full bg-black/20 px-12 text-xs font-black tracking-widest uppercase backdrop-blur-xl transition-all sm:w-auto md:h-20 md:text-base"
+                  className="border-halal-primary/40 text-halal-primary hover:bg-halal-primary hover:text-halal-secondary flex w-full items-center justify-center gap-3 rounded-full bg-black/20 text-xs font-black tracking-[0.1em] uppercase backdrop-blur-xl transition-all sm:w-auto md:text-sm"
                   onClick={() => onAction('tenant')}
+                  size="lg"
                 >
+                  <Store className="h-5 w-5 md:h-6 md:w-6" />
                   Booth UMKM
                 </Button>
               </motion.div>

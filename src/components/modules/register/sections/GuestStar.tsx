@@ -43,7 +43,7 @@ export function GuestStar() {
             WALI BAND
           </motion.h4>
           <p className="text-halal-primary mt-4 font-serif text-2xl tracking-wide italic">
-            "Satu Hati, Satu Silaturahmi"
+            &quot;Satu Hati, Satu Silaturahmi&quot;
           </p>
         </div>
 

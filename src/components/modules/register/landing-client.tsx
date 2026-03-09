@@ -70,8 +70,6 @@ export function LandingClient({
         {mainEvent && (
           <Registration
             eventId={mainEvent.id}
-            eventName={mainEvent.name || ''}
-            status={mainEvent.public_reg_status as 'open' | 'closed'}
             regData={
               registrationsByEvent[mainEvent.id] || { external: 0, tenant: 0 }
             }

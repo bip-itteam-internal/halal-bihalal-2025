@@ -33,12 +33,6 @@ export function Footer({ logoUrl }: { logoUrl?: string }) {
         </motion.div>
 
         <div className="mb-12 flex flex-wrap justify-center gap-x-12 gap-y-6 text-xs font-black tracking-[0.3em] text-slate-500 uppercase">
-          <a href="#" className="hover:text-halal-primary transition-colors">
-            Syarat Ketentuan
-          </a>
-          <a href="#" className="hover:text-halal-primary transition-colors">
-            Panduan Tiket
-          </a>
           <a
             href="https://wa.me/6289676258026"
             target="_blank"
@@ -51,7 +45,7 @@ export function Footer({ logoUrl }: { logoUrl?: string }) {
 
         <div className="space-y-4">
           <p className="font-serif text-sm text-slate-600 italic">
-            &copy; 2026 Bharata Group. Seluruh Hak Cipta Dilindungi.
+            &copy; 2026 Bharata Group.
           </p>
         </div>
       </div>

@@ -1,12 +1,11 @@
 'use client'
 
 import React, { useState } from 'react'
-import { CheckCircle2, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/components/ui/button'
-import { CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -301,7 +300,7 @@ export function RegistrationForm({
 
           <Button
             type="submit"
-            className="w-full bg-amber-500 font-bold text-black hover:bg-amber-400"
+            className="bg-halal-primary hover:bg-halal-primary/90 w-full font-bold text-black"
             disabled={registerLoading}
           >
             {registerLoading ? (

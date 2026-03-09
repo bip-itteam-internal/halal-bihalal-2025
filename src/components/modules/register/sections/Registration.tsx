@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Users, Store, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import { RegistrationForm } from '../registration-form'
 import { GuestLoginForm } from '../../auth/guest-login-form'
 import { RegistrationSuccess } from '../registration-success'
@@ -13,7 +12,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 interface RegistrationProps {
   eventId: string
-  eventName: string
   regData: {
     external: number
     tenant: number
@@ -22,21 +20,17 @@ interface RegistrationProps {
     external: number
     tenant: number
   }
-  status: 'open' | 'closed'
   activeTab: 'external' | 'tenant'
   onTabChange: (tab: 'external' | 'tenant') => void
 }
 
 export function Registration({
   eventId,
-  eventName,
-  status,
   regData,
   quotas,
   activeTab,
   onTabChange,
 }: RegistrationProps) {
-  const isOpen = status === 'open'
   const [authMode, setAuthMode] = useState<'register' | 'login'>('register')
   const [successData, setSuccessData] = useState<{
     guest_id: string
@@ -82,21 +76,21 @@ export function Registration({
       <div className="space-y-8">
         <div className="flex flex-col gap-8 md:flex-row md:items-start">
           {/* Info Side */}
-          <div className="flex-1 space-y-10 py-4">
+          <div className="flex-1 space-y-6 py-4 md:space-y-10">
             <div>
-              <div className="mb-4 flex items-center gap-3">
+              <div className="mb-3 flex items-center gap-3 md:mb-4">
                 <div className="bg-halal-primary/30 h-px w-12" />
                 <span className="text-halal-primary text-[10px] font-black tracking-[0.5em] uppercase">
                   CATEGORY
                 </span>
               </div>
-              <h2 className="mb-4 text-5xl font-black tracking-tight text-white uppercase md:text-6xl">
+              <h2 className="mb-4 text-4xl font-black tracking-tight text-white uppercase md:text-6xl">
                 {type === 'external' ? 'DAFTAR ' : 'BOOTH '}
                 <span className="text-halal-primary">
                   {type === 'external' ? 'UMUM' : 'UMKM'}
                 </span>
               </h2>
-              <p className="max-w-md text-lg leading-relaxed text-zinc-400">
+              <p className="max-w-md text-base leading-relaxed text-zinc-400 md:text-lg">
                 {type === 'external'
                   ? 'Registrasi masyarakat umum untuk menghadiri konser akbar.'
                   : 'Dapatkan kesempatan ekspansi bisnis dan jangkau ribuan pengunjung di lokasi acara.'}
@@ -164,10 +158,10 @@ export function Registration({
           </div>
 
           {/* Form Side */}
-          <div className="w-full rounded-[2.5rem] border border-white/5 bg-[#0a1212] p-10 shadow-2xl md:w-[480px]">
-            <div className="mb-10 flex items-center justify-between">
+          <div className="w-full rounded-[2.5rem] border border-white/5 bg-[#0a1212] p-6 shadow-2xl md:w-[480px] md:p-10">
+            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between md:mb-10">
               <div>
-                <h3 className="text-2xl font-black tracking-tight text-white uppercase">
+                <h3 className="text-xl font-black tracking-tight text-white uppercase md:text-2xl">
                   {authMode === 'register' ? 'FORM ' : 'AKSES '}
                   <span className="text-halal-primary">
                     {authMode === 'register' ? 'PENDAFTARAN' : 'UNDANGAN'}
@@ -181,7 +175,7 @@ export function Registration({
                 onClick={() =>
                   setAuthMode(authMode === 'register' ? 'login' : 'register')
                 }
-                className="text-halal-primary p-0 text-[10px] font-black tracking-[0.2em] uppercase hover:text-white"
+                className="text-halal-primary h-auto p-0 text-[10px] font-black tracking-[0.2em] uppercase hover:text-white sm:text-right"
               >
                 {authMode === 'register' ? 'Sudah Daftar?' : 'Belum Daftar?'}
               </Button>
@@ -238,14 +232,16 @@ export function Registration({
             <TabsList className="grid h-16 w-full grid-cols-2 rounded-2xl border border-white/5 bg-black/40 p-1.5 backdrop-blur-xl">
               <TabsTrigger
                 value="external"
-                className="data-[state=active]:bg-halal-primary data-[state=active]:text-halal-secondary rounded-xl text-xs font-black tracking-widest uppercase transition-all"
+                className="group data-[state=active]:bg-halal-primary data-[state=active]:text-halal-secondary flex items-center gap-2 rounded-xl text-xs font-black tracking-widest uppercase transition-all"
               >
+                <Users className="h-4 w-4 transition-transform group-active:scale-90" />
                 Umum
               </TabsTrigger>
               <TabsTrigger
                 value="tenant"
-                className="data-[state=active]:bg-halal-primary data-[state=active]:text-halal-secondary rounded-xl text-xs font-black tracking-widest uppercase transition-all"
+                className="group data-[state=active]:bg-halal-primary data-[state=active]:text-halal-secondary flex items-center gap-2 rounded-xl text-xs font-black tracking-widest uppercase transition-all"
               >
+                <Store className="h-4 w-4 transition-transform group-active:scale-90" />
                 UMKM
               </TabsTrigger>
             </TabsList>
