@@ -45,7 +45,7 @@ export function EventInfo({ date, location }: EventInfoProps) {
             label: 'MASTER OF CEREMONY',
             value: 'TARMIN',
             sub: 'Professional MC',
-            image: '/tarmin.png',
+            image: '/TARMIN.png',
             color: 'from-amber-400 to-halal-primary',
             glow: 'rgba(234, 179, 8, 0.1)',
             span: 'md:col-span-2',
@@ -56,7 +56,7 @@ export function EventInfo({ date, location }: EventInfoProps) {
             whileHover={{ y: -10 }}
             className={`group hover:border-halal-primary/40 relative flex flex-col items-start overflow-hidden rounded-[2.5rem] border border-white/10 bg-[#0a1a19] p-10 shadow-2xl transition-all duration-500 ${
               item.span || ''
-            } ${item.image ? 'min-h-[280px]' : 'min-h-[320px]'}`}
+            } ${item.image ? 'min-h-[400px] md:min-h-[280px]' : 'min-h-[320px]'}`}
           >
             {/* Background Glow Effect */}
             <div
@@ -64,10 +64,10 @@ export function EventInfo({ date, location }: EventInfoProps) {
               style={{ backgroundColor: 'rgba(234, 179, 8, 0.3)' }}
             />
 
-            {/* Image Layer for MC - Positioned Right on Desktop */}
+            {/* Desktop Image Layer (Hidden on Mobile) */}
             {item.image && (
-              <div className="absolute inset-0 z-0 overflow-hidden transition-all duration-700 group-hover:scale-[1.02]">
-                <div className="absolute inset-x-0 top-0 h-full opacity-40 transition-opacity duration-700 group-hover:opacity-60 md:right-0 md:left-auto md:w-1/2">
+              <div className="absolute inset-0 z-0 hidden overflow-hidden transition-all duration-700 group-hover:scale-[1.02] md:block">
+                <div className="absolute inset-x-0 top-0 h-full transition-opacity duration-700 md:right-0 md:left-auto md:w-1/2">
                   <Image
                     src={item.image}
                     alt={item.value}
@@ -75,31 +75,47 @@ export function EventInfo({ date, location }: EventInfoProps) {
                     className="object-cover object-top contrast-110"
                   />
                   {/* Desktop Side Fade */}
-                  <div className="absolute inset-0 hidden bg-gradient-to-r from-[#0a1a19] via-transparent to-transparent md:block" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#0a1a19] via-[#0a1a19]/20 to-transparent" />
                 </div>
                 {/* Global Bottom Fade */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a19] via-[#0a1a19]/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a19] via-transparent to-transparent" />
               </div>
             )}
 
-            <div className="relative z-10 w-full max-w-xl space-y-6">
-              {/* Consistent Icon Container */}
-              <div className="text-halal-primary group-hover:bg-halal-primary/20 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 shadow-inner backdrop-blur-md transition-all duration-500">
-                <item.icon className="h-7 w-7" />
+            <div className="relative z-10 flex h-full w-full flex-col space-y-2">
+              <div className="space-y-6">
+                {/* Consistent Icon Container */}
+                <div className="text-halal-primary group-hover:bg-halal-primary/20 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 shadow-inner backdrop-blur-md transition-all duration-500">
+                  <item.icon className="h-7 w-7" />
+                </div>
+
+                {/* Standardized Text Content */}
+                <div className="space-y-2">
+                  <span className="text-halal-primary block text-[10px] font-black tracking-[0.4em] uppercase opacity-70">
+                    {item.label}
+                  </span>
+                  <h3 className="text-2xl leading-tight font-bold text-white transition-colors duration-300 md:text-5xl">
+                    {item.value}
+                  </h3>
+                  <p className="min-h-[1.5em] text-sm font-semibold text-zinc-400 transition-colors group-hover:text-zinc-300 md:text-lg">
+                    {item.sub}
+                  </p>
+                </div>
               </div>
 
-              {/* Standardized Text Content */}
-              <div className="space-y-2">
-                <span className="text-halal-primary block text-[10px] font-black tracking-[0.4em] uppercase opacity-70">
-                  {item.label}
-                </span>
-                <h3 className="text-2xl leading-tight font-bold text-white transition-colors duration-300 md:text-5xl">
-                  {item.value}
-                </h3>
-                <p className="min-h-[1.5em] text-sm font-semibold text-zinc-400 transition-colors group-hover:text-zinc-300 md:text-lg">
-                  {item.sub}
-                </p>
-              </div>
+              {/* Mobile Image (Visible on Mobile only, at the bottom) */}
+              {item.image && (
+                <div className="relative -mx-10 mt-8 -mb-10 h-[350px] overflow-hidden md:hidden">
+                  <Image
+                    src={item.image}
+                    alt={item.value}
+                    fill
+                    className="object-cover object-top contrast-110"
+                  />
+                  {/* Subtle blend for mobile image */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a19] via-transparent to-transparent" />
+                </div>
+              )}
             </div>
 
             {/* Decorative Bottom Bar */}

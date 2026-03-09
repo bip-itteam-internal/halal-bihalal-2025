@@ -14,6 +14,7 @@ interface ImportFooterProps {
   hasDuplicates: boolean
   hasFile: boolean
   previewDataLength: number
+  skipDuplicates: boolean
   fileUniqueCount: number
 }
 
@@ -27,6 +28,7 @@ export function ImportFooter({
   hasDuplicates,
   hasFile,
   previewDataLength,
+  skipDuplicates,
   fileUniqueCount,
 }: ImportFooterProps) {
   return (

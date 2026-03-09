@@ -1,9 +1,81 @@
 'use client'
 
+import React, { useMemo } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Users, Store } from 'lucide-react'
+
+const FloatingStars = () => {
+  const particles = useMemo(() => {
+    return Array.from({ length: 40 }).map((_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      size: Math.random() * 6 + 2,
+      delay: Math.random() * 5,
+      duration: Math.random() * 15 + 10,
+      color: Math.random() > 0.4 ? '#fbbf24' : '#ffffff',
+    }))
+  }, [])
+
+  return (
+    <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+      {particles.map((p) => (
+        <motion.div
+          key={p.id}
+          className="absolute rounded-full"
+          style={{
+            left: p.left,
+            top: p.top,
+            width: p.size,
+            height: p.size,
+            backgroundColor: p.color,
+            boxShadow: `0 0 15px ${p.color}`,
+            filter: 'blur(1px)',
+          }}
+          animate={{
+            y: [0, -60, -20, 0],
+            x: [0, 40, -40, 0],
+            scale: [1, 1.2, 0.8, 1],
+            opacity: [0.2, 0.6, 0.3, 0.2],
+          }}
+          transition={{
+            duration: p.duration,
+            repeat: Infinity,
+            ease: 'easeInOut',
+            delay: p.delay,
+          }}
+        />
+      ))}
+      {/* Shooting Stars */}
+      {[...Array(4)].map((_, i) => (
+        <motion.div
+          key={`shooting-${i}`}
+          className="absolute h-[1px] w-[150px] bg-gradient-to-r from-transparent via-amber-400/60 to-transparent"
+          initial={{
+            opacity: 0,
+            rotate: -35,
+            x: '-20%',
+            y: `${Math.random() * 70}%`,
+          }}
+          animate={{
+            opacity: [0, 1, 0],
+            x: ['0%', '150%'],
+            y: ['0%', '100%'],
+          }}
+          transition={{
+            duration: 1.5,
+            repeat: Infinity,
+            ease: 'linear',
+            delay: Math.random() * 15,
+            repeatDelay: Math.random() * 10,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
 
 export function Hero({
   logoUrl,
@@ -16,32 +88,37 @@ export function Hero({
 }) {
   return (
     <section className="bg-halal-secondary relative flex min-h-screen w-full items-center overflow-hidden">
-      {/* Background Image - Desktop Only & Global Overlays */}
-      <motion.div
-        initial={{ opacity: 0, scale: 1.05 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.5, ease: 'easeOut' }}
-        className="absolute inset-0 z-0"
-      >
-        {/* Mobile Gradient Overlay */}
-        <div className="from-halal-secondary via-halal-secondary/40 absolute inset-0 z-10 bg-gradient-to-b to-transparent md:hidden" />
-        {/* Desktop Gradient Overlay */}
-        <div className="from-halal-secondary via-halal-secondary/40 absolute inset-0 z-10 hidden bg-gradient-to-r to-transparent md:block" />
+      {/* Background Layer */}
+      <div className="absolute inset-0 z-0">
+        <FloatingStars />
 
-        {/* Desktop Only Background Image */}
-        <div className="absolute inset-0 hidden md:block">
-          <Image
-            src="/wali.png"
-            alt="Wali Band"
-            fill
-            className="translate-x-[20%] translate-y-10 scale-110 object-contain object-center"
-            priority
-          />
-        </div>
+        {/* Background Image - Desktop Only & Global Overlays */}
+        <motion.div
+          initial={{ opacity: 0, scale: 1.05 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1.5, ease: 'easeOut' }}
+          className="absolute inset-0"
+        >
+          {/* Mobile Gradient Overlay */}
+          <div className="from-halal-secondary via-halal-secondary/40 absolute inset-0 z-10 bg-gradient-to-b to-transparent md:hidden" />
+          {/* Desktop Gradient Overlay */}
+          <div className="from-halal-secondary via-halal-secondary/40 absolute inset-0 z-10 hidden bg-gradient-to-r to-transparent md:block" />
 
-        {/* Golden Aura Glow */}
-        <div className="bg-halal-primary/20 absolute right-1/2 bottom-20 -z-10 h-[300px] w-[300px] translate-x-1/2 -translate-y-0 rounded-full opacity-30 blur-[100px] md:top-1/2 md:right-0 md:h-[600px] md:w-[600px] md:translate-x-[15%] md:-translate-y-1/2 md:blur-[180px]" />
-      </motion.div>
+          {/* Desktop Only Background Image */}
+          <div className="absolute inset-0 hidden md:block">
+            <Image
+              src="/wali.png"
+              alt="Wali Band"
+              fill
+              className="translate-x-[20%] translate-y-10 scale-110 object-contain object-center"
+              priority
+            />
+          </div>
+
+          {/* Golden Aura Glow */}
+          <div className="bg-halal-primary/20 absolute right-1/2 bottom-20 -z-10 h-[300px] w-[300px] translate-x-1/2 -translate-y-0 rounded-full opacity-30 blur-[100px] md:top-1/2 md:right-0 md:h-[600px] md:w-[600px] md:translate-x-[15%] md:-translate-y-1/2 md:blur-[180px]" />
+        </motion.div>
+      </div>
 
       {/* Content Container */}
       <div className="relative z-10 mx-auto w-full max-w-7xl px-6 pt-16 pb-20 md:pt-16 md:pb-24">
