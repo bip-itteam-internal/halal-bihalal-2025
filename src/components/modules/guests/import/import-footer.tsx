@@ -28,7 +28,6 @@ export function ImportFooter({
   hasDuplicates,
   hasFile,
   previewDataLength,
-  skipDuplicates,
   fileUniqueCount,
 }: ImportFooterProps) {
   return (
