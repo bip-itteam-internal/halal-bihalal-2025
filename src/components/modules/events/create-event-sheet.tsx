@@ -60,6 +60,7 @@ const eventSchema = z.object({
   location: z.string().optional(),
   dress_code: z.string().optional(),
   external_quota: z.coerce.number().optional().default(1000),
+  tenant_quota: z.coerce.number().optional().default(200),
 })
 
 type EventFormValues = z.infer<typeof eventSchema>
@@ -87,6 +88,7 @@ export function CreateEventSheet({
       location: '',
       dress_code: '',
       external_quota: 1000,
+      tenant_quota: 50,
       event_time: '08:00',
     },
   })
@@ -113,6 +115,7 @@ export function CreateEventSheet({
           location: values.location,
           dress_code: values.dress_code,
           external_quota: values.external_quota,
+          tenant_quota: values.tenant_quota,
           public_reg_status: 'closed',
         },
       ])
@@ -343,19 +346,35 @@ export function CreateEventSheet({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="external_quota"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kuota Eksternal (Tamu Publik)</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="0" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="external_quota"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Kuota Umum</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="0" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="tenant_quota"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Kuota Tenant</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="0" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,9 +12,9 @@ import { ImportGuestSheet } from '@/components/modules/guests/import-guest-sheet
 import { toast } from 'sonner'
 import { PageHeader } from '@/components/shared/page-header'
 import { useProfile } from '@/hooks/use-profile'
+import { getGuests } from '@/services/api/guests'
 
 export default function MasterGuestPage() {
-  const supabase = createClient()
   const [loading, setLoading] = useState(true)
   const [guests, setGuests] = useState<Guest[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -27,29 +26,13 @@ export default function MasterGuestPage() {
   const fetchGuests = useCallback(async () => {
     try {
       setLoading(true)
-
-      // Fetch Guests with Pagination and Search
-      let query = supabase
-        .from('guests')
-        .select('*, guest_events(event_id, events(name))', { count: 'exact' })
-
-      if (searchQuery) {
-        query = query.ilike('full_name', `%${searchQuery}%`)
-      }
-
-      const from = (page - 1) * pageSize
-      const to = from + pageSize - 1
-
-      const {
-        data: guestsData,
-        count,
-        error,
-      } = await query.order('created_at', { ascending: false }).range(from, to)
-
-      if (error) throw error
-
-      setGuests(guestsData || [])
-      setTotalCount(count || 0)
+      const { guests: data, totalCount: count } = await getGuests({
+        page,
+        pageSize,
+        searchQuery,
+      })
+      setGuests(data)
+      setTotalCount(count)
     } catch (err: unknown) {
       const error = err as Error
       console.error(error)
@@ -57,7 +40,7 @@ export default function MasterGuestPage() {
     } finally {
       setLoading(false)
     }
-  }, [supabase, page, pageSize, searchQuery])
+  }, [page, pageSize, searchQuery])
 
   useEffect(() => {
     fetchGuests()
@@ -97,7 +80,6 @@ export default function MasterGuestPage() {
                   className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
                 />
               </Button>
-              {/* We need to update these sheets to handle null eventId */}
               <ImportGuestSheet eventId={''} onSuccess={fetchGuests} />
               <AddGuestSheet eventId={''} onSuccess={fetchGuests} />
             </div>

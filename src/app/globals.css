@@ -20,37 +20,26 @@
   --secondary-color: #f59e0b;
   --selection-bg: rgba(11, 116, 222, 0.26);
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: #0b74de;
-  --primary-foreground: #ffffff;
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: #0b74de;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  /* Halal Bihalal Event Theme - Base */
+  --background: #102726;
+  --foreground: #ffffff;
+  --primary: #dfae46;
+  --primary-foreground: #102726;
+  --secondary: #163533;
+  --secondary-foreground: #ffffff;
+  --accent: #dfae46;
+  --accent-foreground: #102726;
+  --border: rgba(223, 174, 70, 0.2);
+  --input: rgba(223, 174, 70, 0.1);
+  --ring: #dfae46;
+
+  --halal-primary: #dfae46;
+  --halal-secondary: #102726;
+  --halal-secondary-dark: #0a1b1a;
+  --halal-accent: #163533;
+
+  /* Custom Transitions */
+  --transition-all: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 [data-theme='dark'] {
@@ -141,6 +130,11 @@ body {
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  --color-halal-primary: #dfae46;
+  --color-halal-secondary: #102726;
+  --color-halal-secondary-dark: #0a1b1a;
+  --color-halal-accent: #163533;
+
   --grid-cols-15: repeat(15, minmax(0, 1fr));
   --grid-cols-20: repeat(20, minmax(0, 1fr));
   --grid-cols-25: repeat(25, minmax(0, 1fr));
@@ -178,6 +172,24 @@ body {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+@keyframes meteor {
+  0% {
+    transform: rotate(215deg) translateX(0);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(215deg) translateX(-500px);
+    opacity: 0;
+  }
+}
+
+.animate-meteor-effect {
+  animation: meteor 5s linear infinite;
 }
 
 @layer base {

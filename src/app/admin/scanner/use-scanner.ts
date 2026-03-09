@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Html5Qrcode } from 'html5-qrcode'
-import { createClient } from '@/lib/supabase/client'
 import { Guest } from '@/types'
+import { getEvents } from '@/services/api/events'
+import { submitCheckin as apiSubmitCheckin } from '@/services/api/checkin'
 
 export type EventOption = {
   id: string
@@ -16,7 +17,6 @@ export type ScanResult = {
 }
 
 export function useScanner() {
-  const supabase = createClient()
   const router = useRouter()
   const searchParams = useSearchParams()
   const scannerRef = useRef<Html5Qrcode | null>(null)
@@ -54,18 +54,16 @@ export function useScanner() {
   const fetchEvents = useCallback(async () => {
     try {
       setLoadingEvents(true)
-      const { data, error } = await supabase
-        .from('events')
-        .select('id,name')
-        .order('created_at', { ascending: false })
-      if (error) throw error
-      setEvents((data || []) as EventOption[])
+      const data = await getEvents()
+      setEvents(
+        data.map((e) => ({ id: e.id, name: e.name || 'Untitled Event' })),
+      )
     } catch (err) {
       console.error(err)
     } finally {
       setLoadingEvents(false)
     }
-  }, [supabase])
+  }, [])
 
   useEffect(() => {
     fetchEvents()
@@ -105,25 +103,16 @@ export function useScanner() {
       setSubmitting(true)
       setManualError('')
 
-      const res = await fetch('/api/checkin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event_id: eventId,
-          qr_payload: payload.trim(),
-        }),
+      const result = await apiSubmitCheckin({
+        event_id: eventId,
+        qr_payload: payload.trim(),
       })
-
-      const data = await res.json()
-      if (!res.ok) {
-        throw new Error(data.message || 'Gagal check-in')
-      }
 
       setSuccessDialogOpen(true)
       setLastResult({
         success: true,
-        message: data.message,
-        guest: data.guest,
+        message: result.message,
+        guest: result.guest,
       })
       setManualCode('')
       return true

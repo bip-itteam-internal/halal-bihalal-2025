@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from 'react'
 import { CalendarDays, Users, CheckCircle2, Globe } from 'lucide-react'
 import Link from 'next/link'
 
-import { createClient } from '@/lib/supabase/client'
 import { AppLayout } from '@/components/layout/app-layout'
 import { StatsCard } from '@/components/shared/stats-card'
 import { PageHeader } from '@/components/shared/page-header'
@@ -26,19 +25,15 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { formatJakartaDate } from '@/lib/utils'
-
-type DashboardEvent = {
-  id: string
-  name: string
-  event_date: string
-  event_type: 'internal' | 'public' | null
-  public_reg_status: 'open' | 'closed'
-}
+import {
+  getDashboardData,
+  DashboardEvent,
+  DashboardStats,
+} from '@/services/api/dashboard'
 
 export default function AdminDashboardPage() {
-  const supabase = createClient()
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<DashboardStats>({
     totalEvents: 0,
     totalGuests: 0,
     checkedIn: 0,
@@ -50,44 +45,15 @@ export default function AdminDashboardPage() {
   const fetchDashboard = useCallback(async () => {
     try {
       setLoading(true)
-
-      const [eventsRes, eventsCountRes, guestsRes, checkinsRes] =
-        await Promise.all([
-          supabase
-            .from('events')
-            .select('id,name,event_date,event_type,public_reg_status')
-            .order('created_at', { ascending: false })
-            .limit(8),
-          supabase.from('events').select('id', { count: 'exact', head: true }),
-          supabase.from('guests').select('id', { count: 'exact', head: true }),
-          supabase
-            .from('checkins')
-            .select('id', { count: 'exact', head: true }),
-        ])
-
-      if (eventsRes.error) throw eventsRes.error
-      if (eventsCountRes.error) throw eventsCountRes.error
-      if (guestsRes.error) throw guestsRes.error
-      if (checkinsRes.error) throw checkinsRes.error
-
-      const events = (eventsRes.data || []) as DashboardEvent[]
-
-      setRecentEvents(events)
-      setStats({
-        totalEvents: eventsCountRes.count || 0,
-        totalGuests: guestsRes.count || 0,
-        checkedIn: checkinsRes.count || 0,
-        openPublicEvents: events.filter(
-          (event) =>
-            event.event_type === 'public' && event.public_reg_status === 'open',
-        ).length,
-      })
+      const data = await getDashboardData()
+      setRecentEvents(data.recentEvents)
+      setStats(data.stats)
     } catch (err) {
       console.error(err)
     } finally {
       setLoading(false)
     }
-  }, [supabase])
+  }, [])
 
   useEffect(() => {
     fetchDashboard()

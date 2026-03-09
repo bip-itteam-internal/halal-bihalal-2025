@@ -11,6 +11,7 @@ import {
   RefreshCw,
   ChevronLeft,
   ChevronRight,
+  Filter,
 } from 'lucide-react'
 import Link from 'next/link'
 import { Guest } from '@/types'
@@ -18,6 +19,13 @@ import { GuestListTable } from '@/components/modules/guests/guest-list-table'
 import { AddGuestSheet } from '@/components/modules/guests/add-guest-sheet'
 import { ImportGuestSheet } from '@/components/modules/guests/import-guest-sheet'
 import { toast } from 'sonner'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export default function GuestManagementPage({
   params,
@@ -32,6 +40,8 @@ export default function GuestManagementPage({
   const [event, setEvent] = useState<{ name: string } | null>(null)
   const [guests, setGuests] = useState<Guest[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [guestType, setGuestType] = useState<string>('all')
+  const [status, setStatus] = useState<string>('all')
   const [page, setPage] = useState(1)
   const [pageSize] = useState(10)
   const [totalCount, setTotalCount] = useState(0)
@@ -62,6 +72,14 @@ export default function GuestManagementPage({
         query = query.ilike('guests.full_name', `%${searchQuery}%`)
       }
 
+      if (guestType !== 'all') {
+        query = query.eq('guests.guest_type', guestType)
+      }
+
+      if (status !== 'all') {
+        query = query.eq('guests.rsvp_status', status)
+      }
+
       const from = (page - 1) * pageSize
       const to = from + pageSize - 1
 
@@ -87,11 +105,16 @@ export default function GuestManagementPage({
     } finally {
       setLoading(false)
     }
-  }, [eventId, supabase, page, pageSize, searchQuery, event])
+  }, [eventId, supabase, page, pageSize, searchQuery, guestType, status, event])
 
   useEffect(() => {
     fetchEventAndGuests()
-  }, [page, searchQuery, fetchEventAndGuests])
+  }, [page, searchQuery, guestType, status, fetchEventAndGuests])
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setPage(1)
+  }, [searchQuery, guestType, status])
 
   const totalPages = Math.ceil(totalCount / pageSize)
 
@@ -121,32 +144,83 @@ export default function GuestManagementPage({
       )}
     >
       <div className="flex-1 space-y-4 p-5 pt-4">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="relative max-w-sm flex-1">
-            <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
-            <Input
-              placeholder="Cari nama tamu..."
-              className="pl-9"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={fetchEventAndGuests}
-              disabled={loading}
-            >
-              <RefreshCw
-                className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="relative max-w-sm flex-1">
+              <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+              <Input
+                placeholder="Cari nama tamu..."
+                className="pl-9"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-            </Button>
-            <ImportGuestSheet
-              eventId={eventId}
-              onSuccess={fetchEventAndGuests}
-            />
-            <AddGuestSheet eventId={eventId} onSuccess={fetchEventAndGuests} />
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={fetchEventAndGuests}
+                disabled={loading}
+              >
+                <RefreshCw
+                  className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
+                />
+              </Button>
+              <ImportGuestSheet
+                eventId={eventId}
+                onSuccess={fetchEventAndGuests}
+              />
+              <AddGuestSheet
+                eventId={eventId}
+                onSuccess={fetchEventAndGuests}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 border-b pb-4">
+            <div className="text-muted-foreground flex items-center gap-2 text-xs font-medium">
+              <Filter className="h-3.5 w-3.5" />
+              <span>Filter:</span>
+            </div>
+
+            <Select value={guestType} onValueChange={setGuestType}>
+              <SelectTrigger className="h-8 w-[140px] text-xs">
+                <SelectValue placeholder="Tipe Tamu" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Tipe</SelectItem>
+                <SelectItem value="internal">Internal</SelectItem>
+                <SelectItem value="external">Eksternal</SelectItem>
+                <SelectItem value="tenant">Tenant</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="h-8 w-[140px] text-xs">
+                <SelectValue placeholder="Status RSVP" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Status</SelectItem>
+                <SelectItem value="pending">Tertunda</SelectItem>
+                <SelectItem value="confirmed">Dikonfirmasi</SelectItem>
+                <SelectItem value="declined">Dibatalkan</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {(guestType !== 'all' || status !== 'all' || searchQuery) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground h-8 text-xs"
+                onClick={() => {
+                  setGuestType('all')
+                  setStatus('all')
+                  setSearchQuery('')
+                }}
+              >
+                Reset Filter
+              </Button>
+            )}
           </div>
         </div>
 

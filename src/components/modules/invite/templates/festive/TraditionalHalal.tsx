@@ -1,4 +1,3 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, Clock, MapPin, Heart, ArrowRight } from 'lucide-react'
 import { EventTicket } from '@/components/shared/EventTicket'
@@ -25,7 +24,48 @@ export function TraditionalHalal({
   onRSVP,
   isUpdating,
 }: TemplateProps) {
-  if (!isOpen) {
+  // If tenant or external, we skip the cover
+  const isAutoOpen =
+    guest.guest_type === 'tenant' || guest.guest_type === 'external'
+  const effectOpen = isOpen || isAutoOpen
+
+  // 3. Confirmed View (Ticket) - Prioritize this screen if confirmed
+  if (guest.rsvp_status === 'confirmed') {
+    return (
+      <motion.div
+        key="ticket-view"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-[480px] p-4"
+      >
+        <div className="space-y-6">
+          <EventTicket
+            eventName={event.name}
+            eventDate={formatJakartaDate(event.event_date, 'PPP')}
+            eventTime={`${formatJakartaDate(event.event_date, 'p')}`}
+            location={event.location || ''}
+            guestName={guest.full_name || ''}
+            entryCode={guest.invitation_code || guest.id}
+            primaryColor="emerald"
+            logoUrl={event.logo_url || undefined}
+            downloadFileName={`Ticket-${guest.full_name}-${event.name}.png`}
+          />
+
+          <div className="px-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+              className="h-12 w-full rounded-2xl border-slate-200 bg-white text-[10px] font-bold text-slate-600 uppercase transition-all hover:bg-slate-50"
+            >
+              Tutup Rincian
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
+
+  if (!effectOpen) {
     return (
       <motion.div
         key="cover-halal"
@@ -101,42 +141,6 @@ export function TraditionalHalal({
             </Button>
           </CardContent>
         </Card>
-      </motion.div>
-    )
-  }
-
-  // 3. Confirmed View (Ticket)
-  if (guest.rsvp_status === 'confirmed') {
-    return (
-      <motion.div
-        key="ticket-view"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-[480px] p-4"
-      >
-        <div className="space-y-6">
-          <EventTicket
-            eventName={event.name}
-            eventDate={formatJakartaDate(event.event_date, 'PPP')}
-            eventTime={`${formatJakartaDate(event.event_date, 'p')}`}
-            location={event.location || ''}
-            guestName={guest.full_name || ''}
-            entryCode={guest.invitation_code || guest.id}
-            primaryColor="emerald"
-            logoUrl={event.logo_url || undefined}
-            downloadFileName={`Ticket-${guest.full_name}-${event.name}.png`}
-          />
-
-          <div className="px-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-              className="h-12 w-full rounded-2xl border-slate-200 bg-white text-[10px] font-bold text-slate-600 uppercase transition-all hover:bg-slate-50"
-            >
-              Tutup Rincian
-            </Button>
-          </div>
-        </div>
       </motion.div>
     )
   }
@@ -243,7 +247,7 @@ export function TraditionalHalal({
           <Button
             variant="ghost"
             onClick={() => setIsOpen(false)}
-            className="w-full text-[10px] font-bold tracking-[0.3em] text-amber-700/60 uppercase"
+            className="w-full text-[10px] mb-4 font-bold tracking-[0.3em] text-amber-700/60 uppercase"
           >
             Tutup Rincian
           </Button>

@@ -129,22 +129,26 @@ export function generateRandomCode(length: number = 6) {
 export function encodeUUID(uuid: string): string {
   if (!uuid) return ''
   const hex = uuid.replace(/-/g, '')
-  if (hex.length !== 32) return uuid // fallback if not standard UUID
+  if (hex.length !== 32) return uuid
 
-  const buffer = new Uint8Array(16)
+  const bytes = new Uint8Array(16)
   for (let i = 0; i < 16; i++) {
-    buffer[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16)
+    bytes[i] = parseInt(hex.substring(i * 2, i * 2 + 2), 16)
   }
 
-  const b64 = btoa(String.fromCharCode.apply(null, Array.from(buffer)))
-  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+  // Use btoa safely for binary data
+  const binString = String.fromCharCode(...bytes)
+  return btoa(binString)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
 }
 
 /**
  * Decode an obfuscated Base64URL string back to a UUID.
  */
 export function decodeUUID(base64url: string): string {
-  if (!base64url || base64url.length !== 22) return base64url // fallback if not encoded properly
+  if (!base64url || base64url.length !== 22) return base64url
 
   let b64 = base64url.replace(/-/g, '+').replace(/_/g, '/')
   while (b64.length % 4) {
@@ -152,16 +156,12 @@ export function decodeUUID(base64url: string): string {
   }
 
   try {
-    const bin = atob(b64)
-    if (bin.length !== 16) return base64url // fallback
+    const binString = atob(b64)
+    const hex = Array.from(binString)
+      .map((c) => c.charCodeAt(0).toString(16).padStart(2, '0'))
+      .join('')
 
-    let hex = ''
-    for (let i = 0; i < bin.length; i++) {
-      const charCode = bin.charCodeAt(i).toString(16)
-      hex += charCode.length === 1 ? '0' + charCode : charCode
-    }
-
-    return `${hex.substr(0, 8)}-${hex.substr(8, 4)}-${hex.substr(12, 4)}-${hex.substr(16, 4)}-${hex.substr(20)}`
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
   } catch {
     return base64url
   }

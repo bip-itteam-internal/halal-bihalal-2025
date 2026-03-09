@@ -113,7 +113,7 @@ export async function POST(
     // 1. Get Event Quota and Current Public Registration Count
     const { data: event, error: eventErr } = await supabase
       .from('events')
-      .select('external_quota, public_reg_status')
+      .select('external_quota, tenant_quota, public_reg_status')
       .eq('id', eventId)
       .single()
 
@@ -131,21 +131,28 @@ export async function POST(
       )
     }
 
-    // 2. Count current public guests for this event
+    // 2. Count current registrants for this event BASED ON GUEST TYPE
     const { count, error: countErr } = await supabase
       .from('guest_events')
-      .select('id, guests!inner(registration_source)', {
+      .select('id, guests!inner(registration_source, guest_type)', {
         count: 'exact',
         head: true,
       })
       .eq('event_id', eventId)
       .eq('guests.registration_source', 'public_registration')
+      .eq('guests.guest_type', guestType)
 
     if (countErr) throw countErr
 
-    if (count !== null && count >= event.external_quota) {
+    const quotaLimit =
+      guestType === 'tenant'
+        ? (event.tenant_quota ?? 0)
+        : (event.external_quota ?? 0)
+
+    if (count !== null && count >= quotaLimit) {
+      const typeLabel = guestType === 'tenant' ? 'Tenant' : 'Umum'
       return NextResponse.json(
-        { message: 'Mohon maaf, kuota pendaftaran publik sudah penuh.' },
+        { message: `Mohon maaf, kuota pendaftaran ${typeLabel} sudah penuh.` },
         { status: 403 },
       )
     }

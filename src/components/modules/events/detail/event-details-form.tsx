@@ -194,6 +194,22 @@ export function EventDetailsForm({
                     required
                   />
                 </div>
+                <div className="space-y-2">
+                  <label className="text-sm leading-none font-medium">
+                    Kuota Tenant <span className="text-destructive">*</span>
+                  </label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={event.tenant_quota}
+                    onChange={(e) =>
+                      onUpdateEvent({
+                        tenant_quota: Number(e.target.value) || 0,
+                      })
+                    }
+                    required
+                  />
+                </div>
               </div>
             </div>
             <div className="space-y-2">

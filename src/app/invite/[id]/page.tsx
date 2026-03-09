@@ -6,7 +6,7 @@ import { AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import { toast } from 'sonner'
 import { Guest, Event as AppEvent } from '@/types'
-import { decodeUUID, encodeUUID } from '@/lib/utils'
+import { decodeUUID } from '@/lib/utils'
 import slugify from 'slugify'
 import { usePathname } from 'next/navigation'
 
@@ -17,9 +17,20 @@ type GuestInvitation = Guest & {
 
 // Modular Components
 import { InvitationStatus } from '@/components/modules/invite/invitation-status'
+
+function toEventSlug(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+}
 import { MosaicBackground } from '@/components/modules/invite/mosaic-background'
 import { TemplateRenderer } from '@/components/modules/invite/TemplateRenderer'
 import { INVITATION_TEMPLATES as templates } from '@/lib/constants/templates'
+
+import { FloatingMusicPlayer } from '@/components/modules/invite/music-player'
 
 export default function GuestInvitePage({
   params,
@@ -30,20 +41,22 @@ export default function GuestInvitePage({
   const pathname = usePathname()
 
   // Extract ID part (either 22 chars short-id or 36 chars UUID)
-  // We split by hyphen and check the first part
-  const idSegments = resolvedParams.id.split('-')
   let rawIdPart = ''
+  let remainingPath = ''
 
   if (
     resolvedParams.id.length >= 36 &&
     (resolvedParams.id.match(/-/g) || []).length >= 4
   ) {
     // Looks like a full UUID (8-4-4-4-12)
-    // We need to take the first 5 segments if they form a UUID
-    rawIdPart = idSegments.slice(0, 5).join('-')
+    // We split by hyphen and take the first 5 parts to reconstruct the UUID
+    const parts = resolvedParams.id.split('-')
+    rawIdPart = parts.slice(0, 5).join('-')
+    remainingPath = parts.slice(5).join('-')
   } else {
-    // Looks like an obfuscated ID (22 chars)
-    rawIdPart = idSegments[0]
+    // Looks like an obfuscated ID (Base64URL length is exactly 22)
+    rawIdPart = resolvedParams.id.substring(0, 22)
+    remainingPath = resolvedParams.id.substring(23) // Skip the hyphen after the 22 chars
   }
 
   const guestId = rawIdPart.length === 36 ? rawIdPart : decodeUUID(rawIdPart)
@@ -55,6 +68,14 @@ export default function GuestInvitePage({
   const [error, setError] = useState<string | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
+  const [shouldPlayMusic, setShouldPlayMusic] = useState(true)
+
+  // Trigger music when invitation is opened
+  useEffect(() => {
+    if (isOpen) {
+      setShouldPlayMusic(true)
+    }
+  }, [isOpen])
 
   useEffect(() => {
     async function fetchData() {
@@ -84,24 +105,38 @@ export default function GuestInvitePage({
           .map((m) => m.events)
           .filter(Boolean) as unknown as AppEvent[]
 
-        // 3. Determine which event to show
-        // Use the slug from URL if possible
-        const urlSegments = resolvedParams.id.split('-')
-        const urlEventSlug =
-          urlSegments.length > 2 ? urlSegments.slice(2).join('-') : ''
+        // 3. Determine which event to show based on the URL suffix
+        let targetEvent = guestEvents[0]
+        if (remainingPath) {
+          const matched = guestEvents.find((e) => {
+            const s1 = slugify(e.name || '', { lower: true, strict: true })
+            const s2 = toEventSlug(e.name || '')
+            const eid = e.id
 
-        let targetEvent = guestEvents[0] // Default to first
-        if (urlEventSlug) {
-          const matched = guestEvents.find(
-            (e) =>
-              slugify(e.name || '', { lower: true, strict: true }) ===
-              urlEventSlug,
-          )
+            return (
+              remainingPath === s1 ||
+              remainingPath === s2 ||
+              remainingPath === eid ||
+              remainingPath.endsWith('-' + s1) ||
+              remainingPath.endsWith('-' + s2) ||
+              remainingPath.endsWith('-' + eid) ||
+              remainingPath.startsWith('guest-' + s1) ||
+              remainingPath.startsWith('guest-' + eid)
+            )
+          })
           if (matched) targetEvent = matched
         }
 
         setGuest({ ...guestData, event: targetEvent } as GuestInvitation)
         setEvent(targetEvent)
+
+        // Automatically open the invitation for Tenant or External guests
+        if (
+          guestData.guest_type === 'tenant' ||
+          guestData.guest_type === 'external'
+        ) {
+          setIsOpen(true)
+        }
       } catch (err: unknown) {
         const error = err as Error
         setError(error.message || 'Gagal memuat undangan.')
@@ -111,29 +146,27 @@ export default function GuestInvitePage({
     }
 
     fetchData()
-  }, [guestId, supabase, resolvedParams.id])
+  }, [guestId, supabase, resolvedParams.id, remainingPath])
 
   // Pretty URL sync: Update URL to include name/event if it's just a raw ID
   useEffect(() => {
     if (!guest || !event || loading) return
 
-    const shortId = encodeUUID(guest.id)
     const nameSlug = slugify(guest.full_name || '', {
       lower: true,
       strict: true,
     })
     const eventSlug = slugify(event.name || '', { lower: true, strict: true })
-    const targetPath = `/invite/${shortId}-${nameSlug}-${eventSlug}`
+    // Using real UUID (guest.id)
+    const targetPath = `/invite/${guest.id}-${nameSlug}-${eventSlug}`
 
-    // Only update if the pathname is different and we are not in a full-UUID URL that already has info
-    // Or if we want to force the short-id format for everyone
     if (pathname !== targetPath) {
       window.history.replaceState(null, '', targetPath)
     }
 
     // Update document title for better user experience
     document.title = `Undangan ${guest.full_name} - ${event.name}`
-  }, [guest, event, loading, pathname])
+  }, [guest, event, loading, pathname, remainingPath])
 
   const handleRSVP = async (status: 'confirmed' | 'declined' | 'pending') => {
     try {
@@ -194,6 +227,14 @@ export default function GuestInvitePage({
           />
         </AnimatePresence>
       </div>
+
+      {/* Floating Music Player for Festive/Halal Events */}
+      {event?.template_id === 'festive-halal' && (
+        <FloatingMusicPlayer
+          url="https://bbqtqcwjjzzfbyrlehdc.supabase.co/storage/v1/object/public/event-assets/music/lebaran.mp3"
+          autoPlay={shouldPlayMusic}
+        />
+      )}
     </div>
   )
 }

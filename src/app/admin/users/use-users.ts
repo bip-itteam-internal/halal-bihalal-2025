@@ -1,32 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { PermissionRole, UserRole } from '@/types'
+import {
+  getUsersData,
+  createUser as apiCreateUser,
+  updateUserRole,
+  updateUserPermissions,
+  ManagedUser,
+  EventOption,
+} from '@/services/api/users'
 
-export type ManagedPermission = {
-  id: string
-  event_id: string
-  role: PermissionRole
-}
-
-export type ManagedUser = {
-  id: string
-  email: string | null
-  full_name: string | null
-  role: UserRole
-  created_at: string
-  permissions: ManagedPermission[]
-}
-
-export type EventOption = {
-  id: string
-  name: string
-  event_date: string
-}
-
-export type UsersResponse = {
-  users: ManagedUser[]
-  events: EventOption[]
-}
+export type { ManagedUser, EventOption }
 
 export function useUsers() {
   const [loading, setLoading] = useState(true)
@@ -51,9 +35,7 @@ export function useUsers() {
   const fetchData = useCallback(async () => {
     try {
       setLoading(true)
-      const res = await fetch('/api/admin/users')
-      const data = (await res.json()) as UsersResponse & { message?: string }
-      if (!res.ok) throw new Error(data.message || 'Gagal memuat data user')
+      const data = await getUsersData()
 
       setUsers(data.users || [])
       setEvents(data.events || [])
@@ -87,13 +69,7 @@ export function useUsers() {
     e.preventDefault()
     try {
       setSubmitting(true)
-      const res = await fetch('/api/admin/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(createForm),
-      })
-      const data = (await res.json()) as { message?: string }
-      if (!res.ok) throw new Error(data.message || 'Gagal membuat akun.')
+      await apiCreateUser(createForm)
 
       toast.success('Akun berhasil dibuat.')
       setCreateForm({
@@ -119,12 +95,7 @@ export function useUsers() {
       const permsDraft = permissionDraftByUserId[user.id] || {}
 
       // 1. Update Role
-      const roleRes = await fetch(`/api/admin/users/${user.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role }),
-      })
-      if (!roleRes.ok) throw new Error('Gagal update role.')
+      await updateUserRole(user.id, role)
 
       // 2. Update Permissions
       const permissions = Object.entries(permsDraft)
@@ -134,12 +105,7 @@ export function useUsers() {
           role: role as PermissionRole,
         }))
 
-      const permRes = await fetch(`/api/admin/users/${user.id}/permissions`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ permissions }),
-      })
-      if (!permRes.ok) throw new Error('Gagal update permissions.')
+      await updateUserPermissions(user.id, permissions)
 
       toast.success('Data user berhasil diperbarui.')
       await fetchData()
@@ -163,15 +129,7 @@ export function useUsers() {
           role: role as PermissionRole,
         }))
 
-      const res = await fetch(
-        `/api/admin/users/${activePermissionUser.id}/permissions`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ permissions }),
-        },
-      )
-      if (!res.ok) throw new Error('Gagal menyimpan permission.')
+      await updateUserPermissions(activePermissionUser.id, permissions)
 
       toast.success('Permission event berhasil disimpan.')
       setActivePermissionUser(null)

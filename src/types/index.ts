@@ -30,6 +30,7 @@ export interface Event {
   logo_url?: string | null
   wa_template?: string | null
   external_quota: number
+  tenant_quota: number
   public_reg_status: PublicRegistrationStatus
   created_at: string
 }

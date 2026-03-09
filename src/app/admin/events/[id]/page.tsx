@@ -2,20 +2,12 @@
 
 import { useState, useEffect, useCallback, use } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { AppLayout } from '@/components/layout/app-layout'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
 import { getJakartaNow, toJakartaISOString } from '@/lib/utils'
-import { Trash2, Save } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Event } from '@/types'
+import { getEventById, updateEvent, deleteEvent } from '@/services/api/events'
+import { createClient } from '@/lib/supabase/client'
 
 // Extracted Components
 import { EventPageHeader } from '@/components/modules/events/detail/event-page-header'
@@ -30,8 +22,8 @@ export default function EventDetailPage({
   const resolvedParams = use(params)
   const eventId = resolvedParams.id
 
-  const supabase = createClient()
   const router = useRouter()
+  const supabase = createClient()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -64,12 +56,7 @@ export default function EventDetailPage({
   const fetchEventDetails = useCallback(async () => {
     try {
       setLoading(true)
-      const { data } = await supabase
-        .from('events')
-        .select('*')
-        .eq('id', eventId)
-        .single()
-
+      const data = await getEventById(eventId)
       setEvent(data)
 
       if (data?.event_date) {
@@ -92,7 +79,7 @@ export default function EventDetailPage({
     } finally {
       setLoading(false)
     }
-  }, [eventId, supabase])
+  }, [eventId])
 
   useEffect(() => {
     fetchEventDetails()
@@ -107,24 +94,20 @@ export default function EventDetailPage({
 
     try {
       setSaving(true)
+      await updateEvent(eventId, {
+        name: event.name,
+        event_type: event.event_type,
+        description: event.description,
+        event_date: toJakartaISOString(eventDateInput, eventTimeInput),
+        location: event.location,
+        dress_code: event.dress_code,
+        external_quota: event.external_quota,
+        tenant_quota: event.tenant_quota,
+        public_reg_status: event.public_reg_status,
+        logo_url: event.logo_url,
+        template_id: event.template_id,
+      })
 
-      const { error } = await supabase
-        .from('events')
-        .update({
-          name: event.name,
-          event_type: event.event_type,
-          description: event.description,
-          event_date: toJakartaISOString(eventDateInput, eventTimeInput),
-          location: event.location,
-          dress_code: event.dress_code,
-          external_quota: event.external_quota,
-          public_reg_status: event.public_reg_status,
-          logo_url: event.logo_url,
-          template_id: event.template_id,
-        })
-        .eq('id', eventId)
-
-      if (error) throw error
       toast.success('Perubahan berhasil disimpan!')
       router.refresh()
     } catch (err: unknown) {
@@ -141,19 +124,13 @@ export default function EventDetailPage({
   const handleDelete = async () => {
     try {
       setDeleting(true)
-
-      const { error } = await supabase.from('events').delete().eq('id', eventId)
-      if (error) throw error
-
+      await deleteEvent(eventId)
       setIsDeleteModalOpen(false)
       toast.success('Event berhasil dihapus.')
       router.push('/admin/events')
-      router.refresh()
     } catch (err: unknown) {
       toast.error(
-        err instanceof Error
-          ? err.message
-          : 'Terjadi kesalahan sistem saat menghapus event.',
+        err instanceof Error ? err.message : 'Gagal menghapus kegiatan.',
       )
     } finally {
       setDeleting(false)
@@ -164,131 +141,55 @@ export default function EventDetailPage({
     const file = e.target.files?.[0]
     if (!file || !event) return
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('File harus berupa gambar.')
-      return
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Ukuran file maksimal 2MB.')
-      return
-    }
-
     try {
       setIsUploadingLogo(true)
       const fileExt = file.name.split('.').pop()
-      const fileName = `${eventId}/${Date.now()}.${fileExt}`
-      const bucketName = 'event-assets'
+      const fileName = `${eventId}-${Math.random()}.${fileExt}`
+      const filePath = `event-logos/${fileName}`
 
       const { error: uploadError } = await supabase.storage
-        .from(bucketName)
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: true,
-        })
+        .from('assets')
+        .upload(filePath, file)
 
-      if (uploadError) {
-        if (uploadError.message.includes('bucket not found')) {
-          throw new Error('Storage bucket "event-assets" belum dibuat.')
-        }
-        throw uploadError
-      }
+      if (uploadError) throw uploadError
 
       const {
         data: { publicUrl },
-      } = supabase.storage.from(bucketName).getPublicUrl(fileName)
+      } = supabase.storage.from('assets').getPublicUrl(filePath)
 
       setEvent({ ...event, logo_url: publicUrl })
       toast.success('Logo berhasil diunggah.')
-    } catch (err: unknown) {
-      const error = err as Error
-      toast.error(error.message || 'Gagal mengunggah logo.')
+    } catch (error: any) {
+      toast.error('Gagal mengunggah logo: ' + error.message)
     } finally {
       setIsUploadingLogo(false)
     }
   }
 
-  if (loading) {
-    return (
-      <AppLayout header={<div className="h-14 animate-pulse bg-white/50" />}>
-        <div className="flex-1 space-y-6 p-8">
-          <div className="text-muted-foreground animate-pulse py-12 text-center">
-            Memuat detail event...
-          </div>
-        </div>
-      </AppLayout>
-    )
-  }
-
-  if (!event) {
-    return (
-      <AppLayout header={<div className="h-14" />}>
-        <div className="flex-1 space-y-6 p-8">
-          <div className="text-muted-foreground py-12 text-center">
-            Data event tidak ditemukan.
-          </div>
-        </div>
-      </AppLayout>
-    )
-  }
-
   return (
-    <AppLayout header={<EventPageHeader name={event.name} />}>
-      <div className="flex-1 space-y-4 p-5 pt-4">
-        <div className="grid gap-6">
-          <Card>
-            <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-              <div className="space-y-1.5 font-sans">
-                <div className="flex items-center gap-4">
-                  <CardTitle>Pengaturan Event</CardTitle>
-                </div>
-                <CardDescription>
-                  Kelola detail informasi dan visual branding event ini.
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  className="h-8 shadow-none"
-                  onClick={() => setIsDeleteModalOpen(true)}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Hapus
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="h-8 shadow-none"
-                  onClick={handleUpdate}
-                  disabled={saving}
-                >
-                  {saving ? (
-                    'Menyimpan...'
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Simpan
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <EventDetailsForm
-                event={event}
-                eventDateInput={eventDateInput}
-                setEventDateInput={setEventDateInput}
-                eventTimeInput={eventTimeInput}
-                setEventTimeInput={setEventTimeInput}
-                onUpdateEvent={(updates) => setEvent({ ...event, ...updates })}
-                isUploadingLogo={isUploadingLogo}
-                onLogoUpload={handleLogoUpload}
-              />
-            </CardContent>
-          </Card>
-        </div>
+    <AppLayout
+      header={
+        <EventPageHeader
+          name={event?.name || 'Detail Event'}
+          onSave={handleUpdate}
+          onDelete={() => setIsDeleteModalOpen(true)}
+          saving={saving}
+        />
+      }
+    >
+      <div className="flex-1 space-y-6 p-5 pt-4">
+        {event && (
+          <EventDetailsForm
+            event={event}
+            eventDateInput={eventDateInput}
+            setEventDateInput={setEventDateInput}
+            eventTimeInput={eventTimeInput}
+            setEventTimeInput={setEventTimeInput}
+            onUpdateEvent={(updates) => setEvent({ ...event, ...updates })}
+            isUploadingLogo={isUploadingLogo}
+            onLogoUpload={handleLogoUpload}
+          />
+        )}
       </div>
 
       <EventDeleteDialog

@@ -41,17 +41,8 @@ interface GuestLoginPageProps {
   params: Promise<{ eventId: string }>
 }
 
-function getGuestRedirectPath(guestId: string, guestType?: string) {
-  switch (guestType) {
-    case 'internal':
-      return `/invite/${guestId}`
-    case 'external':
-      return `/invite/${guestId}`
-    case 'tenant':
-      return `/invite/${guestId}`
-    default:
-      return `/invite/${guestId}`
-  }
+function getGuestRedirectPath(guestId: string, eventId: string) {
+  return `/invite/${guestId}-${eventId}`
 }
 
 export default function GuestLoginPage({ params }: GuestLoginPageProps) {
@@ -113,7 +104,7 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
         throw new Error(data.message || 'Data tamu tidak valid.')
       }
 
-      router.push(getGuestRedirectPath(data.guest_id, data.guest_type))
+      router.push(getGuestRedirectPath(data.guest_id, eventId))
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan sistem')
     } finally {
