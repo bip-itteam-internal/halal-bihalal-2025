@@ -1,6 +1,31 @@
 import { NextResponse } from 'next/server'
 import { adminClient as supabase } from '@/lib/supabase/admin'
-import { generateRandomCode } from '@/lib/utils'
+import { generateRandomCode, toEventSlug } from '@/lib/utils'
+
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+async function resolveEventId(identifier: string) {
+  const normalized = identifier.trim()
+
+  // 1. Direct UUID match
+  if (UUID_REGEX.test(normalized)) {
+    return normalized
+  }
+
+  // 2. Fallback to name slug search
+  const { data: events, error } = await supabase
+    .from('events')
+    .select('id, name')
+  if (error) throw error
+
+  const slug = toEventSlug(normalized)
+  const matched = (events || []).find(
+    (event) => toEventSlug(event.name || '') === slug,
+  )
+
+  return matched?.id || null
+}
 
 export async function GET(
   request: Request,
@@ -8,7 +33,15 @@ export async function GET(
 ) {
   try {
     const resolvedParams = await params
-    const eventId = resolvedParams.eventId
+    const identifier = resolvedParams.eventId
+    const eventId = await resolveEventId(identifier)
+
+    if (!eventId) {
+      return NextResponse.json(
+        { message: 'Event tidak ditemukan' },
+        { status: 404 },
+      )
+    }
 
     const { data: event, error } = await supabase
       .from('events')
@@ -39,7 +72,16 @@ export async function POST(
 ) {
   try {
     const resolvedParams = await params
-    const eventId = resolvedParams.eventId
+    const identifier = resolvedParams.eventId
+    const eventId = await resolveEventId(identifier)
+
+    if (!eventId) {
+      return NextResponse.json(
+        { message: 'Event tidak ditemukan.' },
+        { status: 404 },
+      )
+    }
+
     const body = await request.json()
     const {
       full_name: fullName,

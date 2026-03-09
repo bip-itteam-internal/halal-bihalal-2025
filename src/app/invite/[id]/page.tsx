@@ -6,7 +6,7 @@ import { AnimatePresence } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import { toast } from 'sonner'
 import { Guest, Event as AppEvent, PaymentStatus } from '@/types'
-import { decodeUUID } from '@/lib/utils'
+import { decodeUUID, toEventSlug } from '@/lib/utils'
 import slugify from 'slugify'
 import { usePathname } from 'next/navigation'
 
@@ -22,20 +22,12 @@ type GuestEventMapping = {
 
 // Modular Components
 import { InvitationStatus } from '@/components/modules/invite/invitation-status'
-
-function toEventSlug(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-}
 import { MosaicBackground } from '@/components/modules/invite/mosaic-background'
 import { TemplateRenderer } from '@/components/modules/invite/TemplateRenderer'
 import { INVITATION_TEMPLATES as templates } from '@/lib/constants/templates'
 
 import { FloatingMusicPlayer } from '@/components/modules/invite/music-player'
+import { FloatingWhatsApp } from '@/components/ui/floating-whatsapp'
 
 export default function GuestInvitePage({
   params,
@@ -277,13 +269,23 @@ export default function GuestInvitePage({
         </AnimatePresence>
       </div>
 
-      {/* Floating Music Player for Festive/Halal Events */}
-      {event?.template_id === 'festive-halal' && (
+      {/* Floating Music Player - Hidden when in ticket view */}
+      {!isTicketView && event?.template_id === 'festive-halal' && (
         <FloatingMusicPlayer
           url="https://bbqtqcwjjzzfbyrlehdc.supabase.co/storage/v1/object/public/event-assets/music/lebaran.mp3"
           autoPlay={shouldPlayMusic}
         />
       )}
+
+      {/* Floating WhatsApp Contact - Always shown, position adjusts based on Music Player */}
+      <FloatingWhatsApp
+        phone="6289676258026"
+        containerClassName={
+          !isTicketView && event?.template_id === 'festive-halal'
+            ? 'right-24'
+            : 'right-6'
+        }
+      />
     </div>
   )
 }

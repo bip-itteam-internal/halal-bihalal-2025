@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import slugify from 'slugify'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Users, Store } from 'lucide-react'
@@ -180,7 +181,12 @@ export function Hero({
                 className="w-full sm:w-auto"
               >
                 {eventId ? (
-                  <Link href={`/register/${eventId}/tenant`}>
+                  <Link
+                    href={`/register/${slugify(title || '', {
+                      lower: true,
+                      strict: true,
+                    })}/tenant`}
+                  >
                     <Button
                       variant="outline"
                       className="border-halal-primary/40 text-halal-primary hover:bg-halal-primary hover:text-halal-secondary flex w-full items-center justify-center gap-3 rounded-full bg-black/20 text-xs font-black tracking-[0.1em] uppercase backdrop-blur-xl transition-all sm:w-auto md:text-sm"

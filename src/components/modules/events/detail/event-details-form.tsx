@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { toast } from 'sonner'
 import {
   CalendarIcon,
   Image as ImageIcon,
@@ -254,26 +255,93 @@ export function EventDetailsForm({
           </CardContent>
         </Card>
 
-        
-        <div className="space-y-2 pt-2">
-          <label className="text-sm leading-none font-medium">
-            Link Login Internal
-          </label>
-          <div className="flex items-center gap-2">
-            <Input value={internalLoginUrl} readOnly className="h-9 text-xs" />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="h-9 shrink-0"
-              onClick={handleCopyInternalLink}
-            >
-              <Copy className="mr-2 h-3.5 w-3.5" />
-              {copied ? 'Copied' : 'Copy'}
-            </Button>
+        <div className="space-y-4 pt-2">
+          <div className="space-y-2">
+            <label className="text-sm leading-none font-medium">
+              Link Login Internal (Tamu Terdaftar)
+            </label>
+            <div className="flex items-center gap-2">
+              <Input
+                value={internalLoginUrl}
+                readOnly
+                className="h-9 text-xs"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9 shrink-0"
+                onClick={handleCopyInternalLink}
+              >
+                <Copy className="mr-2 h-3.5 w-3.5" />
+                {copied ? 'Copied' : 'Copy'}
+              </Button>
+            </div>
           </div>
+
+          <div className="space-y-2">
+            <label className="text-sm leading-none font-medium">
+              Link Pendaftaran Publik (Tamu Baru)
+            </label>
+            <div className="flex items-center gap-2">
+              <Input
+                value={
+                  origin ? `${origin}/register/${toEventSlug(event.name)}` : ''
+                }
+                readOnly
+                className="h-9 text-xs"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9 shrink-0"
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    `${origin}/register/${toEventSlug(event.name)}`,
+                  )
+                  toast.success('Link pendaftaran umum disalin!')
+                }}
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm leading-none font-medium">
+              Link Pendaftaran Tenant
+            </label>
+            <div className="flex items-center gap-2">
+              <Input
+                value={
+                  origin
+                    ? `${origin}/register/${toEventSlug(event.name)}/tenant`
+                    : ''
+                }
+                readOnly
+                className="h-9 text-xs"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9 shrink-0"
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    `${origin}/register/${toEventSlug(event.name)}/tenant`,
+                  )
+                  toast.success('Link pendaftaran tenant disalin!')
+                }}
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+
           <p className="text-muted-foreground text-[11px]">
-            Bagikan link ini ke tamu internal untuk login langsung.
+            Gunakan link di atas untuk dibagikan ke calon pendaftar. Format link
+            sudah menggunakan slug nama event agar lebih mudah dibaca.
           </p>
         </div>
       </div>

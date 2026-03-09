@@ -1,11 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import slugify from 'slugify'
 import { MoveLeft, Store, Star } from 'lucide-react'
 import { Event } from '@/types'
 import { Button } from '@/components/ui/button'
 import { RegistrationForm } from '@/components/modules/register/registration-form'
+import { GuestLoginForm } from '@/components/modules/auth/guest-login-form'
 import { motion } from 'framer-motion'
 
 type TenantRegisterClientProps = {
@@ -18,6 +20,8 @@ export function TenantRegisterClient({
   event,
 }: TenantRegisterClientProps) {
   const router = useRouter()
+
+  const [authMode, setAuthMode] = useState<'register' | 'login'>('register')
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0a1b1a] px-4 py-12">
@@ -98,29 +102,54 @@ export function TenantRegisterClient({
           <div className="relative overflow-hidden rounded-[2.5rem] border border-white/5 bg-[#0d1f1e] p-8 shadow-2xl md:p-10">
             <div className="bg-halal-primary/5 absolute top-0 right-0 -mt-16 -mr-16 h-32 w-32 rounded-full blur-3xl" />
 
-            <div className="relative mb-10">
-              <h3 className="text-2xl font-black tracking-tight text-white uppercase">
-                Formulir <span className="text-halal-primary">Pendaftaran</span>
-              </h3>
-              <div className="bg-halal-primary mt-2 h-1 w-12" />
+            <div className="relative mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between md:mb-10">
+              <div>
+                <h3 className="text-2xl font-black tracking-tight text-white uppercase">
+                  {authMode === 'register' ? 'FORM ' : 'AKSES '}
+                  <span className="text-halal-primary">
+                    {authMode === 'register' ? 'PENDAFTARAN' : 'UNDANGAN'}
+                  </span>
+                </h3>
+                <div className="bg-halal-primary mt-2 h-1 w-12" />
+              </div>
+              <Button
+                variant="link"
+                size="sm"
+                onClick={() =>
+                  setAuthMode(authMode === 'register' ? 'login' : 'register')
+                }
+                className="text-halal-primary h-auto p-0 text-[10px] font-black tracking-[0.2em] uppercase hover:text-white sm:text-right"
+              >
+                {authMode === 'register' ? 'Sudah Daftar?' : 'Belum Daftar?'}
+              </Button>
             </div>
 
-            <RegistrationForm
-              eventIdentifier={eventIdentifier}
-              forcedGuestType="tenant"
-              onSuccess={(data) => {
-                const nameSlug = slugify(data.registeredName || '', {
-                  lower: true,
-                  strict: true,
-                })
-                const eventSlug = slugify(event.name || '', {
-                  lower: true,
-                  strict: true,
-                })
-                router.push(`/invite/${data.guest_id}-${nameSlug}-${eventSlug}`)
-              }}
-              hideHeader
-            />
+            {authMode === 'register' ? (
+              <RegistrationForm
+                eventIdentifier={eventIdentifier}
+                forcedGuestType="tenant"
+                onSuccess={(data) => {
+                  const nameSlug = slugify(data.registeredName || '', {
+                    lower: true,
+                    strict: true,
+                  })
+                  const eventSlug = slugify(event.name || '', {
+                    lower: true,
+                    strict: true,
+                  })
+                  router.push(
+                    `/invite/${data.guest_id}-${nameSlug}-${eventSlug}`,
+                  )
+                }}
+                hideHeader
+              />
+            ) : (
+              <GuestLoginForm
+                eventId={eventIdentifier}
+                guestType="tenant"
+                hideHeader
+              />
+            )}
           </div>
         </div>
       </div>

@@ -248,7 +248,10 @@ export function Registration({
               Ingin mendaftar sebagai tenant atau booth UMKM?
             </p>
             <Link
-              href={`/register/${eventId}/tenant`}
+              href={`/register/${slugify(eventName || '', {
+                lower: true,
+                strict: true,
+              })}/tenant`}
               className="text-halal-primary group inline-flex items-center gap-2 text-xs font-black tracking-widest uppercase hover:underline"
             >
               Klik di sini untuk Pendaftaran Tenant

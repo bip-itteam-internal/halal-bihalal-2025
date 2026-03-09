@@ -1,18 +1,10 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { toEventSlug } from '@/lib/utils'
 import { TenantRegisterClient } from './tenant-client'
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
-function toEventSlug(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-}
 
 async function resolveEventId(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -20,10 +12,12 @@ async function resolveEventId(
 ) {
   const normalized = identifier.trim()
 
+  // 1. Direct UUID match
   if (UUID_REGEX.test(normalized)) {
     return normalized
   }
 
+  // 2. Fallback to name slug search
   const { data: events, error } = await supabase
     .from('events')
     .select('id, name')

@@ -186,3 +186,15 @@ export function decodeUUID(base64url: string): string {
     return base64url
   }
 }
+
+/**
+ * Convert a string to a URL-friendly slug.
+ */
+export function toEventSlug(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+}
