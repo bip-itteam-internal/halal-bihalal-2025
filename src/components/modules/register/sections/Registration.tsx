@@ -98,7 +98,7 @@ export function Registration({
               </h2>
               <p className="max-w-md text-lg leading-relaxed text-zinc-400">
                 {type === 'external'
-                  ? 'Registrasi pengunjung tamu kehormatan & masyarakat umum untuk menghadiri konser akbar.'
+                  ? 'Registrasi masyarakat umum untuk menghadiri konser akbar.'
                   : 'Dapatkan kesempatan ekspansi bisnis dan jangkau ribuan pengunjung di lokasi acara.'}
               </p>
             </div>
@@ -127,26 +127,39 @@ export function Registration({
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {[
-                  'Akses Listrik',
-                  'Fasilitas Air',
-                  'Stand Exclusive',
-                  'Tiket Konser',
-                ].map((benefit, i) => (
-                  <div
-                    key={i}
-                    className="group flex items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:bg-white/[0.05]"
-                  >
-                    <div className="bg-halal-primary/10 text-halal-primary flex h-8 w-8 items-center justify-center rounded-full">
-                      <Star className="h-4 w-4 fill-current" />
+              <>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {[
+                    'Akses Listrik',
+                    'Fasilitas Air',
+                    'Stand Exclusive',
+                    'Tiket Konser',
+                  ].map((benefit, i) => (
+                    <div
+                      key={i}
+                      className="group flex items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.02] p-4 transition-colors hover:bg-white/[0.05]"
+                    >
+                      <div className="bg-halal-primary/10 text-halal-primary flex h-8 w-8 items-center justify-center rounded-full">
+                        <Star className="h-4 w-4 fill-current" />
+                      </div>
+                      <span className="text-xs font-bold tracking-wide text-zinc-300 uppercase">
+                        {benefit}
+                      </span>
                     </div>
-                    <span className="text-xs font-bold tracking-wide text-zinc-300 uppercase">
-                      {benefit}
-                    </span>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                <p className="mt-6 text-xs font-medium text-zinc-500 italic">
+                  Informasi lebih lanjut mengenai booth? Hubungi{' '}
+                  <a
+                    href="https://wa.me/6289676258026"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-halal-primary not-italic hover:underline"
+                  >
+                    0896-7625-8026 (FARIZ)
+                  </a>
+                </p>
+              </>
             )}
           </div>
 

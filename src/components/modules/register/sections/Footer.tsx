@@ -39,8 +39,13 @@ export function Footer({ logoUrl }: { logoUrl?: string }) {
           <a href="#" className="hover:text-halal-primary transition-colors">
             Panduan Tiket
           </a>
-          <a href="#" className="hover:text-halal-primary transition-colors">
-            Kontak Panitia
+          <a
+            href="https://wa.me/6289676258026"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-halal-primary transition-colors"
+          >
+            Kontak Panitia: 0896-7625-8026 (FARIZ)
           </a>
         </div>
 
