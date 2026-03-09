@@ -42,6 +42,7 @@ export default function GuestManagementPage({
   const [searchQuery, setSearchQuery] = useState('')
   const [guestType, setGuestType] = useState<string>('all')
   const [status, setStatus] = useState<string>('all')
+  const [payStatus, setPayStatus] = useState<string>('all')
   const [page, setPage] = useState(1)
   const [pageSize] = useState(10)
   const [totalCount, setTotalCount] = useState(0)
@@ -82,6 +83,10 @@ export default function GuestManagementPage({
         query = query.eq('guests.rsvp_status', status)
       }
 
+      if (payStatus !== 'all') {
+        query = query.eq('payment_status', payStatus)
+      }
+
       const from = (page - 1) * pageSize
       const to = from + pageSize - 1
 
@@ -112,16 +117,32 @@ export default function GuestManagementPage({
     } finally {
       setLoading(false)
     }
-  }, [eventId, supabase, page, pageSize, searchQuery, guestType, status, event])
+  }, [
+    eventId,
+    supabase,
+    page,
+    pageSize,
+    searchQuery,
+    guestType,
+    status,
+    payStatus,
+    event,
+  ])
+
+  const handleUpdateGuest = (guestId: string, updates: Partial<Guest>) => {
+    setGuests((prev) =>
+      prev.map((g) => (g.id === guestId ? { ...g, ...updates } : g)),
+    )
+  }
 
   useEffect(() => {
     fetchEventAndGuests()
-  }, [page, searchQuery, guestType, status, fetchEventAndGuests])
+  }, [page, searchQuery, guestType, status, payStatus, fetchEventAndGuests])
 
   // Reset page to 1 when filters change
   useEffect(() => {
     setPage(1)
-  }, [searchQuery, guestType, status])
+  }, [searchQuery, guestType, status, payStatus])
 
   const totalPages = Math.ceil(totalCount / pageSize)
 
@@ -214,6 +235,18 @@ export default function GuestManagementPage({
               </SelectContent>
             </Select>
 
+            <Select value={payStatus} onValueChange={setPayStatus}>
+              <SelectTrigger className="h-8 w-[140px] text-xs">
+                <SelectValue placeholder="Status Bayar" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Bayar</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="verified">Terverifikasi</SelectItem>
+                <SelectItem value="rejected">Ditolak</SelectItem>
+              </SelectContent>
+            </Select>
+
             {(guestType !== 'all' || status !== 'all' || searchQuery) && (
               <Button
                 variant="ghost"
@@ -222,6 +255,7 @@ export default function GuestManagementPage({
                 onClick={() => {
                   setGuestType('all')
                   setStatus('all')
+                  setPayStatus('all')
                   setSearchQuery('')
                 }}
               >
@@ -246,7 +280,9 @@ export default function GuestManagementPage({
               guests={guests}
               eventName={event?.name}
               onRefresh={fetchEventAndGuests}
+              onUpdateGuest={handleUpdateGuest}
               startNumber={(page - 1) * pageSize + 1}
+              eventId={eventId}
             />
 
             {/* Pagination Controls */}

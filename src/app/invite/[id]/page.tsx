@@ -77,13 +77,16 @@ export default function GuestInvitePage({
   const [isUpdating, setIsUpdating] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
   const [shouldPlayMusic, setShouldPlayMusic] = useState(true)
+  const [isTicketView, setIsTicketView] = useState(false)
 
   // Trigger music when invitation is opened
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !isTicketView) {
       setShouldPlayMusic(true)
+    } else if (isTicketView) {
+      setShouldPlayMusic(false)
     }
-  }, [isOpen])
+  }, [isOpen, isTicketView])
 
   useEffect(() => {
     async function fetchData() {
@@ -269,6 +272,7 @@ export default function GuestInvitePage({
             paymentProofUrl={guestEvent?.payment_proof_url}
             openGate={openGate}
             startTime={startTime}
+            onTicketView={setIsTicketView}
           />
         </AnimatePresence>
       </div>

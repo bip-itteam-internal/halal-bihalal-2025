@@ -18,10 +18,12 @@ export function FloatingMusicPlayer({
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
-    if (autoPlay && audioRef.current && !hasInteracted) {
+    const audio = audioRef.current
+    if (!audio) return
+
+    if (autoPlay) {
       const playAudio = () => {
-        if (!audioRef.current) return
-        const playPromise = audioRef.current.play()
+        const playPromise = audio.play()
         if (playPromise !== undefined) {
           playPromise
             .then(() => setIsPlaying(true))
@@ -43,8 +45,11 @@ export function FloatingMusicPlayer({
       }
       window.addEventListener('click', handleGlobalClick)
       return () => window.removeEventListener('click', handleGlobalClick)
+    } else {
+      audio.pause()
+      setIsPlaying(false)
     }
-  }, [autoPlay, isPlaying, hasInteracted])
+  }, [autoPlay])
 
   const togglePlay = () => {
     setHasInteracted(true)

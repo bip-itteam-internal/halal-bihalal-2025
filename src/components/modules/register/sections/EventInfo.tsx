@@ -28,10 +28,19 @@ export function EventInfo({ date, location, guestRules }: EventInfoProps) {
           {
             icon: Calendar,
             label: 'WAKTU PELAKSANAAN',
-            value: date ? formatJakartaDate(date, 'PPP') : 'TBA',
-            sub: date
-              ? `Pukul ${formatJakartaDate(date, 'p')} - Selesai`
-              : 'TBA',
+            value: date ? formatJakartaDate(date, 'PPPP') : 'TBA',
+            sub: (() => {
+              const externalRule = guestRules?.find(
+                (r) => r.guest_type === 'external',
+              )
+              const timeStr = externalRule?.start_time
+                ? externalRule.start_time.substring(0, 5).replace(':', '.') +
+                  ' WIB'
+                : date
+                  ? formatJakartaDate(date, 'p')
+                  : 'TBA'
+              return `Pukul ${timeStr} - Selesai`
+            })(),
             color: 'from-amber-400 to-halal-primary',
             glow: 'rgba(234, 179, 8, 0.1)',
           },

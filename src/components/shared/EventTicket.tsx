@@ -168,22 +168,24 @@ export function EventTicket({
           </div>
 
           {/* Middle Section: Event Details */}
-          <div className="mt-6 space-y-6 border-t border-dashed border-slate-100 pt-6">
+          <div className="mt-6 space-y-4 border-t border-dashed border-slate-100 pt-6">
             {/* Full Date - Large & Prominent */}
             <div className="space-y-1">
               <p className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">
                 Hari & Tanggal
               </p>
-              <p className="text-base font-black text-slate-900">{eventDate}</p>
+              <p className="text-[16px] leading-tight font-bold text-slate-900">
+                {eventDate}
+              </p>
             </div>
 
             {/* Time Grid (Open Gate & Start Time) */}
-            <div className="grid grid-cols-2 gap-4 rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
                   Open Gate
                 </p>
-                <p className="text-sm font-black text-slate-900 italic">
+                <p className="text-[11px] leading-tight font-bold text-slate-900">
                   {openGate
                     ? openGate.substring(0, 5).replace(':', '.') + ' WIB'
                     : '-'}
@@ -194,8 +196,8 @@ export function EventTicket({
                 <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
                   Waktu Mulai
                 </p>
-                <p className="inline-block border-l border-slate-200 pl-4 text-sm font-black text-slate-900">
-                  {eventTime}
+                <p className="text-[11px] leading-tight font-bold text-slate-900">
+                  {eventTime} - Selesai
                 </p>
               </div>
             </div>
@@ -214,7 +216,7 @@ export function EventTicket({
                 <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
                   Kategori
                 </p>
-                <p className="text-[11px] font-black tracking-wider text-blue-600 uppercase">
+                <p className="text-[11px] font-black tracking-wider uppercase">
                   {guestType || '-'}
                 </p>
               </div>

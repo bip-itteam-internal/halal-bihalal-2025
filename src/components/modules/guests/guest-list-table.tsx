@@ -9,17 +9,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import {
-  Trash2,
   CheckCircle2,
   Clock,
   XCircle,
-  UserPen,
   Link as LinkIcon,
   FileImage,
-  Check,
-  X,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
@@ -38,23 +40,34 @@ interface GuestListTableProps {
   guests: Guest[]
   eventName?: string
   onRefresh: () => void
+  onUpdateGuest?: (guestId: string, updates: Partial<Guest>) => void
   startNumber?: number
+  eventId?: string
 }
 
 export function GuestListTable({
   guests,
   eventName,
   onRefresh,
+  onUpdateGuest,
   startNumber = 1,
+  eventId: propEventId,
 }: GuestListTableProps) {
   const supabase = createClient()
   const [loading, setLoading] = useState<string | null>(null)
+  const [selectedGuestForProof, setSelectedGuestForProof] =
+    useState<Guest | null>(null)
 
   const handleUpdatePaymentStatus = async (
     guestId: string,
     eventId: string,
     status: 'verified' | 'rejected',
   ) => {
+    console.log('handleUpdatePaymentStatus called with:', {
+      guestId,
+      eventId,
+      status,
+    })
     try {
       setLoading(guestId)
 
@@ -82,7 +95,14 @@ export function GuestListTable({
           ? 'Pembayaran berhasil diverifikasi.'
           : 'Pembayaran ditolak.',
       )
-      onRefresh()
+      if (onUpdateGuest) {
+        onUpdateGuest(guestId, {
+          payment_status: status,
+          rsvp_status: status === 'verified' ? 'confirmed' : undefined,
+        } as Partial<Guest>)
+      } else {
+        onRefresh()
+      }
     } catch (err: unknown) {
       const error = err as Error
       toast.error(error.message || 'Gagal merubah status pembayaran.')
@@ -287,74 +307,12 @@ export function GuestListTable({
                 <TableCell className="text-center">
                   {guest.payment_proof_url ? (
                     <div className="flex flex-col items-center gap-1.5">
-                      <a
-                        href={guest.payment_proof_url}
-                        target="_blank"
-                        rel="noreferrer"
+                      <button
+                        onClick={() => setSelectedGuestForProof(guest)}
                         className="inline-flex items-center gap-1 rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600 transition-colors hover:text-blue-800"
                       >
                         <FileImage className="h-3 w-3" /> LIHAT
-                      </a>
-
-                      {guest.payment_status === 'pending' && (
-                        <div className="flex gap-1">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="h-6 w-6 border-emerald-500 p-0 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
-                                  onClick={() => {
-                                    const eventId =
-                                      guest.guest_events?.[0]?.event_id
-                                    if (eventId)
-                                      handleUpdatePaymentStatus(
-                                        guest.id,
-                                        eventId,
-                                        'verified',
-                                      )
-                                  }}
-                                  disabled={loading === guest.id}
-                                >
-                                  <Check className="h-3 w-3" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="text-xs">Verifikasi Bayar</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="border-destructive text-destructive hover:bg-destructive/5 h-6 w-6 p-0"
-                                  onClick={() => {
-                                    const eventId =
-                                      guest.guest_events?.[0]?.event_id
-                                    if (eventId)
-                                      handleUpdatePaymentStatus(
-                                        guest.id,
-                                        eventId,
-                                        'rejected',
-                                      )
-                                  }}
-                                  disabled={loading === guest.id}
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="text-xs">Tolak Bayar</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                      )}
+                      </button>
                     </div>
                   ) : (
                     <span className="text-[10px] text-slate-300">-</span>
@@ -370,7 +328,6 @@ export function GuestListTable({
                             size="icon"
                             className="h-8 w-8 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
                             onClick={() => {
-                              const encodedId = encodeUUID(guest.id)
                               const nameSlug = slugify(guest.full_name, {
                                 lower: true,
                                 strict: true,
@@ -382,7 +339,7 @@ export function GuestListTable({
                                     strict: true,
                                   })
                                 : ''
-                              const url = `${window.location.origin}/invite/${encodedId}-${nameSlug}${eventSlug}`
+                              const url = `${window.location.origin}/invite/${guest.id}-${nameSlug}${eventSlug}`
                               navigator.clipboard.writeText(url)
                               toast.success('Link undangan berhasil disalin!')
                             }}
@@ -395,42 +352,6 @@ export function GuestListTable({
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-primary h-8 w-8"
-                          >
-                            <UserPen className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs">Edit Tamu</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive hover:bg-destructive/10 h-8 w-8"
-                            onClick={() => handleDelete(guest.id)}
-                            disabled={loading === guest.id}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs">Hapus Tamu</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
                   </div>
                 </TableCell>
               </TableRow>
@@ -438,6 +359,78 @@ export function GuestListTable({
           )}
         </TableBody>
       </Table>
+
+      <Dialog
+        open={!!selectedGuestForProof}
+        onOpenChange={(open) => !open && setSelectedGuestForProof(null)}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-sm font-bold tracking-widest text-slate-400 uppercase">
+              Verifikasi Pembayaran
+            </DialogTitle>
+            <p className="text-xs font-bold text-slate-900">
+              {selectedGuestForProof?.full_name}
+            </p>
+          </DialogHeader>
+          <div className="mt-2 flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded-2xl border bg-slate-50 shadow-inner">
+            {selectedGuestForProof?.payment_proof_url && (
+              <img
+                src={selectedGuestForProof.payment_proof_url}
+                alt="Bukti Bayar"
+                className="h-full w-full object-contain"
+              />
+            )}
+          </div>
+
+          {selectedGuestForProof?.payment_status === 'pending' && (
+            <div className="mt-4 flex gap-3">
+              <Button
+                variant="outline"
+                className="border-destructive text-destructive hover:bg-destructive/5 h-11 flex-1 rounded-xl text-[10px] font-bold tracking-widest uppercase"
+                onClick={() => {
+                  const eid =
+                    propEventId ||
+                    selectedGuestForProof.guest_events?.[0]?.event_id
+                  if (eid) {
+                    handleUpdatePaymentStatus(
+                      selectedGuestForProof.id,
+                      eid,
+                      'rejected',
+                    )
+                    setSelectedGuestForProof(null)
+                  }
+                }}
+                disabled={loading === selectedGuestForProof.id}
+              >
+                Tolak Pembayaran
+              </Button>
+              <Button
+                className="h-11 flex-1 rounded-xl bg-emerald-600 text-[10px] font-bold tracking-widest text-white uppercase shadow-lg shadow-emerald-600/20 hover:bg-emerald-700"
+                onClick={() => {
+                  const eid =
+                    propEventId ||
+                    selectedGuestForProof.guest_events?.[0]?.event_id
+                  if (eid) {
+                    handleUpdatePaymentStatus(
+                      selectedGuestForProof.id,
+                      eid,
+                      'verified',
+                    )
+                    setSelectedGuestForProof(null)
+                  } else {
+                    console.error('No eventId found!')
+                    toast.error('Gagal verifikasi: ID Event tidak ditemukan')
+                  }
+                }}
+                disabled={loading === selectedGuestForProof.id}
+              >
+                Verifikasi Berhasil
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import React, { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Clock, Building2 } from 'lucide-react'
 import { EventTicket } from '@/components/shared/EventTicket'
@@ -20,6 +21,7 @@ interface TemplateProps {
   paymentProofUrl?: string | null
   openGate?: string | null
   startTime?: string | null
+  onTicketView?: (visible: boolean) => void
 }
 
 export function ModernCorporate({
@@ -33,7 +35,17 @@ export function ModernCorporate({
   paymentProofUrl,
   openGate,
   startTime,
+  onTicketView,
 }: TemplateProps) {
+  const shouldSkipCover =
+    guest.guest_type === 'external' || guest.guest_type === 'tenant'
+
+  const showingTicket = guest.rsvp_status === 'confirmed' && isOpen
+
+  useEffect(() => {
+    onTicketView?.(showingTicket)
+  }, [showingTicket, onTicketView])
+
   // 1. Confirmed View (Ticket) - Only show if open
   if (guest.rsvp_status === 'confirmed' && isOpen) {
     return (
@@ -68,15 +80,17 @@ export function ModernCorporate({
             downloadFileName={`Ticket-${guest.full_name}-${event.name}.png`}
           />
 
-          <div className="px-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-              className="h-12 w-full rounded-xl border-slate-200 bg-white text-[10px] font-bold text-slate-600 uppercase transition-all hover:bg-slate-50"
-            >
-              Tutup Rincian
-            </Button>
-          </div>
+          {!shouldSkipCover && (
+            <div className="px-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsOpen(false)}
+                className="h-12 w-full rounded-xl border-slate-200 bg-white text-[10px] font-bold text-slate-600 uppercase transition-all hover:bg-slate-50"
+              >
+                Tutup Rincian
+              </Button>
+            </div>
+          )}
         </div>
       </motion.div>
     )
@@ -214,9 +228,9 @@ export function ModernCorporate({
                   <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
                     Konfirmasi Kehadiran
                   </p>
-                  <p className="text-[11px] font-medium text-slate-600">
-                    Silakan lakukan konfirmasi kehadiran Anda untuk memudahkan
-                    pengaturan logistik acara.
+                  <p className="text-[11px] leading-relaxed font-medium text-slate-600">
+                    Besar harapan kami agar kamu bisa hadir dan berbagi
+                    kebahagiaan di momen spesial perusahaan kali ini.
                   </p>
                 </div>
                 <div className="flex flex-col gap-2">
@@ -257,13 +271,15 @@ export function ModernCorporate({
             )}
           </div>
 
-          <Button
-            variant="ghost"
-            onClick={() => setIsOpen(false)}
-            className="w-full text-[9px] font-bold tracking-[0.3em] text-slate-400 uppercase hover:bg-transparent hover:text-slate-900"
-          >
-            Tutup Rincian
-          </Button>
+          {!shouldSkipCover && (
+            <Button
+              variant="ghost"
+              onClick={() => setIsOpen(false)}
+              className="w-full text-[9px] font-bold tracking-[0.3em] text-slate-400 uppercase hover:bg-transparent hover:text-slate-900"
+            >
+              Tutup Rincian
+            </Button>
+          )}
         </CardContent>
       </Card>
     </motion.div>
