@@ -13,7 +13,6 @@ import { registerGuest } from '@/services/api/registration'
 import { RegistrationFormHeader } from './components/form-header'
 import { GuestTypeToggle } from './components/guest-type-toggle'
 import { FormFields } from './components/form-fields'
-import { PaymentSection } from './components/payment-section'
 import { SubmitButton } from './components/submit-button'
 
 // Lib & Schema
@@ -32,6 +31,8 @@ interface RegistrationFormProps {
     registrationType: 'external' | 'tenant'
   }) => void
   hideHeader?: boolean
+  paymentFile?: File | null
+  setPaymentFile?: (file: File | null) => void
 }
 
 export function RegistrationForm({
@@ -39,14 +40,27 @@ export function RegistrationForm({
   forcedGuestType,
   onSuccess,
   hideHeader = false,
+  paymentFile: externalPaymentFile,
+  setPaymentFile: setExternalPaymentFile,
 }: RegistrationFormProps) {
   const [registerLoading, setRegisterLoading] = useState(false)
   const [registerError, setRegisterError] = useState('')
+  const [internalPaymentFile, setInternalPaymentFile] = useState<File | null>(
+    null,
+  )
+
+  const effectivePaymentFile =
+    externalPaymentFile !== undefined
+      ? externalPaymentFile
+      : internalPaymentFile
+
+  const effectiveSetPaymentFile =
+    setExternalPaymentFile || setInternalPaymentFile
+
   const [registrationType, setRegistrationType] = useState<
     'external' | 'tenant'
   >(forcedGuestType === 'tenant' ? 'tenant' : 'external')
   const [eventData, setEventData] = useState<Event | null>(null)
-  const [paymentFile, setPaymentFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const supabase = createClient()
 
@@ -65,16 +79,6 @@ export function RegistrationForm({
     fetchEvent()
   }, [eventIdentifier])
 
-  const getPrice = () => {
-    if (!eventData?.is_paid) return 0
-    return registrationType === 'tenant'
-      ? eventData.is_tenant_paid
-        ? 1
-        : 0
-      : eventData.price_external || 0
-  }
-
-  const price = getPrice()
   const isPaid =
     registrationType === 'tenant'
       ? eventData?.is_tenant_paid
@@ -130,19 +134,19 @@ export function RegistrationForm({
 
       let paymentProofUrl = ''
       if (isPaid) {
-        if (!paymentFile) {
+        if (!effectivePaymentFile) {
           setRegisterError('Bukti pembayaran wajib diunggah.')
           setRegisterLoading(false)
           return
         } else {
           setIsUploading(true)
           try {
-            const fileExt = paymentFile.name.split('.').pop()
+            const fileExt = effectivePaymentFile.name.split('.').pop()
             const fileName = `${eventIdentifier}-${Date.now()}.${fileExt}`
             const filePath = `payment-proofs/${fileName}`
             const { error: uploadError } = await supabase.storage
               .from('event-assets')
-              .upload(filePath, paymentFile)
+              .upload(filePath, effectivePaymentFile)
             if (uploadError) throw uploadError
             const {
               data: { publicUrl },
@@ -209,17 +213,13 @@ export function RegistrationForm({
             />
           )}
 
-          <FormFields form={form} registrationType={registrationType} />
-
-          {isPaid && (
-            <PaymentSection
-              registrationType={registrationType}
-              eventData={eventData}
-              price={price}
-              paymentFile={paymentFile}
-              setPaymentFile={setPaymentFile}
-            />
-          )}
+          <FormFields
+            form={form}
+            registrationType={registrationType}
+            isPaid={isPaid}
+            paymentFile={effectivePaymentFile}
+            setPaymentFile={effectiveSetPaymentFile}
+          />
 
           <SubmitButton loading={registerLoading} isUploading={isUploading} />
         </form>

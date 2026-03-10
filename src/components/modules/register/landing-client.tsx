@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
 import { Event, EventGuestRule } from '@/types'
 
 // Sections
 import { Hero } from './sections/Hero'
 import { EventInfo } from './sections/EventInfo'
 import { Registration } from './sections/Registration'
+import { TenantBanner } from './sections/TenantBanner'
 import { Footer } from './sections/Footer'
 import { ScrollToTop } from '@/components/ui/scroll-to-top'
 
@@ -23,21 +23,10 @@ export function LandingClient({
 }: LandingClientProps) {
   const mainEvent = events?.[0]
 
-  const [activeTab, setActiveTab] = useState<'external' | 'tenant'>('external')
-
-  const handleHeroAction = (type: 'external' | 'tenant') => {
-    if (type === 'tenant') {
-      setActiveTab('tenant')
-      const element = document.getElementById('register-section')
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' })
-      }
-    } else {
-      setActiveTab('external')
-      const element = document.getElementById('register-section')
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' })
-      }
+  const handleHeroAction = () => {
+    const element = document.getElementById('register-section')
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
     }
   }
 
@@ -80,22 +69,26 @@ export function LandingClient({
 
         <div id="register-section">
           {mainEvent && (
-            <Registration
-              eventId={mainEvent.id}
-              eventName={mainEvent.name || undefined}
-              regData={
-                registrationsByEvent[mainEvent.id] || { external: 0, tenant: 0 }
-              }
-              quotas={{
-                external: mainEvent.external_quota ?? 0,
-                tenant: mainEvent.tenant_quota ?? 0,
-              }}
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              guestRules={guestRules?.filter(
-                (r) => r.event_id === mainEvent?.id,
-              )}
-            />
+            <>
+              <Registration
+                eventId={mainEvent.id}
+                eventName={mainEvent.name || undefined}
+                regData={
+                  registrationsByEvent[mainEvent.id] || {
+                    external: 0,
+                    tenant: 0,
+                  }
+                }
+                quotas={{
+                  external: mainEvent.external_quota ?? 0,
+                  tenant: mainEvent.tenant_quota ?? 0,
+                }}
+                guestRules={guestRules?.filter(
+                  (r) => r.event_id === mainEvent?.id,
+                )}
+              />
+              <TenantBanner eventName={mainEvent.name || ''} />
+            </>
           )}
         </div>
       </main>

@@ -3,12 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import slugify from 'slugify'
-import { MoveLeft, Store, Star } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { MoveLeft, Store, Star, MessageCircle, Info } from 'lucide-react'
 import { Event } from '@/types'
 import { Button } from '@/components/ui/button'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { RegistrationForm } from '@/components/modules/register/registration-form'
 import { GuestLoginForm } from '@/components/modules/auth/guest-login-form'
-import { motion } from 'framer-motion'
 
 type TenantRegisterClientProps = {
   eventIdentifier: string
@@ -20,8 +21,8 @@ export function TenantRegisterClient({
   event,
 }: TenantRegisterClientProps) {
   const router = useRouter()
-
   const [authMode, setAuthMode] = useState<'register' | 'login'>('register')
+  const [paymentFile, setPaymentFile] = useState<File | null>(null)
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0a1b1a] px-4 py-12">
@@ -53,7 +54,7 @@ export function TenantRegisterClient({
               <h1 className="mb-6 text-5xl leading-none font-black tracking-tight text-white uppercase md:text-6xl">
                 REGISTRASI
                 <br />
-                <span className="text-halal-primary">BOOTH UMKM</span>
+                <span className="text-halal-primary uppercase">BOOTH UMKM</span>
               </h1>
             </div>
 
@@ -83,23 +84,45 @@ export function TenantRegisterClient({
               </div>
             </div>
 
-            <div className="rounded-2xl border border-amber-500/10 bg-amber-500/5 p-6">
-              <h4 className="text-halal-primary mb-2 flex items-center gap-2 text-sm font-bold uppercase">
-                <Store className="h-4 w-4" /> Bantuan Pendaftaran
-              </h4>
-              <p className="text-xs leading-relaxed text-zinc-500">
-                Jika Anda mengalami kesulitan dalam proses pendaftaran tenant
-                atau ingin menanyakan detail spesifikasi booth, silakan hubungi
-                tim panitia kami melalui WhatsApp.
-              </p>
-              <a
-                href="https://wa.me/6289676258026"
-                target="_blank"
-                rel="noreferrer"
-                className="text-halal-primary mt-4 inline-flex text-xs font-black tracking-widest uppercase hover:underline"
-              >
-                Hubungi Panitia &rarr;
-              </a>
+            <div className="space-y-6">
+              <div className="group rounded-3xl border border-white/5 bg-white/[0.02] p-6 transition-all hover:bg-white/[0.03]">
+                <div className="mb-6 space-y-2">
+                  <div className="bg-halal-primary/10 text-halal-primary inline-flex items-center gap-2 rounded-full px-3 py-1 text-[10px] font-bold uppercase">
+                    <Store className="h-3 w-3" /> Info Booth UMKM
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-zinc-400">
+                    Pendaftaran khusus tenant Food & Beverage. Informasi
+                    pembayaran dan bantuan pendaftaran tersedia di bawah ini.
+                  </p>
+                </div>
+
+                <Alert className="border-white/10 bg-black/40 backdrop-blur-sm">
+                  <Info className="text-halal-primary h-4 w-4" />
+                  <AlertTitle className="text-[10px] font-black tracking-[0.2em] text-zinc-500 uppercase">
+                    Metode Transfer
+                  </AlertTitle>
+                  <AlertDescription className="mt-2 text-slate-300">
+                    <div className="font-mono text-[11px] leading-relaxed tracking-tight whitespace-pre-wrap">
+                      {event.payment_info}
+                    </div>
+                    <div className="mt-3 flex items-center gap-2 text-[9px] font-medium text-zinc-500 italic">
+                      Silakan hubungi panitia jika ada kendala pembayaran.
+                    </div>
+                  </AlertDescription>
+                </Alert>
+
+                <div className="mt-6">
+                  <a
+                    href="https://wa.me/6289676258026"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-emerald-500 px-6 py-3.5 text-[10px] font-black tracking-[0.2em] text-white uppercase transition-all hover:scale-[1.02] hover:bg-emerald-400 hover:shadow-[0_10px_30px_rgba(16,185,129,0.3)] active:scale-95"
+                  >
+                    <MessageCircle className="h-4 w-4 fill-current" /> Hubungi
+                    Panitia (Fariz)
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -117,22 +140,14 @@ export function TenantRegisterClient({
                 </h3>
                 <div className="bg-halal-primary mt-2 h-1 w-12" />
               </div>
-              <Button
-                variant="link"
-                size="sm"
-                onClick={() =>
-                  setAuthMode(authMode === 'register' ? 'login' : 'register')
-                }
-                className="text-halal-primary h-auto p-0 text-[10px] font-black tracking-[0.2em] uppercase hover:text-white sm:text-right"
-              >
-                {authMode === 'register' ? 'Sudah Daftar?' : 'Belum Daftar?'}
-              </Button>
             </div>
 
             {authMode === 'register' ? (
               <RegistrationForm
                 eventIdentifier={eventIdentifier}
                 forcedGuestType="tenant"
+                paymentFile={paymentFile}
+                setPaymentFile={setPaymentFile}
                 onSuccess={(data) => {
                   const nameSlug = slugify(data.registeredName || '', {
                     lower: true,
@@ -155,24 +170,18 @@ export function TenantRegisterClient({
                 hideHeader
               />
             )}
-
-            <div className="mt-8 border-t border-white/5 pt-6 text-center">
-              <p className="mb-2 text-[10px] tracking-widest text-zinc-500 uppercase">
-                Peserta Umum / Masyarakat?
-              </p>
+            <div className="mt-8 flex justify-center border-t border-white/5 pt-6">
               <Button
                 variant="link"
-                className="text-halal-primary h-auto p-0 text-[10px] font-black tracking-[0.2em] uppercase hover:text-white"
+                size="sm"
                 onClick={() =>
-                  router.push(
-                    `/register/${slugify(event.name || '', {
-                      lower: true,
-                      strict: true,
-                    })}/eksternal`,
-                  )
+                  setAuthMode(authMode === 'register' ? 'login' : 'register')
                 }
+                className="text-halal-primary h-auto p-0 text-[10px] font-black tracking-[0.2em] uppercase hover:text-white"
               >
-                Daftar Peserta Umum &rarr;
+                {authMode === 'register'
+                  ? 'Sudah Daftar? Klik di sini'
+                  : 'Belum Daftar? Klik di sini'}
               </Button>
             </div>
           </div>

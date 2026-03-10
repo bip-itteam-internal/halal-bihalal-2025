@@ -118,7 +118,7 @@ export function GuestLoginForm({
 
           <Button
             type="submit"
-            className="w-full bg-amber-500 text-black hover:bg-amber-400"
+            className="bg-halal-primary w-full text-black hover:bg-halal-primary/80"
             disabled={loading}
           >
             {loading ? (

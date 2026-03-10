@@ -126,11 +126,10 @@ export function EventInfo({ date, location, guestRules }: EventInfoProps) {
                             >
                               <span className="font-medium text-zinc-500">
                                 {rule.guest_type === 'tenant'
-                                  ? 'Booth UMKM'
-                                  : 'Umum'}
+                                  ? 'Open Gate Booth UMKM'
+                                  : 'Open Gate Ticket Konser'}
                               </span>
                               <span className="text-halal-primary font-bold">
-                                Open Gate:{' '}
                                 {rule.open_gate
                                   ? rule.open_gate
                                       .substring(0, 5)
