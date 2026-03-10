@@ -15,11 +15,7 @@ export const getEvents = async () => {
 }
 
 export const getEventById = async (id: string) => {
-  return await supabase
-    .from('events')
-    .select('*, event_themes(*)')
-    .eq('id', id)
-    .single()
+  return await supabase.from('events').select('*').eq('id', id).single()
 }
 
 export const getGuestById = async (id: string) => {
