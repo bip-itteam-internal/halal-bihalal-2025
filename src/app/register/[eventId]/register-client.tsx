@@ -27,7 +27,7 @@ export function RegisterEventClient({
     <div className="bg-muted/40 min-h-screen px-4 py-8">
       <div className="mx-auto w-full max-w-6xl space-y-4">
         <Link
-          href="/bharata-group-spesial-konser-wali-band-2026"
+          href="/halal-bihalal-dan-spesial-konser-wali-band-2026"
           className="inline-flex"
         >
           <Button variant="outline" size="icon" aria-label="Kembali">

@@ -1,5 +1,5 @@
 ﻿import { redirect } from 'next/navigation'
 
 export default function HomeRedirect() {
-  redirect('/bharata-group-spesial-konser-wali-band-2026')
+  redirect('/halal-bihalal-dan-spesial-konser-wali-band-2026')
 }

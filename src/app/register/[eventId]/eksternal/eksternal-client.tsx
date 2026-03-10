@@ -3,22 +3,22 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import slugify from 'slugify'
-import { MoveLeft, Store, Star } from 'lucide-react'
+import { MoveLeft, Ticket, Gift, Music, Users } from 'lucide-react'
 import { Event } from '@/types'
 import { Button } from '@/components/ui/button'
 import { RegistrationForm } from '@/components/modules/register/registration-form'
 import { GuestLoginForm } from '@/components/modules/auth/guest-login-form'
 import { motion } from 'framer-motion'
 
-type TenantRegisterClientProps = {
+type EksternalRegisterClientProps = {
   eventIdentifier: string
   event: Event
 }
 
-export function TenantRegisterClient({
+export function EksternalRegisterClient({
   eventIdentifier,
   event,
-}: TenantRegisterClientProps) {
+}: EksternalRegisterClientProps) {
   const router = useRouter()
 
   const [authMode, setAuthMode] = useState<'register' | 'login'>('register')
@@ -38,7 +38,7 @@ export function TenantRegisterClient({
         <div className="flex items-center justify-between">
           <Button
             variant="link"
-            className="gap-2 p-0 text-zinc-500 transition-colors"
+            className="gap-2 p-0 text-zinc-500 transition-colors hover:text-white"
             onClick={() => router.back()}
           >
             <MoveLeft className="h-4 w-4" />
@@ -53,7 +53,7 @@ export function TenantRegisterClient({
               <h1 className="mb-6 text-5xl leading-none font-black tracking-tight text-white uppercase md:text-6xl">
                 REGISTRASI
                 <br />
-                <span className="text-halal-primary">BOOTH UMKM</span>
+                <span className="text-halal-primary">PESERTA UMUM</span>
               </h1>
             </div>
 
@@ -62,44 +62,37 @@ export function TenantRegisterClient({
                 Fasilitas yang Didapat
               </h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {['Stand', 'Akses Listrik', 'Air Bersih', 'Tiket Konser'].map(
-                  (benefit, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.1 }}
-                      className="flex items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.03] p-4"
-                    >
-                      <div className="bg-halal-primary/10 text-halal-primary flex h-8 w-8 items-center justify-center rounded-full">
-                        <Star className="h-4 w-4 fill-current" />
-                      </div>
-                      <span className="text-xs font-bold tracking-wide text-zinc-300 uppercase">
-                        {benefit}
-                      </span>
-                    </motion.div>
-                  ),
-                )}
+                {[
+                  { label: 'Tiket Konser GRATIS', icon: Ticket },
+                  { label: 'Hiburan Musik', icon: Music },
+                ].map((benefit, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="group flex items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.03] p-4 transition-colors hover:bg-white/[0.06]"
+                  >
+                    <div className="bg-halal-primary/10 text-halal-primary flex h-8 w-8 items-center justify-center rounded-full transition-transform group-hover:scale-110">
+                      <benefit.icon className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold tracking-wide text-zinc-300 uppercase">
+                      {benefit.label}
+                    </span>
+                  </motion.div>
+                ))}
               </div>
             </div>
 
-            <div className="rounded-2xl border border-amber-500/10 bg-amber-500/5 p-6">
+            <div className="border-halal-primary/10 bg-halal-primary/5 rounded-2xl border p-6">
               <h4 className="text-halal-primary mb-2 flex items-center gap-2 text-sm font-bold uppercase">
-                <Store className="h-4 w-4" /> Bantuan Pendaftaran
+                Informasi Penting
               </h4>
               <p className="text-xs leading-relaxed text-zinc-500">
-                Jika Anda mengalami kesulitan dalam proses pendaftaran tenant
-                atau ingin menanyakan detail spesifikasi booth, silakan hubungi
-                tim panitia kami melalui WhatsApp.
+                Satu akun dapat digunakan untuk mendaftarkan beberapa anggota
+                keluarga atau kerabat. Pastikan data yang dimasukkan sesuai
+                dengan identitas diri Anda.
               </p>
-              <a
-                href="https://wa.me/6289676258026"
-                target="_blank"
-                rel="noreferrer"
-                className="text-halal-primary mt-4 inline-flex text-xs font-black tracking-widest uppercase hover:underline"
-              >
-                Hubungi Panitia &rarr;
-              </a>
             </div>
           </div>
 
@@ -132,7 +125,7 @@ export function TenantRegisterClient({
             {authMode === 'register' ? (
               <RegistrationForm
                 eventIdentifier={eventIdentifier}
-                forcedGuestType="tenant"
+                forcedGuestType="external"
                 onSuccess={(data) => {
                   const nameSlug = slugify(data.registeredName || '', {
                     lower: true,
@@ -151,28 +144,25 @@ export function TenantRegisterClient({
             ) : (
               <GuestLoginForm
                 eventId={eventIdentifier}
-                guestType="tenant"
+                guestType="external"
                 hideHeader
               />
             )}
 
             <div className="mt-8 border-t border-white/5 pt-6 text-center">
               <p className="mb-2 text-[10px] tracking-widest text-zinc-500 uppercase">
-                Peserta Umum / Masyarakat?
+                Ingin mendaftar sebagai tenant?
               </p>
               <Button
                 variant="link"
                 className="text-halal-primary h-auto p-0 text-[10px] font-black tracking-[0.2em] uppercase hover:text-white"
                 onClick={() =>
                   router.push(
-                    `/register/${slugify(event.name || '', {
-                      lower: true,
-                      strict: true,
-                    })}/eksternal`,
+                    `/register/${slugify(event.name || '', { lower: true, strict: true })}/tenant`,
                   )
                 }
               >
-                Daftar Peserta Umum &rarr;
+                Pendaftaran Booth UMKM &rarr;
               </Button>
             </div>
           </div>

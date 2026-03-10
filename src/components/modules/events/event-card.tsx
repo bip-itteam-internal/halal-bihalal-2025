@@ -1,6 +1,6 @@
 'use client'
 
-import { CalendarDays, MapPin, ScanLine } from 'lucide-react'
+import { CalendarDays, MapPin, ScanLine, Copy } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
@@ -12,7 +12,7 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui/card'
-import { formatJakartaDate } from '@/lib/utils'
+import { formatJakartaDate, toEventSlug } from '@/lib/utils'
 import { Event } from '@/types'
 
 interface EventCardProps {
@@ -111,9 +111,31 @@ export function EventCard({
                 <span className="text-muted-foreground font-medium">
                   Kuota Umum
                 </span>
-                <span className="text-muted-foreground">
-                  {publicRegistered} / {publicQuotaTotal}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">
+                    {publicRegistered} / {publicQuotaTotal}
+                  </span>
+                  {canManageEvent && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground h-6 w-6 hover:text-sky-600"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        const origin = window.location.origin
+                        const url = `${origin}/register/${toEventSlug(event.name)}`
+                        navigator.clipboard.writeText(url)
+                        import('sonner').then(({ toast }) =>
+                          toast.success('Link pendaftaran umum disalin!'),
+                        )
+                      }}
+                      title="Salin Link Pendaftaran Umum"
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
               </div>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
                 <div
@@ -128,9 +150,31 @@ export function EventCard({
                 <span className="text-muted-foreground font-medium">
                   Kuota Tenant
                 </span>
-                <span className="text-muted-foreground">
-                  {tenantRegistered} / {tenantQuotaTotal}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">
+                    {tenantRegistered} / {tenantQuotaTotal}
+                  </span>
+                  {canManageEvent && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground h-6 w-6 hover:text-amber-600"
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        const origin = window.location.origin
+                        const url = `${origin}/register/${toEventSlug(event.name)}/tenant`
+                        navigator.clipboard.writeText(url)
+                        import('sonner').then(({ toast }) =>
+                          toast.success('Link pendaftaran tenant disalin!'),
+                        )
+                      }}
+                      title="Salin Link Pendaftaran Tenant"
+                    >
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
               </div>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
                 <div

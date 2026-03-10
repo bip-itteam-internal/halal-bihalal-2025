@@ -281,12 +281,14 @@ export function EventDetailsForm({
 
           <div className="space-y-2">
             <label className="text-sm leading-none font-medium">
-              Link Pendaftaran Publik (Tamu Baru)
+              Link Pendaftaran Umum
             </label>
             <div className="flex items-center gap-2">
               <Input
                 value={
-                  origin ? `${origin}/register/${toEventSlug(event.name)}` : ''
+                  origin
+                    ? `${origin}/register/${toEventSlug(event.name)}/eksternal`
+                    : ''
                 }
                 readOnly
                 className="h-9 text-xs"

@@ -123,12 +123,10 @@ export function RegistrationSuccess({
         </Button>
         {!inline && (
           <Link
-            href="/bharata-group-spesial-konser-wali-band-2026"
-            className="w-full"
+            href="/halal-bihalal-dan-spesial-konser-wali-band-2026"
+            className="inline-flex items-center gap-2 text-xs font-bold tracking-widest text-zinc-500 uppercase transition-colors hover:text-white"
           >
-            <Button variant="outline" className="w-full">
-              Kembali ke Beranda
-            </Button>
+            Kembali ke Beranda
           </Link>
         )}
       </CardFooter>
