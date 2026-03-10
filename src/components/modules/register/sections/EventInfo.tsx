@@ -56,7 +56,7 @@ export function EventInfo({ date, location, guestRules }: EventInfoProps) {
             label: 'MASTER OF CEREMONY',
             value: 'TARMIN & SAMIDI',
             sub: 'Professional MC',
-            image: '/TARMIN.png',
+            image: '/tarmin (2).png',
             color: 'from-amber-400 to-halal-primary',
             glow: 'rgba(234, 179, 8, 0.1)',
             span: 'md:col-span-2',
