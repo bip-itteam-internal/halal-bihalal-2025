@@ -218,7 +218,7 @@ export function Hero({
               className="pointer-events-none relative mx-auto mt-12 h-[320px] w-full max-w-5xl drop-shadow-2xl md:h-[400px]"
             >
               <Image
-                src="/wali.png"
+                src="/waligg.png"
                 alt="Wali Band"
                 fill
                 className="scale-125 object-contain object-bottom transition-transform duration-1000 hover:scale-135 md:scale-150 md:hover:scale-165"
