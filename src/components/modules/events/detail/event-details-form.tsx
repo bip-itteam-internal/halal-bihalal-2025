@@ -51,6 +51,8 @@ interface EventDetailsFormProps {
   event: Event
   eventDateInput: Date | undefined
   setEventDateInput: (date: Date | undefined) => void
+  eventTimeInput: string
+  setEventTimeInput: (time: string) => void
   onUpdateEvent: (updates: Partial<Event>) => void
   isUploadingLogo: boolean
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -60,6 +62,8 @@ export function EventDetailsForm({
   event,
   eventDateInput,
   setEventDateInput,
+  eventTimeInput,
+  setEventTimeInput,
   onUpdateEvent,
   isUploadingLogo,
   onLogoUpload,
@@ -144,6 +148,18 @@ export function EventDetailsForm({
                       />
                     </PopoverContent>
                   </Popover>
+                </div>
+
+                {/* Jam Acara */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Jam Acara</label>
+
+                  <Input
+                    type="time"
+                    value={eventTimeInput}
+                    onChange={(e) => setEventTimeInput(e.target.value)}
+                    className="h-9"
+                  />
                 </div>
 
                 {/* Tipe Event */}

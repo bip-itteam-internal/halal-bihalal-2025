@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { adminClient } from '@/lib/supabase/admin'
 
 type UpdateUserPayload = {
   full_name?: string
@@ -74,7 +75,6 @@ export async function PATCH(
     }
 
     const supabase = await createClient()
-    const admin = createClient()
 
     const { error: profileError } = await supabase
       .from('profiles')
@@ -84,14 +84,12 @@ export async function PATCH(
     if (profileError) throw profileError
 
     if (Object.prototype.hasOwnProperty.call(updates, 'full_name')) {
-      const { error: metadataError } = await (await admin).auth.admin.updateUserById(
-        id,
-        {
+      const { error: metadataError } =
+        await adminClient.auth.admin.updateUserById(id, {
           user_metadata: {
             full_name: updates.full_name,
           },
-        },
-      )
+        })
       if (metadataError) throw metadataError
     }
 
