@@ -14,7 +14,6 @@ export function FloatingMusicPlayer({
   autoPlay = false,
 }: MusicPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false)
-  const [hasInteracted, setHasInteracted] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
@@ -52,7 +51,6 @@ export function FloatingMusicPlayer({
   }, [autoPlay])
 
   const togglePlay = () => {
-    setHasInteracted(true)
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause()

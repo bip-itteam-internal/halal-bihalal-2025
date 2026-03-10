@@ -1,15 +1,7 @@
 import React from 'react'
-import {
-  Receipt,
-  Info,
-  MessageCircle,
-  CheckCircle2,
-  Upload,
-} from 'lucide-react'
-import { FormLabel } from '@/components/ui/form'
+import { Info, MessageCircle, CheckCircle2, Upload } from 'lucide-react'
 import { Event } from '@/types'
 import { cn } from '@/lib/utils'
-import { RequiredMark } from './field-helpers'
 
 interface PaymentSectionProps {
   registrationType: 'external' | 'tenant'
@@ -51,7 +43,8 @@ export function PaymentSection({
                 rel="noreferrer"
                 className="flex items-center gap-1.5 rounded-full bg-emerald-500 px-3 py-1.5 text-[10px] font-black tracking-tight text-white transition-transform hover:scale-105 active:scale-95"
               >
-                <MessageCircle className="h-3 w-3 fill-current" /> WhatsApp (Fariz)
+                <MessageCircle className="h-3 w-3 fill-current" /> WhatsApp
+                (Fariz)
               </a>
             </div>
           ) : (

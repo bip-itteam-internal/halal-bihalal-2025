@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import slugify from 'slugify'
-import { MoveLeft, Ticket, Gift, Music, Users } from 'lucide-react'
+import { MoveLeft, Ticket, Music } from 'lucide-react'
 import { Event } from '@/types'
 import { Button } from '@/components/ui/button'
 import { RegistrationForm } from '@/components/modules/register/registration-form'

@@ -10,6 +10,7 @@ import {
   ArrowRight,
   User,
   XCircle,
+  LucideIcon,
 } from 'lucide-react'
 import { EventTicket } from '@/components/shared/EventTicket'
 import { Card, CardContent } from '@/components/ui/card'
@@ -264,7 +265,7 @@ function InfoItem({
   value,
   isTight,
 }: {
-  icon: any
+  icon: LucideIcon
   label: string
   value: string
   isTight?: boolean
@@ -433,7 +434,6 @@ export function TraditionalHalal({
   onRSVP,
   isUpdating,
   paymentStatus,
-  paymentProofUrl,
   openGate,
   startTime,
   onTicketView,

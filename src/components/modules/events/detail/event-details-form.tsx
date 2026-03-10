@@ -13,7 +13,6 @@ import {
 } from 'lucide-react'
 import { INVITATION_TEMPLATES as templates } from '@/lib/constants/templates'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -29,7 +28,6 @@ import {
 } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
 import { cn, formatJakartaDate } from '@/lib/utils'
-import { Switch } from '@/components/ui/switch'
 import Image from 'next/image'
 import { Event } from '@/types'
 import {
@@ -53,8 +51,6 @@ interface EventDetailsFormProps {
   event: Event
   eventDateInput: Date | undefined
   setEventDateInput: (date: Date | undefined) => void
-  eventTimeInput: string
-  setEventTimeInput: (time: string) => void
   onUpdateEvent: (updates: Partial<Event>) => void
   isUploadingLogo: boolean
   onLogoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -64,8 +60,6 @@ export function EventDetailsForm({
   event,
   eventDateInput,
   setEventDateInput,
-  eventTimeInput,
-  setEventTimeInput,
   onUpdateEvent,
   isUploadingLogo,
   onLogoUpload,

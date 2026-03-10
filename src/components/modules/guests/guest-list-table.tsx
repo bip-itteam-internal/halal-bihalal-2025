@@ -26,6 +26,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import Image from 'next/image'
 import {
   Tooltip,
   TooltipContent,
@@ -34,7 +35,6 @@ import {
 } from '@/components/ui/tooltip'
 import { Guest } from '@/types'
 import slugify from 'slugify'
-import { encodeUUID } from '@/lib/utils'
 
 interface GuestListTableProps {
   guests: Guest[]
@@ -106,23 +106,6 @@ export function GuestListTable({
     } catch (err: unknown) {
       const error = err as Error
       toast.error(error.message || 'Gagal merubah status pembayaran.')
-    } finally {
-      setLoading(null)
-    }
-  }
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus tamu ini?')) return
-
-    try {
-      setLoading(id)
-      const { error } = await supabase.from('guests').delete().eq('id', id)
-      if (error) throw error
-      toast.success('Tamu berhasil dihapus.')
-      onRefresh()
-    } catch (err: unknown) {
-      const error = err as Error
-      toast.error(error.message || 'Gagal menghapus tamu.')
     } finally {
       setLoading(null)
     }
@@ -375,9 +358,12 @@ export function GuestListTable({
           </DialogHeader>
           <div className="mt-2 flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded-2xl border bg-slate-50 shadow-inner">
             {selectedGuestForProof?.payment_proof_url && (
-              <img
+              <Image
                 src={selectedGuestForProof.payment_proof_url}
                 alt="Bukti Bayar"
+                width={400}
+                height={533}
+                unoptimized
                 className="h-full w-full object-contain"
               />
             )}
