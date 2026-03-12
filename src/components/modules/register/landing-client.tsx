@@ -12,23 +12,11 @@ import { ScrollToTop } from '@/components/ui/scroll-to-top'
 
 export interface LandingClientProps {
   events: Event[]
-  registrationsByEvent: Record<string, { external: number; tenant: number }>
   guestRules: EventGuestRule[]
 }
 
-export function LandingClient({
-  events,
-  registrationsByEvent,
-  guestRules,
-}: LandingClientProps) {
+export function LandingClient({ events, guestRules }: LandingClientProps) {
   const mainEvent = events?.[0]
-
-  const handleHeroAction = () => {
-    const element = document.getElementById('register-section')
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
-    }
-  }
 
   return (
     <div className="theme-halal bg-halal-secondary selection:bg-halal-primary relative flex min-h-screen w-full flex-col overflow-x-hidden scroll-smooth font-sans text-[#f8fafc] selection:text-black">
@@ -56,41 +44,27 @@ export function LandingClient({
       {/* Main Content Sections */}
       <main className="relative z-10">
         <Hero
-          eventId={mainEvent?.id}
           logoUrl={mainEvent?.logo_url || undefined}
           title={mainEvent?.name || undefined}
-          onAction={handleHeroAction}
-        />
-        <EventInfo
-          date={mainEvent?.event_date as unknown as string}
-          location={mainEvent?.location || undefined}
-          guestRules={guestRules?.filter((r) => r.event_id === mainEvent?.id)}
         />
 
         <div id="register-section">
           {mainEvent && (
             <>
               <Registration
-                eventId={mainEvent.id}
-                eventName={mainEvent.name || undefined}
-                regData={
-                  registrationsByEvent[mainEvent.id] || {
-                    external: 0,
-                    tenant: 0,
-                  }
-                }
-                quotas={{
-                  external: mainEvent.external_quota ?? 0,
-                  tenant: mainEvent.tenant_quota ?? 0,
-                }}
                 guestRules={guestRules?.filter(
                   (r) => r.event_id === mainEvent?.id,
                 )}
               />
-              <TenantBanner eventName={mainEvent.name || ''} />
             </>
           )}
         </div>
+        <EventInfo
+          date={mainEvent?.event_date as unknown as string}
+          location={mainEvent?.location || undefined}
+          guestRules={guestRules?.filter((r) => r.event_id === mainEvent?.id)}
+        />
+        <TenantBanner eventName={mainEvent.name || ''} />
       </main>
 
       <Footer logoUrl={mainEvent?.logo_url || undefined} />

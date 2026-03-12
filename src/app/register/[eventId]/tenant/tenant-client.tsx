@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { RegistrationForm } from '@/components/modules/register/registration-form'
 import { GuestLoginForm } from '@/components/modules/auth/guest-login-form'
+import { Particles, ShootingStars } from '@/components/ui/particles'
 
 type TenantRegisterClientProps = {
   eventIdentifier: string
@@ -26,6 +27,12 @@ export function TenantRegisterClient({
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#0a1b1a] px-4 py-12">
+      {/* Background Particles & Stars */}
+      <div className="pointer-events-none absolute inset-0 z-0">
+        <Particles count={30} />
+        <ShootingStars />
+      </div>
+
       {/* Modern Islamic Pattern Overlay */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.03] mix-blend-overlay"
@@ -36,14 +43,15 @@ export function TenantRegisterClient({
       />
 
       <div className="relative z-10 mx-auto w-full max-w-5xl space-y-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-start">
           <Button
-            variant="link"
-            className="gap-2 p-0 text-zinc-500 transition-colors"
+            variant="outline"
+            size="sm"
             onClick={() => router.back()}
+            className="hover:bg-halal-primary/10 border-halal-primary/30 text-halal-primary rounded-full bg-black/40 backdrop-blur-md transition-all"
           >
-            <MoveLeft className="h-4 w-4" />
-            Kembali ke Beranda
+            <MoveLeft className="mr-2 h-4 w-4" />
+            Kembali
           </Button>
         </div>
 

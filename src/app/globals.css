@@ -105,6 +105,9 @@ body {
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  --font-outfit: var(--ff-outfit), var(--font-heading);
+  --font-heading: var(--ff-outfit), var(--font-heading);
+
   --color-halal-primary: #dfae46;
   --color-halal-secondary: #102726;
   --color-halal-secondary-dark: #0a1b1a;

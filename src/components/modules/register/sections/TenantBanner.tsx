@@ -58,7 +58,7 @@ export function TenantBanner({ eventName }: TenantBannerProps) {
                     <div className="flex flex-col items-center gap-1">
                       <div className="flex items-center gap-3">
                         <span className="text-lg font-bold uppercase">
-                          Daftar Tenant
+                          Daftar Sekarang
                         </span>
                         <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                       </div>
