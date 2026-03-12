@@ -51,11 +51,7 @@ export function LandingClient({ events, guestRules }: LandingClientProps) {
         <div id="register-section">
           {mainEvent && (
             <>
-              <Registration
-                guestRules={guestRules?.filter(
-                  (r) => r.event_id === mainEvent?.id,
-                )}
-              />
+              <Registration />
             </>
           )}
         </div>

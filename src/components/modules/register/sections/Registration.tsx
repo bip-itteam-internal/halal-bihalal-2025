@@ -1,12 +1,5 @@
 import { motion } from 'framer-motion'
-import { Clock } from 'lucide-react'
-import { EventGuestRule } from '@/types'
-
-interface RegistrationProps {
-  guestRules?: EventGuestRule[]
-}
-
-export function Registration({ guestRules }: RegistrationProps) {
+export function Registration() {
   return (
     <section className="relative z-10 overflow-hidden py-16 md:py-24">
       {/* Background Decor */}

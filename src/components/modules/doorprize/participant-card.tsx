@@ -67,9 +67,12 @@ export function ParticipantCard({
         isTop9 && 'animate-pulse-border',
       )}
     >
-      <div className="flex h-full w-full flex-col items-center justify-center overflow-hidden p-2 lg:p-3">
+      <div className={cn(
+        "flex h-full w-full flex-col items-center justify-center overflow-hidden px-1",
+        parseFloat(style.fontSize) < 1 ? "py-0" : "py-1"
+      )}>
         <h3
-          className="w-full overflow-hidden font-bold text-white/90 uppercase"
+          className="w-full text-center font-bold text-white/90 uppercase whitespace-normal break-words leading-[1.1]"
           style={{ fontSize: style.fontSize }}
         >
           {guest.full_name}

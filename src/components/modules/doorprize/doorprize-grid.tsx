@@ -25,7 +25,7 @@ export function DoorprizeGrid({
   const isTop9 = aliveParticipants.length <= 9
 
   return (
-    <div className="relative z-10 flex w-full flex-1 flex-wrap content-center items-center justify-center gap-1 overflow-hidden p-4 lg:gap-2">
+    <div className="relative z-10 flex w-full flex-1 flex-wrap content-start items-start justify-center gap-1 overflow-auto p-4 lg:gap-2 custom-scrollbar">
       <LayoutGroup>
         <AnimatePresence mode="popLayout" initial={false}>
           {aliveParticipants.map((guest) => (

@@ -96,6 +96,91 @@ class AudioManager {
     playNote(523.25, start + 0.6, 1.0) // C5
   }
 
+  playSlotSpin() {
+    this.initCtx()
+    if (!this.ctx) return
+
+    const osc = this.ctx.createOscillator()
+    const gain = this.ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(150, this.ctx.currentTime)
+    osc.frequency.linearRampToValueAtTime(80, this.ctx.currentTime + 0.05)
+    
+    gain.gain.setValueAtTime(0.05, this.ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05)
+    
+    osc.connect(gain)
+    gain.connect(this.ctx.destination)
+    osc.start()
+    osc.stop(this.ctx.currentTime + 0.05)
+  }
+
+  playSlotStop() {
+    this.initCtx()
+    if (!this.ctx) return
+
+    const osc1 = this.ctx.createOscillator()
+    const osc2 = this.ctx.createOscillator()
+    const gain = this.ctx.createGain()
+
+    osc1.type = 'triangle'
+    osc1.frequency.setValueAtTime(200, this.ctx.currentTime)
+    osc2.type = 'square'
+    osc2.frequency.setValueAtTime(100, this.ctx.currentTime)
+
+    gain.gain.setValueAtTime(0.3, this.ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2)
+
+    osc1.connect(gain)
+    osc2.connect(gain)
+    gain.connect(this.ctx.destination)
+
+    osc1.start()
+    osc2.start()
+    osc1.stop(this.ctx.currentTime + 0.2)
+    osc2.stop(this.ctx.currentTime + 0.2)
+  }
+
+  playGlitch() {
+    this.initCtx()
+    if (!this.ctx) return
+    const osc = this.ctx.createOscillator()
+    const gain = this.ctx.createGain()
+    osc.type = 'square'
+    osc.frequency.setValueAtTime(60, this.ctx.currentTime)
+    osc.frequency.setValueAtTime(120, this.ctx.currentTime + 0.05)
+    osc.frequency.setValueAtTime(40, this.ctx.currentTime + 0.1)
+    gain.gain.setValueAtTime(0.2, this.ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2)
+    osc.connect(gain)
+    gain.connect(this.ctx.destination)
+    osc.start()
+    osc.stop(this.ctx.currentTime + 0.2)
+  }
+
+  playError() {
+    this.initCtx()
+    if (!this.ctx) return
+
+    const playNote = (freq: number, startTime: number, duration: number) => {
+      const osc = this.ctx!.createOscillator()
+      const gain = this.ctx!.createGain()
+      osc.type = 'square'
+      osc.frequency.setValueAtTime(freq, startTime)
+      gain.gain.setValueAtTime(0.3, startTime)
+      gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration)
+      osc.connect(gain)
+      gain.connect(this.ctx!.destination)
+      osc.start(startTime)
+      osc.stop(startTime + duration)
+    }
+
+    const start = this.ctx.currentTime
+    // Classic buzzer "Te-Tot"
+    playNote(150, start, 0.15)
+    playNote(110, start + 0.2, 0.4)
+  }
+
   startHeartbeat(bpm: number) {
     this.initCtx()
     if (!this.ctx) return

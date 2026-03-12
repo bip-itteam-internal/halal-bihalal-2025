@@ -1,8 +1,8 @@
 export const getCardStyle = (count: number) => {
   if (count > 400)
-    return { width: '4.5vw', height: '2.5vh', fontSize: '0.45vw' }
-  if (count > 250) return { width: '5.8vw', height: '4vh', fontSize: '0.65vw' }
-  if (count > 150) return { width: '7.8vw', height: '6vh', fontSize: '0.8vw' }
+    return { width: '5.2vw', height: '3.5vh', fontSize: '0.45vw' }
+  if (count > 250) return { width: '6.5vw', height: '4.5vh', fontSize: '0.55vw' }
+  if (count > 150) return { width: '8.5vw', height: '6.5vh', fontSize: '0.7vw' }
   if (count > 80) return { width: '10vw', height: '8vh', fontSize: '1vw' }
   if (count > 40) return { width: '14vw', height: '10vh', fontSize: '1.2vw' }
   if (count > 20) return { width: '18vw', height: '14vh', fontSize: '1.8vw' }

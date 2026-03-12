@@ -243,6 +243,7 @@ export function useDoorprize() {
     lastBatch,
     aliveParticipants,
     winner,
+    fetchCandidates,
     reset,
     forceRefresh,
     eliminateRandom,
