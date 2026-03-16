@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { Skeleton } from '@/components/ui/skeleton'
 import { AppLayout } from '@/components/layout/app-layout'
 import { getJakartaNow, toJakartaISOString } from '@/lib/utils'
 import { Event } from '@/types'
@@ -26,7 +27,6 @@ export default function EventDetailPage({
   const router = useRouter()
   const supabase = createClient()
 
-  const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [event, setEvent] = useState<Event | null>(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
@@ -82,34 +82,35 @@ export default function EventDetailPage({
     fetchEventDetails()
   }, [fetchEventDetails])
 
-  const handleUpdate = async () => {
+  const handleSaveSection = async (
+    section: 'core' | 'quota' | 'links' | 'payment' | 'branding',
+    updates: Partial<Event>,
+    nextDate?: Date,
+    nextTime?: string,
+  ) => {
     if (!event) return
-    if (!eventDateInput) {
-      toast.error('Tanggal acara wajib diisi.')
-      return
-    }
-
     try {
-      setSaving(true)
-      const updated = await updateEvent(eventId, {
-        name: event.name.trim(),
-        event_type: event.event_type || 'internal',
-        event_date: toJakartaISOString(eventDateInput, eventTimeInput),
-        location: event.location || '',
-        external_quota: Number(event.external_quota) || 0,
-        tenant_quota: Number(event.tenant_quota) || 0,
-        public_reg_status: event.public_reg_status || 'closed',
-        logo_url: event.logo_url || null,
-        is_paid: !!event.is_paid,
-        is_tenant_paid: !!event.is_tenant_paid,
-        price_external: Number(event.price_external) || 0,
-        payment_info: event.payment_info || '',
-        template_id: event.template_id,
-      })
+      const payload: Partial<Event> = { ...updates }
+
+      if (section === 'core') {
+        if (!nextDate) {
+          toast.error('Tanggal acara wajib diisi.')
+          return
+        }
+
+        payload.event_date = toJakartaISOString(nextDate, nextTime || '08:00')
+      }
+
+      const updated = await updateEvent(eventId, payload)
 
       setEvent(updated)
+      if (updated.event_date) {
+        const { date, time } = buildJakartaDateAndTimeInput(updated.event_date)
+        setEventDateInput(date)
+        setEventTimeInput(time)
+      }
 
-      toast.success('Perubahan berhasil disimpan!')
+      toast.success(`Perubahan section ${section} berhasil disimpan.`)
       router.refresh()
     } catch (err: unknown) {
       toast.error(
@@ -117,8 +118,6 @@ export default function EventDetailPage({
           ? err.message
           : 'Terjadi kesalahan sistem saat menyimpan',
       )
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -175,31 +174,56 @@ export default function EventDetailPage({
       header={
         <EventPageHeader
           name={event?.name || 'Detail Event'}
-          onSave={handleUpdate}
           onDelete={() => setIsDeleteModalOpen(true)}
-          saving={saving}
         />
       }
     >
-      <div className="flex-1 space-y-6 p-5 pt-4">
-        {event && (
-          <EventDetailsForm
-            event={event}
-            eventDateInput={eventDateInput}
-            setEventDateInput={setEventDateInput}
-            eventTimeInput={eventTimeInput}
-            setEventTimeInput={setEventTimeInput}
-            onUpdateEvent={(updates) => setEvent({ ...event, ...updates })}
-            isUploadingLogo={isUploadingLogo}
-            onLogoUpload={handleLogoUpload}
-          />
-        )}
-
-        {event && (
-          <div className="grid grid-cols-1 gap-6">
-            <EventGuestRulesManager eventId={eventId} />
-          </div>
-        )}
+      <div className="flex-1 p-5 pt-4">
+        <div className="mx-auto max-w-7xl space-y-6">
+          {event ? (
+            <>
+              <EventDetailsForm
+                event={event}
+                eventDateInput={eventDateInput}
+                setEventDateInput={setEventDateInput}
+                eventTimeInput={eventTimeInput}
+                setEventTimeInput={setEventTimeInput}
+                onSaveSection={handleSaveSection}
+                isUploadingLogo={isUploadingLogo}
+                onLogoUpload={handleLogoUpload}
+              />
+              <EventGuestRulesManager eventId={eventId} />
+            </>
+          ) : (
+            <div className="space-y-6">
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="flex items-start gap-4">
+                  <Skeleton className="h-20 w-20 rounded-3xl" />
+                  <div className="flex-1 space-y-3">
+                    <Skeleton className="h-6 w-48" />
+                    <Skeleton className="h-4 w-72" />
+                    <div className="flex gap-2">
+                      <Skeleton className="h-8 w-28 rounded-full" />
+                      <Skeleton className="h-8 w-24 rounded-full" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+                <div className="space-y-6">
+                  <Skeleton className="h-72 rounded-2xl" />
+                  <Skeleton className="h-52 rounded-2xl" />
+                  <Skeleton className="h-64 rounded-2xl" />
+                </div>
+                <div className="space-y-6">
+                  <Skeleton className="h-80 rounded-2xl" />
+                  <Skeleton className="h-80 rounded-2xl" />
+                </div>
+              </div>
+              <Skeleton className="h-80 rounded-2xl" />
+            </div>
+          )}
+        </div>
       </div>
 
       <EventDeleteDialog

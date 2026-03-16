@@ -20,43 +20,47 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
-  Link as LinkIcon,
   FileImage,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import Image from 'next/image'
-import { buildInvitePath } from '@/lib/event-identifiers'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+import { FaWhatsapp } from 'react-icons/fa'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Guest } from '@/types'
 
 interface GuestListTableProps {
   guests: Guest[]
-  eventName?: string
   onRefresh: () => void
   onUpdateGuest?: (guestId: string, updates: Partial<Guest>) => void
   startNumber?: number
   eventId?: string
+  showPaymentColumns?: boolean
 }
 
 export function GuestListTable({
   guests,
-  eventName,
   onRefresh,
   onUpdateGuest,
   startNumber = 1,
   eventId: propEventId,
+  showPaymentColumns = true,
 }: GuestListTableProps) {
   const supabase = createClient()
   const [loading, setLoading] = useState<string | null>(null)
   const [selectedGuestForProof, setSelectedGuestForProof] =
     useState<Guest | null>(null)
+
+  const getWhatsappLink = (phone?: string | null) => {
+    if (!phone) return null
+
+    const digits = phone.replace(/[^\d]/g, '')
+    if (!digits) return null
+
+    const normalized = digits.startsWith('0') ? `62${digits.slice(1)}` : digits
+    return `https://wa.me/${normalized}`
+  }
 
   const handleUpdatePaymentStatus = async (
     guestId: string,
@@ -228,22 +232,23 @@ export function GuestListTable({
             <TableHead className="text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
               Status RSVP
             </TableHead>
-            <TableHead className="text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
-              Bayar
-            </TableHead>
-            <TableHead className="text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
-              Bukti Bayar
-            </TableHead>
-            <TableHead className="pr-6 text-right text-[10px] font-black tracking-widest text-slate-400 uppercase">
-              Aksi
-            </TableHead>
+            {showPaymentColumns && (
+              <TableHead className="text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                Bayar
+              </TableHead>
+            )}
+            {showPaymentColumns && (
+              <TableHead className="text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                Bukti Bayar
+              </TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
           {guests.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={7}
+                colSpan={showPaymentColumns ? 7 : 5}
                 className="text-muted-foreground h-32 text-center"
               >
                 <div className="flex flex-col items-center justify-center gap-1">
@@ -270,9 +275,22 @@ export function GuestListTable({
                 <TableCell>
                   <div className="flex flex-col space-y-0.5 text-[11px] leading-tight">
                     {guest.phone && (
-                      <span className="font-medium text-slate-700">
-                        {guest.phone}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-slate-700">
+                          {guest.phone}
+                        </span>
+                        {getWhatsappLink(guest.phone) && (
+                          <a
+                            href={getWhatsappLink(guest.phone) || undefined}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 transition-colors hover:bg-emerald-100 hover:text-emerald-700"
+                            aria-label={`Chat WhatsApp ${guest.full_name}`}
+                          >
+                            <FaWhatsapp className="h-3.5 w-3.5" />
+                          </a>
+                        )}
+                      </div>
                     )}
                     {guest.email && (
                       <span className="text-muted-foreground max-w-[150px] truncate">
@@ -284,63 +302,27 @@ export function GuestListTable({
                 <TableCell className="text-center">
                   {getStatusBadge(guest.rsvp_status)}
                 </TableCell>
-                <TableCell className="text-center">
-                  {getPaymentStatusBadge(guest.payment_status)}
-                </TableCell>
-                <TableCell className="text-center">
-                  {guest.payment_proof_url ? (
-                    <div className="flex flex-col items-center gap-1.5">
-                      <button
-                        onClick={() => setSelectedGuestForProof(guest)}
-                        className="inline-flex items-center gap-1 rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600 transition-colors hover:text-blue-800"
-                      >
-                        <FileImage className="h-3 w-3" /> LIHAT
-                      </button>
-                    </div>
-                  ) : (
-                    <span className="text-[10px] text-slate-300">-</span>
-                  )}
-                </TableCell>
-                <TableCell className="mr-4 py-3 text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
-                            onClick={() => {
-                              const eventSlug = eventName
-                                ? eventName
-                                    .toLowerCase()
-                                    .trim()
-                                    .replace(/[^a-z0-9\s-]/g, '')
-                                    .replace(/\s+/g, '-')
-                                    .replace(/-+/g, '-')
-                                : undefined
-                              if (!guest.invitation_code) {
-                                toast.error('Tamu ini belum memiliki invitation code.')
-                                return
-                              }
-                              const url = `${window.location.origin}${buildInvitePath(
-                                guest.invitation_code,
-                                eventSlug,
-                              )}`
-                              navigator.clipboard.writeText(url)
-                              toast.success('Link undangan berhasil disalin!')
-                            }}
-                          >
-                            <LinkIcon className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="text-xs">Salin Link Undangan</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                </TableCell>
+                {showPaymentColumns && (
+                  <TableCell className="text-center">
+                    {getPaymentStatusBadge(guest.payment_status)}
+                  </TableCell>
+                )}
+                {showPaymentColumns && (
+                  <TableCell className="text-center">
+                    {guest.payment_proof_url ? (
+                      <div className="flex flex-col items-center gap-1.5">
+                        <button
+                          onClick={() => setSelectedGuestForProof(guest)}
+                          className="inline-flex items-center gap-1 rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600 transition-colors hover:text-blue-800"
+                        >
+                          <FileImage className="h-3 w-3" /> LIHAT
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-[10px] text-slate-300">-</span>
+                    )}
+                  </TableCell>
+                )}
               </TableRow>
             ))
           )}
@@ -351,7 +333,7 @@ export function GuestListTable({
         open={!!selectedGuestForProof}
         onOpenChange={(open) => !open && setSelectedGuestForProof(null)}
       >
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold tracking-widest text-slate-400 uppercase">
               Verifikasi Pembayaran
@@ -360,6 +342,15 @@ export function GuestListTable({
               {selectedGuestForProof?.full_name}
             </p>
           </DialogHeader>
+          <Alert className="border-amber-200 bg-amber-50 text-amber-900">
+            <AlertTitle className="text-xs font-bold uppercase">
+              Periksa Transaksi Dulu
+            </AlertTitle>
+            <AlertDescription className="text-[11px] leading-relaxed">
+              Pastikan dana benar-benar sudah masuk ke rekening tujuan dan
+              nominalnya sesuai sebelum menekan tombol verifikasi atau penolakan.
+            </AlertDescription>
+          </Alert>
           <div className="mt-2 flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded-2xl border bg-slate-50 shadow-inner">
             {selectedGuestForProof?.payment_proof_url && (
               <Image

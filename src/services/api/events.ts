@@ -14,7 +14,6 @@ export async function getEvents() {
 
 export async function getEventCounts(eventIds: string[]) {
   const supabase = createClient()
-  // Fetch counts from guest_events junction table instead of directly from guests
   const { data, error } = await supabase
     .from('guest_events')
     .select('event_id, guests(guest_type, registration_source)')
@@ -22,36 +21,33 @@ export async function getEventCounts(eventIds: string[]) {
 
   if (error) throw error
 
-  const counts = (data || []).reduce<
-    Record<string, { external: number; tenant: number }>
-  >((acc, item) => {
-    const typedItem = item as unknown as {
-      event_id: string
-      guests: {
-        guest_type: GuestType
-        registration_source: RegistrationSource
-      } | null
-    }
-    const eventId = typedItem.event_id
-    const guest = typedItem.guests
+  return (data || []).reduce<Record<string, { external: number; tenant: number }>>(
+    (acc, item) => {
+      const typedItem = item as unknown as {
+        event_id: string
+        guests: {
+          guest_type: GuestType
+          registration_source: RegistrationSource
+        } | null
+      }
+      const eventId = typedItem.event_id
+      const guest = typedItem.guests
 
-    if (!guest || guest.registration_source !== 'public_registration') {
+      if (!guest || guest.registration_source !== 'public_registration') {
+        return acc
+      }
+
+      if (!acc[eventId]) {
+        acc[eventId] = { external: 0, tenant: 0 }
+      }
+
+      if (guest.guest_type === 'tenant') acc[eventId].tenant += 1
+      if (guest.guest_type === 'external') acc[eventId].external += 1
+
       return acc
-    }
-
-    if (!acc[eventId]) {
-      acc[eventId] = { external: 0, tenant: 0 }
-    }
-
-    if (guest.guest_type === 'tenant') {
-      acc[eventId].tenant++
-    } else {
-      acc[eventId].external++
-    }
-    return acc
-  }, {})
-
-  return counts
+    },
+    {},
+  )
 }
 
 export async function getEventById(id: string) {

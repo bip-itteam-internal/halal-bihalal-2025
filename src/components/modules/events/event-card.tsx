@@ -1,18 +1,12 @@
 'use client'
 
-import { CalendarDays, MapPin, ScanLine, Copy } from 'lucide-react'
+import { CalendarDays, ScanLine, Users } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from '@/components/ui/card'
-import { formatJakartaDate, toEventSlug } from '@/lib/utils'
+import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card'
+import { formatJakartaDate } from '@/lib/utils'
 import { Event } from '@/types'
 
 interface EventCardProps {
@@ -21,186 +15,96 @@ interface EventCardProps {
   canManageEvent: boolean
 }
 
-export function EventCard({
-  event,
-  eventCounts,
-  canManageEvent,
-}: EventCardProps) {
-  const showQuotaBars = event.event_type === 'public'
-
-  const publicRegistered = eventCounts.external
-  const publicQuotaTotal = event.external_quota ?? 0
-  const publicPercent =
-    publicQuotaTotal > 0
-      ? Math.min(100, Math.round((publicRegistered / publicQuotaTotal) * 100))
-      : 0
-
-  const tenantRegistered = eventCounts.tenant
-  const tenantQuotaTotal = event.tenant_quota ?? 0
-  const tenantPercent =
-    tenantQuotaTotal > 0
-      ? Math.min(100, Math.round((tenantRegistered / tenantQuotaTotal) * 100))
-      : 0
+export function EventCard({ event, eventCounts, canManageEvent }: EventCardProps) {
+  const remainingExternalQuota = Math.max(
+    0,
+    (event.external_quota ?? 0) - eventCounts.external,
+  )
+  const remainingTenantQuota = Math.max(
+    0,
+    (event.tenant_quota ?? 0) - eventCounts.tenant,
+  )
 
   return (
-    <Card className="flex flex-col gap-0 overflow-hidden py-0">
-      <div className="bg-muted relative aspect-square border-b">
-        <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
-          <Badge
-            variant="outline"
-            className={
-              event.event_type === 'public'
-                ? 'border-sky-300 bg-sky-50 text-sky-700 capitalize'
-                : 'border-amber-300 bg-amber-50 text-amber-700 capitalize'
-            }
-          >
-            {event.event_type === 'public' ? 'Publik' : 'Internal'}
-          </Badge>
-          <Badge
-            className={
-              event.public_reg_status === 'open'
-                ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                : 'border-red-500 bg-red-50 text-red-700'
-            }
-          >
-            {event.public_reg_status === 'open' ? 'Buka' : 'Tutup'}
-          </Badge>
-        </div>
-        {event.logo_url ? (
-          <Image
-            src={event.logo_url}
-            alt={`Poster ${event.name}`}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-contain"
-          />
-        ) : (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-sky-100 to-blue-200 text-sky-700">
-            <CalendarDays className="h-10 w-10" />
-            <span className="text-xs font-medium tracking-wide uppercase">
-              Event
-            </span>
-          </div>
-        )}
-      </div>
-      <CardHeader className="p-4 pb-3">
-        <div className="flex items-start">
-          <div className="flex-1">
-            <CardTitle className="text-xl leading-tight">
-              {event.name}
-            </CardTitle>
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="flex-1 space-y-3 px-4 pb-3">
-        <div className="text-muted-foreground flex items-center text-sm">
-          <CalendarDays className="mr-2 h-4 w-4" />
-          {event.event_date
-            ? formatJakartaDate(event.event_date, 'PPP p')
-            : 'TBA'}
-        </div>
-        <div className="text-muted-foreground flex items-center text-sm">
-          <MapPin className="mr-2 h-4 w-4" />
-          {event.location || 'TBA'}
+    <Card className="flex h-full flex-col overflow-hidden border-slate-200 py-0 shadow-sm">
+      <CardContent className="flex flex-1 flex-col items-center justify-center gap-4 px-5 py-8 text-center">
+        <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-3xl border bg-white">
+          {event.logo_url ? (
+            <Image
+              src={event.logo_url}
+              alt={`Logo ${event.name}`}
+              fill
+              sizes="96px"
+              className="object-contain p-3"
+            />
+          ) : (
+            <CalendarDays className="h-10 w-10 text-slate-400" />
+          )}
         </div>
 
-        {showQuotaBars && (
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground font-medium">
-                  Kuota Umum
-                </span>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">
-                    {publicRegistered} / {publicQuotaTotal}
-                  </span>
-                  {canManageEvent && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground h-6 w-6 hover:text-sky-600"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        const origin = window.location.origin
-                        const url = `${origin}/register/${toEventSlug(event.name)}`
-                        navigator.clipboard.writeText(url)
-                        import('sonner').then(({ toast }) =>
-                          toast.success('Link pendaftaran umum disalin!'),
-                        )
-                      }}
-                      title="Salin Link Pendaftaran Umum"
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
-                <div
-                  className="h-full rounded-full bg-sky-500 transition-all"
-                  style={{ width: `${publicPercent}%` }}
-                />
-              </div>
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <Badge
+              variant="outline"
+              className={
+                event.event_type === 'public'
+                  ? 'border-sky-300 bg-sky-50 text-sky-700 capitalize'
+                  : 'border-amber-300 bg-amber-50 text-amber-700 capitalize'
+              }
+            >
+              {event.event_type === 'public' ? 'Publik' : 'Internal'}
+            </Badge>
+            <Badge
+              variant="outline"
+              className={
+                event.public_reg_status === 'open'
+                  ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
+                  : 'border-slate-300 bg-slate-50 text-slate-600'
+              }
+            >
+              {event.public_reg_status === 'open' ? 'Buka' : 'Tutup'}
+            </Badge>
+          </div>
+
+          <CardTitle className="line-clamp-2 text-lg leading-tight text-slate-950">
+            {event.name}
+          </CardTitle>
+
+          <div className="space-y-2 pt-1">
+            <div className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">
+              <CalendarDays className="h-3.5 w-3.5" />
+              <span>
+                {event.event_date
+                  ? formatJakartaDate(event.event_date, 'PPP p')
+                  : 'Waktu belum diatur'}
+              </span>
             </div>
 
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground font-medium">
-                  Kuota Tenant
+            {event.event_type === 'public' && (
+              <div className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">
+                <Users className="h-3.5 w-3.5" />
+                <span>
+                  Sisa kuota umum {remainingExternalQuota} • tenant {remainingTenantQuota}
                 </span>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground">
-                    {tenantRegistered} / {tenantQuotaTotal}
-                  </span>
-                  {canManageEvent && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground h-6 w-6 hover:text-amber-600"
-                      onClick={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
-                        const origin = window.location.origin
-                        const url = `${origin}/register/${toEventSlug(event.name)}/tenant`
-                        navigator.clipboard.writeText(url)
-                        import('sonner').then(({ toast }) =>
-                          toast.success('Link pendaftaran tenant disalin!'),
-                        )
-                      }}
-                      title="Salin Link Pendaftaran Tenant"
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
               </div>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
-                <div
-                  className="h-full rounded-full bg-amber-500 transition-all"
-                  style={{ width: `${tenantPercent}%` }}
-                />
-              </div>
-            </div>
+            )}
           </div>
-        )}
+        </div>
       </CardContent>
-      <CardFooter className="bg-muted/50 mt-auto border-t p-3">
-        <div
-          className={`grid w-full grid-cols-1 gap-2 ${canManageEvent ? 'sm:grid-cols-2 2xl:grid-cols-3' : ''}`}
-        >
+
+      <CardFooter className="mt-auto border-t bg-slate-50/70 p-4">
+        <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
           {canManageEvent && (
             <Link href={`/admin/events/${event.id}`} className="w-full">
               <Button variant="outline" className="w-full" size="sm">
-                Kelola Event
+                Detail
               </Button>
             </Link>
           )}
           {canManageEvent && (
             <Link href={`/admin/events/${event.id}/guests`} className="w-full">
               <Button variant="outline" className="w-full" size="sm">
-                Daftar Tamu
+                Guests
               </Button>
             </Link>
           )}
@@ -210,7 +114,7 @@ export function EventCard({
               size="sm"
             >
               <ScanLine className="h-4 w-4" />
-              Scan
+              Scanner
             </Button>
           </Link>
         </div>

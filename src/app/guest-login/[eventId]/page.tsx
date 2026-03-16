@@ -11,7 +11,6 @@ import {
   Phone,
   ArrowRight,
 } from 'lucide-react'
-import Link from 'next/link'
 import Image from 'next/image'
 import { formatJakartaDate } from '@/lib/utils'
 import { Event } from '@/types'

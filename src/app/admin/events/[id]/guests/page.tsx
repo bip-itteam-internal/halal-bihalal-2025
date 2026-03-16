@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, use } from 'react'
+import { useState, useEffect, useCallback, use, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Button } from '@/components/ui/button'
@@ -16,8 +16,6 @@ import {
 import Link from 'next/link'
 import { Guest, PaymentStatus } from '@/types'
 import { GuestListTable } from '@/components/modules/guests/guest-list-table'
-import { AddGuestSheet } from '@/components/modules/guests/add-guest-sheet'
-import { ImportGuestSheet } from '@/components/modules/guests/import-guest-sheet'
 import { toast } from 'sonner'
 import {
   Select,
@@ -26,6 +24,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Skeleton } from '@/components/ui/skeleton'
+
+type GuestTypeTab = 'all' | 'internal' | 'external' | 'tenant'
+
+type GuestSummary = {
+  total: number
+  confirmed: number
+  pending: number
+  declined: number
+  paymentPending: number
+  paymentVerified: number
+  paymentRejected: number
+}
 
 export default function GuestManagementPage({
   params,
@@ -40,12 +52,23 @@ export default function GuestManagementPage({
   const [event, setEvent] = useState<{ name: string } | null>(null)
   const [guests, setGuests] = useState<Guest[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [guestType, setGuestType] = useState<string>('all')
+  const [guestType, setGuestType] = useState<GuestTypeTab>('all')
   const [status, setStatus] = useState<string>('all')
   const [payStatus, setPayStatus] = useState<string>('all')
   const [page, setPage] = useState(1)
   const [pageSize] = useState(10)
   const [totalCount, setTotalCount] = useState(0)
+  const [summary, setSummary] = useState<GuestSummary>({
+    total: 0,
+    confirmed: 0,
+    pending: 0,
+    declined: 0,
+    paymentPending: 0,
+    paymentVerified: 0,
+    paymentRejected: 0,
+  })
+
+  const showPaymentColumns = guestType !== 'internal'
 
   const fetchEventAndGuests = useCallback(async () => {
     try {
@@ -110,6 +133,51 @@ export default function GuestManagementPage({
 
       setGuests(guestsData)
       setTotalCount(count || 0)
+
+      let summaryQuery = supabase
+        .from('guest_events')
+        .select('payment_status, guests!inner(guest_type, rsvp_status)')
+        .eq('event_id', eventId)
+
+      if (guestType !== 'all') {
+        summaryQuery = summaryQuery.eq('guests.guest_type', guestType)
+      }
+
+      const { data: summaryData, error: summaryError } = await summaryQuery
+
+      if (summaryError) throw summaryError
+
+      const nextSummary = (summaryData || []).reduce<GuestSummary>(
+        (acc, item) => {
+          const guestRow = item.guests as unknown as {
+            guest_type: string
+            rsvp_status: string
+          }
+
+          acc.total += 1
+
+          if (guestRow.rsvp_status === 'confirmed') acc.confirmed += 1
+          else if (guestRow.rsvp_status === 'declined') acc.declined += 1
+          else acc.pending += 1
+
+          if (item.payment_status === 'verified') acc.paymentVerified += 1
+          else if (item.payment_status === 'rejected') acc.paymentRejected += 1
+          else if (item.payment_status === 'pending') acc.paymentPending += 1
+
+          return acc
+        },
+        {
+          total: 0,
+          confirmed: 0,
+          pending: 0,
+          declined: 0,
+          paymentPending: 0,
+          paymentVerified: 0,
+          paymentRejected: 0,
+        },
+      )
+
+      setSummary(nextSummary)
     } catch (err: unknown) {
       const error = err as Error
       console.error(error)
@@ -144,7 +212,31 @@ export default function GuestManagementPage({
     setPage(1)
   }, [searchQuery, guestType, status, payStatus])
 
+  useEffect(() => {
+    if (guestType === 'internal' && payStatus !== 'all') {
+      setPayStatus('all')
+    }
+  }, [guestType, payStatus])
+
   const totalPages = Math.ceil(totalCount / pageSize)
+
+  const summaryCards = useMemo(() => {
+    const cards = [
+      { label: 'Total Tamu', value: summary.total },
+      { label: 'Berhasil RSVP', value: summary.confirmed },
+      { label: 'Pending RSVP', value: summary.pending },
+      { label: 'Ditolak RSVP', value: summary.declined },
+    ]
+
+    if (showPaymentColumns) {
+      cards.push(
+        { label: 'Bayar Pending', value: summary.paymentPending },
+        { label: 'Bayar OK', value: summary.paymentVerified },
+      )
+    }
+
+    return cards
+  }, [showPaymentColumns, summary])
 
   const renderPageHeader = (title: string, subtitle?: string) => (
     <div className="flex items-center gap-3 px-4 py-2">
@@ -160,6 +252,49 @@ export default function GuestManagementPage({
             {subtitle}
           </p>
         )}
+      </div>
+    </div>
+  )
+
+  const renderTableSkeleton = () => (
+    <div className="overflow-hidden rounded-md border bg-white">
+      <div className="border-b bg-slate-50/50 px-6 py-4">
+        <div
+          className={`grid items-center gap-4 ${
+            showPaymentColumns
+              ? 'grid-cols-[60px_1.4fr_0.9fr_1.2fr_1fr_1fr_1fr]'
+              : 'grid-cols-[60px_1.6fr_1fr_1.4fr_1fr]'
+          }`}
+        >
+          {Array.from({ length: showPaymentColumns ? 7 : 5 }).map((_, index) => (
+            <Skeleton key={index} className="h-3 w-20 rounded-full" />
+          ))}
+        </div>
+      </div>
+
+      <div className="divide-y">
+        {Array.from({ length: 8 }).map((_, rowIndex) => (
+          <div
+            key={rowIndex}
+            className={`grid items-center gap-4 px-6 py-4 ${
+              showPaymentColumns
+                ? 'grid-cols-[60px_1.4fr_0.9fr_1.2fr_1fr_1fr_1fr]'
+                : 'grid-cols-[60px_1.6fr_1fr_1.4fr_1fr]'
+            }`}
+          >
+            <Skeleton className="h-4 w-6" />
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-6 w-20 rounded-full" />
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-6 w-24 rounded-full" />
+            {showPaymentColumns && (
+              <>
+                <Skeleton className="h-6 w-24 rounded-full" />
+                <Skeleton className="h-6 w-16 rounded-full" />
+              </>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -194,15 +329,46 @@ export default function GuestManagementPage({
                   className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
                 />
               </Button>
-              <ImportGuestSheet
-                eventId={eventId}
-                onSuccess={fetchEventAndGuests}
-              />
-              <AddGuestSheet
-                eventId={eventId}
-                onSuccess={fetchEventAndGuests}
-              />
             </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 border-b pb-4">
+            <Tabs
+              value={guestType}
+              onValueChange={(value) => setGuestType(value as GuestTypeTab)}
+              className="w-full"
+            >
+              <TabsList variant="line" className="h-auto flex-wrap gap-2 bg-transparent p-0">
+                <TabsTrigger value="all" className="rounded-full border px-4 py-2 text-xs">
+                  Semua
+                </TabsTrigger>
+                <TabsTrigger value="internal" className="rounded-full border px-4 py-2 text-xs">
+                  Internal
+                </TabsTrigger>
+                <TabsTrigger value="external" className="rounded-full border px-4 py-2 text-xs">
+                  Eksternal
+                </TabsTrigger>
+                <TabsTrigger value="tenant" className="rounded-full border px-4 py-2 text-xs">
+                  Tenant
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+            {summaryCards.map((card) => (
+              <div
+                key={card.label}
+                className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
+              >
+                <p className="text-[9px] font-bold tracking-[0.28em] text-slate-400 uppercase">
+                  {card.label}
+                </p>
+                <p className="mt-1 text-3xl leading-none font-black tracking-tight text-slate-900">
+                  {card.value}
+                </p>
+              </div>
+            ))}
           </div>
 
           <div className="flex flex-wrap items-center gap-3 border-b pb-4">
@@ -210,18 +376,6 @@ export default function GuestManagementPage({
               <Filter className="h-3.5 w-3.5" />
               <span>Filter:</span>
             </div>
-
-            <Select value={guestType} onValueChange={setGuestType}>
-              <SelectTrigger className="h-8 w-[140px] text-xs">
-                <SelectValue placeholder="Tipe Tamu" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Tipe</SelectItem>
-                <SelectItem value="internal">Internal</SelectItem>
-                <SelectItem value="external">Eksternal</SelectItem>
-                <SelectItem value="tenant">Tenant</SelectItem>
-              </SelectContent>
-            </Select>
 
             <Select value={status} onValueChange={setStatus}>
               <SelectTrigger className="h-8 w-[140px] text-xs">
@@ -235,25 +389,26 @@ export default function GuestManagementPage({
               </SelectContent>
             </Select>
 
-            <Select value={payStatus} onValueChange={setPayStatus}>
-              <SelectTrigger className="h-8 w-[140px] text-xs">
-                <SelectValue placeholder="Status Bayar" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Bayar</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="verified">Terverifikasi</SelectItem>
-                <SelectItem value="rejected">Ditolak</SelectItem>
-              </SelectContent>
-            </Select>
+            {showPaymentColumns && (
+              <Select value={payStatus} onValueChange={setPayStatus}>
+                <SelectTrigger className="h-8 w-[140px] text-xs">
+                  <SelectValue placeholder="Status Bayar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Bayar</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="verified">Terverifikasi</SelectItem>
+                  <SelectItem value="rejected">Ditolak</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
 
-            {(guestType !== 'all' || status !== 'all' || searchQuery) && (
+            {(status !== 'all' || payStatus !== 'all' || searchQuery) && (
               <Button
                 variant="ghost"
                 size="sm"
                 className="text-muted-foreground h-8 text-xs"
                 onClick={() => {
-                  setGuestType('all')
                   setStatus('all')
                   setPayStatus('all')
                   setSearchQuery('')
@@ -266,23 +421,30 @@ export default function GuestManagementPage({
         </div>
 
         {loading ? (
-          <div className="flex h-64 items-center justify-center rounded-md border bg-white">
-            <div className="flex flex-col items-center gap-2">
-              <RefreshCw className="text-primary h-8 w-8 animate-spin" />
-              <p className="text-muted-foreground text-sm">
-                Memuat daftar tamu...
-              </p>
+          <div className="space-y-4">
+            {renderTableSkeleton()}
+            <div className="flex items-center justify-between border-t pt-4">
+              <Skeleton className="h-4 w-56" />
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-8 w-28" />
+                <div className="flex items-center gap-1">
+                  <Skeleton className="h-8 w-8" />
+                  <Skeleton className="h-8 w-8" />
+                  <Skeleton className="h-8 w-8" />
+                </div>
+                <Skeleton className="h-8 w-24" />
+              </div>
             </div>
           </div>
         ) : (
           <div className="space-y-4">
             <GuestListTable
               guests={guests}
-              eventName={event?.name}
               onRefresh={fetchEventAndGuests}
               onUpdateGuest={handleUpdateGuest}
               startNumber={(page - 1) * pageSize + 1}
               eventId={eventId}
+              showPaymentColumns={showPaymentColumns}
             />
 
             {/* Pagination Controls */}

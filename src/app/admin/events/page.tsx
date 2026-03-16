@@ -10,7 +10,7 @@ import { CreateEventSheet } from '@/components/modules/events/create-event-sheet
 import { PageHeader } from '@/components/shared/page-header'
 import { useProfile } from '@/hooks/use-profile'
 import { Event } from '@/types'
-import { getEvents, getEventCounts } from '@/services/api/events'
+import { getEventCounts, getEvents } from '@/services/api/events'
 import { EventCard } from '@/components/modules/events/event-card'
 
 export default function EventsPage() {
