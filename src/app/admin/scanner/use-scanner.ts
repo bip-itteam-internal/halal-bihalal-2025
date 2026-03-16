@@ -3,7 +3,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Html5Qrcode } from 'html5-qrcode'
 import { Guest } from '@/types'
 import { getEvents } from '@/services/api/events'
-import { submitCheckin as apiSubmitCheckin } from '@/services/api/checkin'
+import { submitCheckin as apiSubmitCheckin, CheckinError } from '@/services/api/checkin'
+import { audioManager } from '@/lib/audio-manager'
 
 export type EventOption = {
   id: string
@@ -45,6 +46,7 @@ export function useScanner() {
   }
 
   const [successDialogOpen, setSuccessDialogOpen] = useState(false)
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false)
 
   const selectedEventName = useMemo(
     () => events.find((event) => event.id === selectedEventId)?.name || '-',
@@ -97,7 +99,7 @@ export function useScanner() {
     source: 'manual' | 'scan' = 'manual',
   ) => {
     const eventId = selectedEventIdRef.current
-    if (!payload || !eventId) return false
+    if (!payload || !eventId || submitting) return false
 
     try {
       setSubmitting(true)
@@ -108,6 +110,7 @@ export function useScanner() {
         qr_payload: payload.trim(),
       })
 
+      audioManager.playSuccess()
       setSuccessDialogOpen(true)
       setLastResult({
         success: true,
@@ -117,8 +120,24 @@ export function useScanner() {
       setManualCode('')
       return true
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Gagal check-in'
-      setLastResult({ success: false, message })
+      audioManager.playError()
+      
+      let message = 'Gagal check-in'
+      let guest: Guest | undefined = undefined
+
+      if (err instanceof CheckinError) {
+        message = err.message
+        guest = err.guest
+      } else if (err instanceof Error) {
+        message = err.message
+      }
+
+      setLastResult({ 
+        success: false, 
+        message,
+        guest
+      })
+      setErrorDialogOpen(true)
       if (source === 'manual') {
         setManualError(message)
       }
@@ -165,10 +184,15 @@ export function useScanner() {
         { facingMode: 'environment' },
         { fps: 10 },
         async (decodedText) => {
-          await submitCheckin(decodedText, 'scan')
+          // Cegah scan ganda: matikan scanner segera setelah kode terdeteksi
           if (autoCloseRef.current) {
             await stopScanner()
+          } else {
+            // Jika kamera tetap standby, tambahkan delay manual agar tidak scan beruntun
+            // Tapi dalam konteks ini, kita prioritaskan flow dengan dialog
           }
+          
+          await submitCheckin(decodedText, 'scan')
         },
         () => undefined,
       )
@@ -211,5 +235,7 @@ export function useScanner() {
     setAutoCloseCamera,
     successDialogOpen,
     setSuccessDialogOpen,
+    errorDialogOpen,
+    setErrorDialogOpen,
   }
 }

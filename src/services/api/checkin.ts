@@ -11,6 +11,15 @@ export interface CheckinResponse {
   guest?: Guest
 }
 
+export class CheckinError extends Error {
+  guest?: Guest
+  constructor(message: string, guest?: Guest) {
+    super(message)
+    this.name = 'CheckinError'
+    this.guest = guest
+  }
+}
+
 export async function submitCheckin(
   params: CheckinParams,
 ): Promise<CheckinResponse> {
@@ -23,7 +32,7 @@ export async function submitCheckin(
   const data = await res.json()
 
   if (!res.ok) {
-    throw new Error(data.message || 'Gagal check-in')
+    throw new CheckinError(data.message || 'Gagal check-in', data.guest)
   }
 
   return {

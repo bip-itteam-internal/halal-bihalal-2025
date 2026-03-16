@@ -39,6 +39,34 @@ class AudioManager {
     osc.stop(this.ctx.currentTime + 0.1)
   }
 
+  playSuccess() {
+    this.initCtx()
+    if (!this.ctx) return
+
+    const playNote = (
+      freq: number,
+      startTime: number,
+      duration: number,
+      type: OscillatorType = 'sine',
+    ) => {
+      const osc = this.ctx!.createOscillator()
+      const gain = this.ctx!.createGain()
+      osc.type = type
+      osc.frequency.setValueAtTime(freq, startTime)
+      gain.gain.setValueAtTime(0.5, startTime)
+      gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration)
+      osc.connect(gain)
+      gain.connect(this.ctx!.destination)
+      osc.start(startTime)
+      osc.stop(startTime + duration)
+    }
+
+    const start = this.ctx.currentTime
+    // High pitched double beep "Ding!"
+    playNote(880, start, 0.1, 'sine') // A5
+    playNote(1318.51, start + 0.1, 0.2, 'sine') // E6
+  }
+
   playElimination() {
     this.initCtx()
     if (!this.ctx) return

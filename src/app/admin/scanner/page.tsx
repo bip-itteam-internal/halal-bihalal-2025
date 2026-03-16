@@ -7,6 +7,7 @@ import { ScannerHeader } from '@/components/modules/scanner/scanner-header'
 import { ScannerCamera } from '@/components/modules/scanner/scanner-camera'
 import { ScannerManualInput } from '@/components/modules/scanner/scanner-manual-input'
 import { ScannerSuccessDialog } from '@/components/modules/scanner/scanner-success-dialog'
+import { ScannerErrorDialog } from '@/components/modules/scanner/scanner-error-dialog'
 
 function ScannerContent() {
   const {
@@ -26,6 +27,8 @@ function ScannerContent() {
     setAutoCloseCamera,
     successDialogOpen,
     setSuccessDialogOpen,
+    errorDialogOpen,
+    setErrorDialogOpen,
   } = useScanner()
 
   const handleConfirmSuccess = () => {
@@ -36,9 +39,18 @@ function ScannerContent() {
     }
   }
 
+  const handleConfirmError = () => {
+    setErrorDialogOpen(false)
+    setLastResult(null)
+    if (autoCloseCamera) {
+      startScanner()
+    }
+  }
+
   const handleDialogChange = (open: boolean) => {
     if (!open) {
       setSuccessDialogOpen(false)
+      setErrorDialogOpen(false)
       setLastResult(null)
     }
   }
@@ -72,6 +84,13 @@ function ScannerContent() {
         onOpenChange={handleDialogChange}
         result={lastResult}
         onConfirm={handleConfirmSuccess}
+      />
+
+      <ScannerErrorDialog
+        open={errorDialogOpen}
+        onOpenChange={handleDialogChange}
+        result={lastResult}
+        onConfirm={handleConfirmError}
       />
     </AppLayout>
   )

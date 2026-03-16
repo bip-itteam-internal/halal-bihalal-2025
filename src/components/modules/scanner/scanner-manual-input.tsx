@@ -57,7 +57,7 @@ export function ScannerManualInput({
           <Input
             value={manualCode}
             onChange={(e) => setManualCode(e.target.value)}
-            placeholder="Contoh: INV-XXXXXX"
+            placeholder="Contoh: XXXXXX"
             className="h-10 rounded-xl border-slate-200 bg-slate-50/50 text-[13px] transition-all focus:bg-white"
           />
 
