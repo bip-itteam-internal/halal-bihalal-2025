@@ -13,7 +13,7 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
         <ShootingStars />
 
         {/* Stage Lights / Concert Lighting */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
           {/* Main Stage Blue Spotlights */}
           <motion.div
             animate={{
@@ -43,7 +43,7 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
               scale: [1, 1.2, 1],
             }}
             transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-halal-primary/40 to-transparent blur-[60px]"
+            className="from-halal-primary/40 absolute right-0 bottom-0 left-0 h-64 bg-gradient-to-t to-transparent blur-[60px]"
           />
 
           {/* Moving Laser Lights */}
@@ -60,7 +60,12 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
               x: ['200%', '-100%'],
               opacity: [0, 0.5, 0],
             }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'linear', delay: 1 }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: 'linear',
+              delay: 1,
+            }}
             className="absolute top-1/2 left-0 h-[1px] w-full rotate-6 bg-gradient-to-r from-transparent via-purple-400/40 to-transparent"
           />
 
@@ -71,15 +76,20 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
               scaleX: [1, 1.5, 1],
             }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute -bottom-20 left-1/3 -z-10 h-[800px] w-1 bg-cyan-400/30 blur-[40px] rotate-[15deg]"
+            className="absolute -bottom-20 left-1/3 -z-10 h-[800px] w-1 rotate-[15deg] bg-cyan-400/30 blur-[40px]"
           />
           <motion.div
             animate={{
               opacity: [0.1, 0.4, 0.1],
               scaleX: [1, 1.5, 1],
             }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-            className="absolute -bottom-20 right-1/3 -z-10 h-[800px] w-1 bg-purple-400/30 blur-[40px] rotate-[-15deg]"
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: 'easeInOut',
+              delay: 2,
+            }}
+            className="absolute right-1/3 -bottom-20 -z-10 h-[800px] w-1 rotate-[-15deg] bg-purple-400/30 blur-[40px]"
           />
         </div>
 
@@ -200,7 +210,7 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
                 repeat: Infinity,
                 ease: 'easeInOut',
               }}
-              className="h-2 w-1 rounded-full bg-halal-primary shadow-[0_0_8px_#f59e0b]"
+              className="bg-halal-primary h-2 w-1 rounded-full shadow-[0_0_8px_#f59e0b]"
             />
           </motion.div>
           <span className="text-[10px] font-medium tracking-[0.2em] text-white/50 uppercase">
