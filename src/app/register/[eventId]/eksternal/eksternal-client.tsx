@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import slugify from 'slugify'
 import { MoveLeft, Ticket, Music } from 'lucide-react'
 import { Event } from '@/types'
+import { buildInvitePath } from '@/lib/event-identifiers'
 import { Button } from '@/components/ui/button'
 import { RegistrationForm } from '@/components/modules/register/registration-form'
 import { GuestLoginForm } from '@/components/modules/auth/guest-login-form'
@@ -127,17 +128,11 @@ export function EksternalRegisterClient({
                 eventIdentifier={eventIdentifier}
                 forcedGuestType="external"
                 onSuccess={(data) => {
-                  const nameSlug = slugify(data.registeredName || '', {
+                  const eventSlug = slugify(event.name || event.id, {
                     lower: true,
                     strict: true,
                   })
-                  const eventSlug = slugify(event.name || '', {
-                    lower: true,
-                    strict: true,
-                  })
-                  router.push(
-                    `/invite/${data.guest_id}-${nameSlug}-${eventSlug}`,
-                  )
+                  router.push(buildInvitePath(data.invitation_code, eventSlug))
                 }}
                 hideHeader
               />

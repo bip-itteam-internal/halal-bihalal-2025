@@ -2,13 +2,14 @@
 
 import React, { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Clock, Building2 } from 'lucide-react'
+import { Clock, Building2, ExternalLink, Loader2, Upload } from 'lucide-react'
 import { EventTicket } from '@/components/shared/EventTicket'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { formatJakartaDate } from '@/lib/utils'
 import { Guest, Event as AppEvent } from '@/types'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import Image from 'next/image'
 
 interface TemplateProps {
   event: AppEvent
@@ -19,6 +20,8 @@ interface TemplateProps {
   isUpdating: boolean
   paymentStatus?: 'pending' | 'verified' | 'rejected'
   paymentProofUrl?: string | null
+  isUpdatingPaymentProof?: boolean
+  onUpdatePaymentProof?: (file: File) => Promise<void>
   openGate?: string | null
   startTime?: string | null
   onTicketView?: (visible: boolean) => void
@@ -33,10 +36,21 @@ export function ModernCorporate({
   isUpdating,
   paymentStatus,
   paymentProofUrl,
+  isUpdatingPaymentProof,
+  onUpdatePaymentProof,
   openGate,
   startTime,
   onTicketView,
 }: TemplateProps) {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || !onUpdatePaymentProof) return
+    await onUpdatePaymentProof(file)
+  }
+
   const shouldSkipCover =
     guest.guest_type === 'external' || guest.guest_type === 'tenant'
 
@@ -61,7 +75,7 @@ export function ModernCorporate({
             eventDate={formatJakartaDate(event.event_date, 'PPP')}
             location={event.location || ''}
             guestName={guest.full_name || ''}
-            entryCode={guest.invitation_code || guest.id}
+            entryCode={guest.invitation_code || ''}
             primaryColor="slate"
             logoUrl={event.logo_url || undefined}
             openGate={openGate || undefined}
@@ -109,12 +123,27 @@ export function ModernCorporate({
         style={{ borderRadius: '1.5rem' }}
       >
         <div className="relative flex h-32 items-center justify-between overflow-hidden bg-slate-900 px-8 text-white">
-          <div className="relative z-10">
-            <h2 className="text-xl font-black tracking-tight uppercase italic">
-              {event.name}
-            </h2>
-          </div>
-          <Building2 className="relative z-10 h-8 w-8 text-blue-500/50" />
+          {event.logo_url ? (
+            <div className="relative z-10 h-16 w-full max-w-[220px]">
+              <Image
+                src={event.logo_url}
+                alt={event.name || 'Event logo'}
+                fill
+                sizes="220px"
+                className="object-contain object-left"
+                priority
+              />
+            </div>
+          ) : (
+            <>
+              <div className="relative z-10">
+                <h2 className="text-xl font-black tracking-tight uppercase italic">
+                  {event.name}
+                </h2>
+              </div>
+              <Building2 className="relative z-10 h-8 w-8 text-blue-500/50" />
+            </>
+          )}
 
           {/* Subtle decoration */}
           <div className="absolute top-0 right-0 h-full w-1/2 bg-gradient-to-l from-blue-500/10 to-transparent" />
@@ -216,10 +245,30 @@ export function ModernCorporate({
                     href={paymentProofUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[10px] font-bold text-blue-600 uppercase underline"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-blue-200 bg-white px-4 text-[10px] font-bold text-blue-600 uppercase shadow-sm"
                   >
+                    <ExternalLink className="h-4 w-4" />
                     Lihat Bukti Bayar
                   </a>
+                )}
+                {onUpdatePaymentProof && (
+                  <label className="cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      className="hidden"
+                      onChange={handleFileChange}
+                      disabled={isUpdatingPaymentProof}
+                    />
+                    <span className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-[10px] font-bold text-slate-700 uppercase shadow-sm">
+                      {isUpdatingPaymentProof ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Upload className="h-4 w-4" />
+                      )}
+                      Update Bukti
+                    </span>
+                  </label>
                 )}
               </div>
             ) : guest.rsvp_status === 'pending' ? (

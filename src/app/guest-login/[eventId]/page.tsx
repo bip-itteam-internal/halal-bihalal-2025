@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/form'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Particles } from '@/components/ui/particles'
+import { buildInvitePath } from '@/lib/event-identifiers'
 
 const loginSchema = z.object({
   phone: z
@@ -51,8 +52,8 @@ interface GuestLoginPageProps {
   params: Promise<{ eventId: string }>
 }
 
-function getGuestRedirectPath(guestId: string, eventId: string) {
-  return `/invite/${guestId}-${eventId}`
+function getGuestRedirectPath(invitationCode: string, eventId: string) {
+  return buildInvitePath(invitationCode, eventId)
 }
 
 export default function GuestLoginPage({ params }: GuestLoginPageProps) {
@@ -114,7 +115,7 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
         throw new Error(data.message || 'Data tamu tidak valid.')
       }
 
-      router.push(getGuestRedirectPath(data.guest_id, eventId))
+      router.push(getGuestRedirectPath(data.invitation_code, eventId))
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan sistem')
     } finally {

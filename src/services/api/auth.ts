@@ -4,7 +4,7 @@ export interface GuestLoginPayload {
 }
 
 export interface GuestLoginResponse {
-  guest_id: string
+  invitation_code: string
   message: string
 }
 

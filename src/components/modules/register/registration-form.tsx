@@ -25,8 +25,7 @@ interface RegistrationFormProps {
   eventIdentifier: string
   forcedGuestType: 'external' | 'tenant' | null
   onSuccess: (data: {
-    guest_id: string
-    qr_payload: string
+    invitation_code: string
     registeredName: string
     registrationType: 'external' | 'tenant'
   }) => void
@@ -177,8 +176,7 @@ export function RegistrationForm({
       })
 
       onSuccess({
-        guest_id: data.guest_id,
-        qr_payload: data.qr_payload || data.guest_id,
+        invitation_code: data.invitation_code,
         registeredName: values.full_name,
         registrationType: registrationType,
       })

@@ -8,8 +8,7 @@ export interface RegisterGuestPayload {
 }
 
 export interface RegisterGuestResponse {
-  guest_id: string
-  qr_payload: string
+  invitation_code: string
   message?: string
 }
 

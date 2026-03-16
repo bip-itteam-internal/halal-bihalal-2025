@@ -24,7 +24,7 @@ export async function getGuests({
   }
 
   if (eventId) {
-    query = query.eq('event_id', eventId)
+    query = query.eq('guest_events.event_id', eventId)
   }
 
   const from = (page - 1) * pageSize

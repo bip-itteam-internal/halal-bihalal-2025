@@ -6,6 +6,7 @@ import slugify from 'slugify'
 import { motion } from 'framer-motion'
 import { MoveLeft, Store, Star, MessageCircle, Info } from 'lucide-react'
 import { Event } from '@/types'
+import { buildInvitePath } from '@/lib/event-identifiers'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { RegistrationForm } from '@/components/modules/register/registration-form'
@@ -157,17 +158,11 @@ export function TenantRegisterClient({
                 paymentFile={paymentFile}
                 setPaymentFile={setPaymentFile}
                 onSuccess={(data) => {
-                  const nameSlug = slugify(data.registeredName || '', {
+                  const eventSlug = slugify(event.name || event.id, {
                     lower: true,
                     strict: true,
                   })
-                  const eventSlug = slugify(event.name || '', {
-                    lower: true,
-                    strict: true,
-                  })
-                  router.push(
-                    `/invite/${data.guest_id}-${nameSlug}-${eventSlug}`,
-                  )
+                  router.push(buildInvitePath(data.invitation_code, eventSlug))
                 }}
                 hideHeader
               />

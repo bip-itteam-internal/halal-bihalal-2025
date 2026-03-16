@@ -2,7 +2,7 @@ import { Guest } from '@/types'
 
 export interface CheckinParams {
   event_id: string
-  qr_payload: string
+  invitation_code: string
 }
 
 export interface CheckinResponse {

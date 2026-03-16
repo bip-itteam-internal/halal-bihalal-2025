@@ -10,6 +10,9 @@ import {
   ArrowRight,
   User,
   XCircle,
+  ExternalLink,
+  Upload,
+  Loader2,
   LucideIcon,
 } from 'lucide-react'
 import { EventTicket } from '@/components/shared/EventTicket'
@@ -28,6 +31,8 @@ interface TemplateProps {
   isUpdating: boolean
   paymentStatus?: 'pending' | 'verified' | 'rejected'
   paymentProofUrl?: string | null
+  isUpdatingPaymentProof?: boolean
+  onUpdatePaymentProof?: (file: File) => Promise<void>
   openGate?: string | null
   startTime?: string | null
   onTicketView?: (visible: boolean) => void
@@ -152,7 +157,7 @@ function HalalTicketView({
           eventDate={formatJakartaDate(event.event_date, 'PPPP')}
           location={event.location || ''}
           guestName={guest.full_name || ''}
-          entryCode={guest.invitation_code || guest.id}
+          entryCode={guest.invitation_code || ''}
           primaryColor="emerald"
           logoUrl={event.logo_url || undefined}
           openGate={openGate || undefined}
@@ -297,14 +302,29 @@ function HalalRSVPSection({
   onRSVP,
   isUpdating,
   paymentStatus,
+  paymentProofUrl,
+  isUpdatingPaymentProof,
+  onUpdatePaymentProof,
   onShowTicket,
 }: {
   guest: Guest
   onRSVP: (status: 'confirmed' | 'declined' | 'pending') => void
   isUpdating: boolean
   paymentStatus?: 'pending' | 'verified' | 'rejected'
+  paymentProofUrl?: string | null
+  isUpdatingPaymentProof?: boolean
+  onUpdatePaymentProof?: (file: File) => Promise<void>
   onShowTicket?: () => void
 }) {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || !onUpdatePaymentProof) return
+    await onUpdatePaymentProof(file)
+  }
+
   // If tenant and payment is pending
   if (guest.guest_type === 'tenant' && paymentStatus === 'pending') {
     return (
@@ -320,6 +340,38 @@ function HalalRSVPSection({
             Bukti pembayaranmu sedang diproses oleh admin. Kami akan segera
             menginfokan setelah tiketmu siap!
           </p>
+        </div>
+        <div className="flex flex-col gap-2">
+          {paymentProofUrl && (
+            <a
+              href={paymentProofUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-amber-300/30 bg-amber-300/10 px-4 text-[10px] font-bold tracking-widest text-amber-100 uppercase transition-colors hover:bg-amber-300/20"
+            >
+              <ExternalLink className="h-4 w-4" />
+              Lihat Bukti
+            </a>
+          )}
+          {onUpdatePaymentProof && (
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                className="hidden"
+                onChange={handleFileChange}
+                disabled={isUpdatingPaymentProof}
+              />
+              <span className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl border border-amber-300/30 bg-transparent px-4 text-[10px] font-bold tracking-widest text-amber-100 uppercase transition-colors hover:bg-amber-300/10">
+                {isUpdatingPaymentProof ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="h-4 w-4" />
+                )}
+                Update Bukti
+              </span>
+            </label>
+          )}
         </div>
       </div>
     )
@@ -434,6 +486,9 @@ export function TraditionalHalal({
   onRSVP,
   isUpdating,
   paymentStatus,
+  paymentProofUrl,
+  isUpdatingPaymentProof,
+  onUpdatePaymentProof,
   openGate,
   startTime,
   onTicketView,
@@ -490,9 +545,22 @@ export function TraditionalHalal({
       >
         {/* Header */}
         <div className="relative flex h-32 items-center justify-center overflow-hidden bg-gradient-to-r from-[#0a2f33] via-[#0f3a3f] to-[#0a2f33] px-8">
-          <h2 className="relative z-10 max-w-md text-center font-serif text-2xl font-bold tracking-tight text-amber-200 uppercase">
-            {event.name}
-          </h2>
+          {event.logo_url ? (
+            <div className="relative z-10 h-20 w-full max-w-[260px]">
+              <Image
+                src={event.logo_url}
+                alt={event.name || 'Event logo'}
+                fill
+                sizes="260px"
+                className="object-contain"
+                priority
+              />
+            </div>
+          ) : (
+            <h2 className="relative z-10 max-w-md text-center font-serif text-2xl font-bold tracking-tight text-amber-200 uppercase">
+              {event.name}
+            </h2>
+          )}
         </div>
 
         <CardContent className="space-y-8 pt-6 pb-6">
@@ -509,6 +577,9 @@ export function TraditionalHalal({
               onRSVP={onRSVP}
               isUpdating={isUpdating}
               paymentStatus={paymentStatus}
+              paymentProofUrl={paymentProofUrl}
+              isUpdatingPaymentProof={isUpdatingPaymentProof}
+              onUpdatePaymentProof={onUpdatePaymentProof}
               onShowTicket={() => setShowTicketManually(true)}
             />
           </div>

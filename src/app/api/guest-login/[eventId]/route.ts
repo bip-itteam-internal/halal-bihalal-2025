@@ -1,45 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { adminClient } from '@/lib/supabase/admin'
-
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+import { resolveEventId } from '@/lib/event-identifiers'
 
 import { Guest } from '@/types'
 
 function normalizePhone(value: string) {
   return value.replace(/[^\d]/g, '')
-}
-
-function toEventSlug(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-}
-
-async function resolveEventId(
-  supabase: typeof adminClient,
-  identifier: string,
-) {
-  const normalized = identifier.trim()
-
-  if (UUID_REGEX.test(normalized)) {
-    return normalized
-  }
-
-  const { data: events, error } = await supabase
-    .from('events')
-    .select('id, name')
-  if (error) throw error
-
-  const slug = toEventSlug(normalized)
-  const matched = (events || []).find(
-    (event) => toEventSlug(event.name || '') === slug,
-  )
-
-  return matched?.id || null
 }
 
 export async function POST(
@@ -78,7 +44,7 @@ export async function POST(
 
     const { data: eventGuests, error } = await supabase
       .from('guest_events')
-      .select('guests!inner(id, phone, guest_type, created_at)')
+      .select('guests!inner(id, phone, guest_type, invitation_code, created_at)')
       .eq('event_id', eventId)
       .in(
         'guests.guest_type',
@@ -92,69 +58,42 @@ export async function POST(
 
     const normalizedInputPhone = normalizePhone(phone)
 
-    let matchedGuestObject: {
+    const matchedGuestObject: {
       id: string
       phone: string
       guest_type: string
+      invitation_code: string | null
     } | null = (eventGuests || []).find((eg) => {
       const g = eg.guests as unknown as Guest
       return normalizePhone(g.phone || '') === normalizedInputPhone
-    })?.guests as unknown as { id: string; phone: string; guest_type: string }
-
-    // If not found in this event, check Master Guest list
-    if (!matchedGuestObject) {
-      // Search in master guests using the last 7 digits for a more efficient lookup
-      // This helps narrow down from thousands to just a few candidates
-      const searchSuffix = normalizedInputPhone.slice(-7)
-
-      const { data: masterGuests, error: masterError } = await supabase
-        .from('guests')
-        .select('id, phone, guest_type')
-        .in(
-          'guest_type',
-          guestType ? [guestType] : ['internal', 'external', 'tenant'],
-        )
-        .ilike('phone', `%${searchSuffix}%`)
-        .not('phone', 'is', null)
-        .limit(10) // Should be very few matches for the same suffix
-
-      if (masterError) throw masterError
-
-      const masterMatch = (masterGuests || []).find((mg) => {
-        return normalizePhone(mg.phone || '') === normalizedInputPhone
-      })
-
-      if (masterMatch) {
-        // Auto-assign to this event
-        const { error: assignError } = await supabase
-          .from('guest_events')
-          .insert({
-            guest_id: masterMatch.id,
-            event_id: eventId,
-          })
-
-        if (assignError) {
-          // If it fails because it's already there (race condition), that's fine
-          console.error('Auto-assign error:', assignError)
-        }
-
-        matchedGuestObject = masterMatch
-      }
+    })?.guests as unknown as {
+      id: string
+      phone: string
+      guest_type: string
+      invitation_code: string | null
     }
 
     if (!matchedGuestObject) {
       return NextResponse.json(
         {
-          message:
-            'Nomor WhatsApp tidak ditemukan pada daftar tamu maupun database master.',
+          message: 'Nomor WhatsApp tidak terdaftar untuk event ini.',
         },
         { status: 404 },
       )
     }
 
+    if (!matchedGuestObject.invitation_code) {
+      return NextResponse.json(
+        {
+          message: 'Undangan tamu belum memiliki kode akses.',
+        },
+        { status: 409 },
+      )
+    }
+
     return NextResponse.json({
       status: 'success',
-      guest_id: matchedGuestObject.id,
+      invitation_code: matchedGuestObject.invitation_code,
       guest_type: matchedGuestObject.guest_type,
     })
   } catch (error: unknown) {

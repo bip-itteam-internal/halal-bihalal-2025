@@ -5,39 +5,28 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient()
   try {
     const body = await req.json()
-    const { guest_id, qr_payload, event_id } = body
+    const { invitation_code, qr_payload, event_id } = body
 
-    if ((!guest_id && !qr_payload) || !event_id) {
+    if ((!invitation_code && !qr_payload) || !event_id) {
       return NextResponse.json(
-        { message: 'Kode tamu dan event wajib diisi.' },
+        { message: 'Kode undangan dan event wajib diisi.' },
         { status: 400 },
       )
     }
 
-    const token = (guest_id || qr_payload || '').trim()
+    const token = (invitation_code || qr_payload || '').trim()
     if (!token) {
       return NextResponse.json(
-        { message: 'Kode tamu tidak boleh kosong.' },
+        { message: 'Kode undangan tidak boleh kosong.' },
         { status: 400 },
       )
     }
 
-    // 1. Resolve guest by id / invitation_code
-    const UUID_REGEX =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-    const isUUID = UUID_REGEX.test(token)
-
-    let query = supabase
+    const { data: guests, error: guestErr } = await supabase
       .from('guests')
       .select('id, full_name, guest_type, invitation_code')
-
-    if (isUUID) {
-      query = query.or(`id.eq.${token},invitation_code.eq.${token}`)
-    } else {
-      query = query.eq('invitation_code', token)
-    }
-
-    const { data: guests, error: guestErr } = await query.limit(1)
+      .eq('invitation_code', token)
+      .limit(1)
     const guest = guests?.[0]
 
     if (guestErr || !guest) {

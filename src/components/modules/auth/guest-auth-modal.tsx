@@ -31,8 +31,7 @@ export function GuestAuthModal({
 }: GuestAuthModalProps) {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>(defaultTab)
   const [successData, setSuccessData] = useState<{
-    guest_id: string
-    qr_payload: string
+    invitation_code: string
     registeredName: string
     registrationType: 'external' | 'tenant'
   } | null>(null)
@@ -58,8 +57,7 @@ export function GuestAuthModal({
               </DialogTitle>
             </div>
             <RegistrationSuccess
-              guestId={successData.guest_id}
-              qrPayload={successData.qr_payload}
+              invitationCode={successData.invitation_code}
               registeredName={successData.registeredName}
               registeredGuestType={successData.registrationType}
               inline

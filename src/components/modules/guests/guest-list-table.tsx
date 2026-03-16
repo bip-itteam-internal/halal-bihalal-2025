@@ -27,6 +27,7 @@ import { Badge } from '@/components/ui/badge'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import Image from 'next/image'
+import { buildInvitePath } from '@/lib/event-identifiers'
 import {
   Tooltip,
   TooltipContent,
@@ -34,7 +35,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { Guest } from '@/types'
-import slugify from 'slugify'
 
 interface GuestListTableProps {
   guests: Guest[]
@@ -311,18 +311,22 @@ export function GuestListTable({
                             size="icon"
                             className="h-8 w-8 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
                             onClick={() => {
-                              const nameSlug = slugify(guest.full_name, {
-                                lower: true,
-                                strict: true,
-                              })
                               const eventSlug = eventName
-                                ? '-' +
-                                  slugify(eventName, {
-                                    lower: true,
-                                    strict: true,
-                                  })
-                                : ''
-                              const url = `${window.location.origin}/invite/${guest.id}-${nameSlug}${eventSlug}`
+                                ? eventName
+                                    .toLowerCase()
+                                    .trim()
+                                    .replace(/[^a-z0-9\s-]/g, '')
+                                    .replace(/\s+/g, '-')
+                                    .replace(/-+/g, '-')
+                                : undefined
+                              if (!guest.invitation_code) {
+                                toast.error('Tamu ini belum memiliki invitation code.')
+                                return
+                              }
+                              const url = `${window.location.origin}${buildInvitePath(
+                                guest.invitation_code,
+                                eventSlug,
+                              )}`
                               navigator.clipboard.writeText(url)
                               toast.success('Link undangan berhasil disalin!')
                             }}

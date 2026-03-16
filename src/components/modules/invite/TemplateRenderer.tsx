@@ -15,6 +15,8 @@ interface TemplateRendererProps {
   isUpdating: boolean
   paymentStatus?: 'pending' | 'verified' | 'rejected'
   paymentProofUrl?: string | null
+  isUpdatingPaymentProof?: boolean
+  onUpdatePaymentProof?: (file: File) => Promise<void>
   openGate?: string | null
   startTime?: string | null
   onTicketView?: (visible: boolean) => void
@@ -30,6 +32,8 @@ export function TemplateRenderer({
   isUpdating,
   paymentStatus,
   paymentProofUrl,
+  isUpdatingPaymentProof,
+  onUpdatePaymentProof,
   openGate,
   startTime,
   onTicketView,
@@ -50,6 +54,8 @@ export function TemplateRenderer({
           isUpdating={isUpdating}
           paymentStatus={paymentStatus}
           paymentProofUrl={paymentProofUrl}
+          isUpdatingPaymentProof={isUpdatingPaymentProof}
+          onUpdatePaymentProof={onUpdatePaymentProof}
           openGate={openGate}
           startTime={startTime}
           onTicketView={onTicketView}
@@ -66,6 +72,8 @@ export function TemplateRenderer({
           isUpdating={isUpdating}
           paymentStatus={paymentStatus}
           paymentProofUrl={paymentProofUrl}
+          isUpdatingPaymentProof={isUpdatingPaymentProof}
+          onUpdatePaymentProof={onUpdatePaymentProof}
           openGate={openGate}
           startTime={startTime}
           onTicketView={onTicketView}
@@ -83,6 +91,8 @@ export function TemplateRenderer({
           isUpdating={isUpdating}
           paymentStatus={paymentStatus}
           paymentProofUrl={paymentProofUrl}
+          isUpdatingPaymentProof={isUpdatingPaymentProof}
+          onUpdatePaymentProof={onUpdatePaymentProof}
           openGate={openGate}
           startTime={startTime}
           onTicketView={onTicketView}

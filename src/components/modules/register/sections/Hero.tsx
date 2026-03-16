@@ -4,13 +4,7 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Particles, ShootingStars } from '@/components/ui/particles'
 
-export function Hero({
-  logoUrl,
-  title,
-}: {
-  logoUrl?: string
-  title?: string
-}) {
+export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
   return (
     <section className="bg-halal-secondary relative flex min-h-screen w-full items-center overflow-hidden">
       {/* Background Layer */}
@@ -89,10 +83,16 @@ export function Hero({
               className="pointer-events-none relative mx-auto mt-12 h-[320px] w-full max-w-5xl drop-shadow-2xl md:h-[400px]"
             >
               <Image
-                src="/waligg.png"
-                alt="Wali Band"
+                src="/CHARLY PNG.png"
+                alt="Setia Band"
                 fill
                 className="scale-125 object-contain object-bottom transition-transform duration-1000 hover:scale-135 md:scale-150 md:hover:scale-165"
+                style={{
+                  maskImage:
+                    'linear-gradient(to bottom, black 0%, black 72%, transparent 100%)',
+                  WebkitMaskImage:
+                    'linear-gradient(to bottom, black 0%, black 72%, transparent 100%)',
+                }}
                 priority
               />
             </motion.div>

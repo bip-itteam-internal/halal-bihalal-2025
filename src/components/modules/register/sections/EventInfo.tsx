@@ -139,6 +139,12 @@ export function EventInfo({ date, location, guestRules }: EventInfoProps) {
                     alt={item.value}
                     fill
                     className="object-cover object-top contrast-110"
+                    style={{
+                      maskImage:
+                        'linear-gradient(to bottom, black 0%, black 72%, transparent 100%)',
+                      WebkitMaskImage:
+                        'linear-gradient(to bottom, black 0%, black 72%, transparent 100%)',
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-[#0a1a19] via-[#0a1a19]/20 to-transparent" />
                 </div>
@@ -177,6 +183,12 @@ export function EventInfo({ date, location, guestRules }: EventInfoProps) {
                     alt={item.value}
                     fill
                     className="object-cover object-top contrast-110"
+                    style={{
+                      maskImage:
+                        'linear-gradient(to bottom, black 0%, black 72%, transparent 100%)',
+                      WebkitMaskImage:
+                        'linear-gradient(to bottom, black 0%, black 72%, transparent 100%)',
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#0a1a19] via-transparent to-transparent" />
                 </div>

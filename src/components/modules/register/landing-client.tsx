@@ -7,6 +7,7 @@ import { Hero } from './sections/Hero'
 import { EventInfo } from './sections/EventInfo'
 import { Registration } from './sections/Registration'
 import { TenantBanner } from './sections/TenantBanner'
+import { AccessBanner } from './sections/AccessBanner'
 import { Footer } from './sections/Footer'
 import { ScrollToTop } from '@/components/ui/scroll-to-top'
 
@@ -47,20 +48,17 @@ export function LandingClient({ events, guestRules }: LandingClientProps) {
           logoUrl={mainEvent?.logo_url || undefined}
           title={mainEvent?.name || undefined}
         />
+        {mainEvent && <Registration />}
 
-        <div id="register-section">
-          {mainEvent && (
-            <>
-              <Registration />
-            </>
-          )}
-        </div>
         <EventInfo
           date={mainEvent?.event_date as unknown as string}
           location={mainEvent?.location || undefined}
           guestRules={guestRules?.filter((r) => r.event_id === mainEvent?.id)}
         />
         <TenantBanner eventName={mainEvent.name || ''} />
+        <div id="register-section">
+          {mainEvent && <AccessBanner eventName={mainEvent.name || ''} />}
+        </div>
       </main>
 
       <Footer logoUrl={mainEvent?.logo_url || undefined} />

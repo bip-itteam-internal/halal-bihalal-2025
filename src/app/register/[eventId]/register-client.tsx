@@ -5,6 +5,7 @@ import slugify from 'slugify'
 import { MoveLeft } from 'lucide-react'
 import Link from 'next/link'
 import { Event } from '@/types'
+import { buildInvitePath } from '@/lib/event-identifiers'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { EventInfo } from '@/components/modules/register/event-info'
@@ -45,16 +46,12 @@ export function RegisterEventClient({
                   eventIdentifier={eventIdentifier}
                   forcedGuestType={initialType}
                   onSuccess={(data) => {
-                    const nameSlug = slugify(data.registeredName || '', {
-                      lower: true,
-                      strict: true,
-                    })
-                    const eventSlug = slugify(event.name || '', {
+                    const eventSlug = slugify(event.name || event.id, {
                       lower: true,
                       strict: true,
                     })
                     router.push(
-                      `/invite/${data.guest_id}-${nameSlug}-${eventSlug}`,
+                      buildInvitePath(data.invitation_code, eventSlug),
                     )
                   }}
                 />

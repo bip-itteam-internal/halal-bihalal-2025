@@ -1,31 +1,7 @@
 import { NextResponse } from 'next/server'
 import { adminClient as supabase } from '@/lib/supabase/admin'
-import { generateRandomCode, toEventSlug } from '@/lib/utils'
-
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
-async function resolveEventId(identifier: string) {
-  const normalized = identifier.trim()
-
-  // 1. Direct UUID match
-  if (UUID_REGEX.test(normalized)) {
-    return normalized
-  }
-
-  // 2. Fallback to name slug search
-  const { data: events, error } = await supabase
-    .from('events')
-    .select('id, name')
-  if (error) throw error
-
-  const slug = toEventSlug(normalized)
-  const matched = (events || []).find(
-    (event) => toEventSlug(event.name || '') === slug,
-  )
-
-  return matched?.id || null
-}
+import { generateRandomCode } from '@/lib/utils'
+import { resolveEventId } from '@/lib/event-identifiers'
 
 export async function GET(
   request: Request,
@@ -34,7 +10,7 @@ export async function GET(
   try {
     const resolvedParams = await params
     const identifier = resolvedParams.eventId
-    const eventId = await resolveEventId(identifier)
+    const eventId = await resolveEventId(supabase, identifier)
 
     if (!eventId) {
       return NextResponse.json(
@@ -73,7 +49,7 @@ export async function POST(
   try {
     const resolvedParams = await params
     const identifier = resolvedParams.eventId
-    const eventId = await resolveEventId(identifier)
+    const eventId = await resolveEventId(supabase, identifier)
 
     if (!eventId) {
       return NextResponse.json(
@@ -160,7 +136,7 @@ export async function POST(
     // Check Duplicate
     const { data: existingGuest } = await supabase
       .from('guests')
-      .select('id, metadata')
+      .select('id, metadata, invitation_code')
       .eq('phone', phone)
       .single()
 
@@ -182,7 +158,8 @@ export async function POST(
     }
 
     // 3. Register Guest (Master Profile)
-    const invitationCode = `${generateRandomCode(6)}`
+    const invitationCode =
+      existingGuest?.invitation_code || `INV-${generateRandomCode(6)}`
 
     let guestId: string
     if (!existingGuest) {
@@ -213,6 +190,7 @@ export async function POST(
           address: address || '',
           rsvp_status: isPaymentRequired ? 'pending' : 'confirmed',
           guest_type: guestType,
+          invitation_code: invitationCode,
           metadata:
             guestType === 'tenant'
               ? { umkm_product: umkmProduct }
@@ -234,8 +212,6 @@ export async function POST(
     return NextResponse.json(
       {
         status: 'success',
-        guest_id: guestId,
-        qr_payload: invitationCode,
         invitation_code: invitationCode,
       },
       { status: 201 },

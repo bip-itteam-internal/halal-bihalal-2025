@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Loader2 } from 'lucide-react'
+import { buildInvitePath } from '@/lib/event-identifiers'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -63,7 +64,7 @@ export function GuestLoginForm({
       })
 
       if (onSuccess) onSuccess()
-      router.push(`/invite/${data.guest_id}-${eventId}`)
+      router.push(buildInvitePath(data.invitation_code, eventId))
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan sistem')
     } finally {

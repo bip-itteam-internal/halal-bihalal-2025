@@ -107,7 +107,7 @@ export function useScanner() {
 
       const result = await apiSubmitCheckin({
         event_id: eventId,
-        qr_payload: payload.trim(),
+        invitation_code: payload.trim(),
       })
 
       audioManager.playSuccess()

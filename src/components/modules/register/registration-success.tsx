@@ -15,16 +15,14 @@ import {
 import { Badge } from '@/components/ui/badge'
 
 interface RegistrationSuccessProps {
-  guestId: string
-  qrPayload: string
+  invitationCode: string
   registeredName: string
   registeredGuestType: 'external' | 'tenant'
   inline?: boolean
 }
 
 export function RegistrationSuccess({
-  guestId,
-  qrPayload,
+  invitationCode,
   registeredName,
   registeredGuestType,
   inline = false,
@@ -57,7 +55,7 @@ export function RegistrationSuccess({
         >
           <div className="mx-auto flex w-fit items-center justify-center rounded-md bg-white p-2">
             <QRCode
-              value={qrPayload}
+              value={invitationCode}
               size={inline ? 180 : 210}
               viewBox="0 0 256 256"
             />
@@ -103,7 +101,7 @@ export function RegistrationSuccess({
                   : 'text-muted-foreground font-mono text-xs'
               }
             >
-              {guestId.split('-')[0]}
+              {invitationCode}
             </span>
           </div>
         </div>

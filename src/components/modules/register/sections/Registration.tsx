@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion'
+
 export function Registration() {
+
   return (
     <section className="relative z-10 overflow-hidden py-16 md:py-24">
       {/* Background Decor */}
