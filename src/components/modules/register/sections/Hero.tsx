@@ -12,6 +12,77 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
         <Particles count={40} />
         <ShootingStars />
 
+        {/* Stage Lights / Concert Lighting */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Main Stage Blue Spotlights */}
+          <motion.div
+            animate={{
+              opacity: [0.3, 0.5, 0.3],
+              rotate: [-10, 10, -10],
+              x: ['-10%', '10%', '-10%'],
+            }}
+            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -top-20 left-1/4 -z-10 h-[600px] w-[300px] origin-top bg-cyan-500/20 blur-[80px] md:h-[1000px] md:w-[500px]"
+            style={{ borderRadius: '50% 50% 0 0', transform: 'rotate(-25deg)' }}
+          />
+          <motion.div
+            animate={{
+              opacity: [0.3, 0.5, 0.3],
+              rotate: [10, -10, 10],
+              x: ['10%', '-10%', '10%'],
+            }}
+            transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -top-20 right-1/4 -z-10 h-[600px] w-[300px] origin-top bg-purple-500/20 blur-[80px] md:h-[1000px] md:w-[500px]"
+            style={{ borderRadius: '50% 50% 0 0', transform: 'rotate(25deg)' }}
+          />
+
+          {/* Golden Floor Uplights */}
+          <motion.div
+            animate={{
+              opacity: [0.4, 0.7, 0.4],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-halal-primary/40 to-transparent blur-[60px]"
+          />
+
+          {/* Moving Laser Lights */}
+          <motion.div
+            animate={{
+              x: ['-100%', '200%'],
+              opacity: [0, 0.5, 0],
+            }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+            className="absolute top-1/3 left-0 h-[2px] w-full -rotate-12 bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent"
+          />
+          <motion.div
+            animate={{
+              x: ['200%', '-100%'],
+              opacity: [0, 0.5, 0],
+            }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'linear', delay: 1 }}
+            className="absolute top-1/2 left-0 h-[1px] w-full rotate-6 bg-gradient-to-r from-transparent via-purple-400/40 to-transparent"
+          />
+
+          {/* Bottom-up Light Beams */}
+          <motion.div
+            animate={{
+              opacity: [0.1, 0.4, 0.1],
+              scaleX: [1, 1.5, 1],
+            }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -bottom-20 left-1/3 -z-10 h-[800px] w-1 bg-cyan-400/30 blur-[40px] rotate-[15deg]"
+          />
+          <motion.div
+            animate={{
+              opacity: [0.1, 0.4, 0.1],
+              scaleX: [1, 1.5, 1],
+            }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+            className="absolute -bottom-20 right-1/3 -z-10 h-[800px] w-1 bg-purple-400/30 blur-[40px] rotate-[-15deg]"
+          />
+        </div>
+
         {/* Cinematic Overlays */}
         <motion.div
           initial={{ opacity: 0 }}
