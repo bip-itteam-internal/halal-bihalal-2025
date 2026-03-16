@@ -1,3 +1,4 @@
+import { SupabaseClient } from '@supabase/supabase-js'
 import { toEventSlug } from '@/lib/utils'
 
 const UUID_REGEX =
@@ -13,13 +14,7 @@ export function isUuid(value: string) {
 }
 
 export async function resolveEventId(
-  supabase: {
-    from: (table: string) => {
-      select: (
-        columns: string,
-      ) => Promise<{ data: EventRecord[] | null; error: Error | null }>
-    }
-  },
+  supabase: SupabaseClient<any>,
   identifier: string,
 ) {
   const normalized = identifier.trim()

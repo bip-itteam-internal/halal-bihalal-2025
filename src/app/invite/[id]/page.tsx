@@ -5,6 +5,7 @@ import { isMatchingEventIdentifier } from '@/lib/event-identifiers'
 import { Event, EventGuestRule, Guest, PaymentStatus } from '@/types'
 
 type GuestEventRow = {
+  event_id: string
   payment_status: PaymentStatus
   payment_proof_url: string | null
   events: (Event & {
@@ -34,7 +35,7 @@ export default async function GuestInvitePage({
     const { data, error } = await adminClient
       .from('guests')
       .select(
-        '*, guest_events(payment_status, payment_proof_url, events(*, event_guest_rules(*)))',
+        '*, guest_events(event_id, payment_status, payment_proof_url, events(*, event_guest_rules(*)))',
       )
       .eq('invitation_code', invitationCode)
       .single()
