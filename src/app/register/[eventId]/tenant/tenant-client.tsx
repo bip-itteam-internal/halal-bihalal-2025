@@ -72,7 +72,7 @@ export function TenantRegisterClient({
                 Fasilitas yang Didapat
               </h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {['Stand', 'Akses Listrik', 'Air Bersih', 'Tiket Konser'].map(
+                {['Stand', 'Akses Listrik', 'Tiket Konser'].map(
                   (benefit, i) => (
                     <motion.div
                       key={i}
