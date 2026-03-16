@@ -170,6 +170,44 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
           </motion.div>
         </div>
       </div>
+
+      {/* Scroll Indicator */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2, duration: 1 }}
+        className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2"
+      >
+        <div className="flex flex-col items-center gap-2">
+          <motion.div
+            animate={{
+              y: [0, 8, 0],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+            className="flex h-10 w-6 justify-center rounded-full border-2 border-white/30 p-1"
+          >
+            <motion.div
+              animate={{
+                y: [0, 12, 0],
+                opacity: [1, 0, 1],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+              className="h-2 w-1 rounded-full bg-halal-primary shadow-[0_0_8px_#f59e0b]"
+            />
+          </motion.div>
+          <span className="text-[10px] font-medium tracking-[0.2em] text-white/50 uppercase">
+            Scroll
+          </span>
+        </div>
+      </motion.div>
     </section>
   )
 }
