@@ -1,87 +1,119 @@
-'use client'
-
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Particles, ShootingStars } from '@/components/ui/particles'
 
 export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
   return (
     <section className="bg-halal-secondary relative flex min-h-screen w-full items-center overflow-hidden">
       {/* Background Layer */}
       <div className="absolute inset-0 z-0">
-        <Particles count={40} />
-        <ShootingStars />
+        <Particles count={isMobile ? 15 : 40} />
+        {!isMobile && <ShootingStars />}
 
         {/* Stage Lights / Concert Lighting */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           {/* Main Stage Blue Spotlights */}
           <motion.div
-            animate={{
-              opacity: [0.3, 0.5, 0.3],
-              rotate: [-10, 10, -10],
-              x: ['-10%', '10%', '-10%'],
-            }}
+            animate={
+              isMobile
+                ? { opacity: [0.2, 0.4, 0.2] }
+                : {
+                    opacity: [0.3, 0.5, 0.3],
+                    rotate: [-10, 10, -10],
+                    x: ['-10%', '10%', '-10%'],
+                  }
+            }
             transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute -top-20 left-1/4 -z-10 h-[600px] w-[300px] origin-top bg-cyan-500/20 blur-[80px] md:h-[1000px] md:w-[500px]"
-            style={{ borderRadius: '50% 50% 0 0', transform: 'rotate(-25deg)' }}
+            className="absolute -top-20 left-1/4 -z-10 h-[500px] w-[250px] origin-top bg-cyan-500/10 blur-[60px] will-change-[opacity,transform] md:h-[1000px] md:w-[500px] md:bg-cyan-500/20 md:blur-[80px]"
+            style={{
+              borderRadius: '50% 50% 0 0',
+              transform: isMobile
+                ? 'rotate(-25deg) translateZ(0)'
+                : 'rotate(-25deg)',
+            }}
           />
           <motion.div
-            animate={{
-              opacity: [0.3, 0.5, 0.3],
-              rotate: [10, -10, 10],
-              x: ['10%', '-10%', '10%'],
-            }}
+            animate={
+              isMobile
+                ? { opacity: [0.2, 0.4, 0.2] }
+                : {
+                    opacity: [0.3, 0.5, 0.3],
+                    rotate: [10, -10, 10],
+                    x: ['10%', '-10%', '10%'],
+                  }
+            }
             transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute -top-20 right-1/4 -z-10 h-[600px] w-[300px] origin-top bg-purple-500/20 blur-[80px] md:h-[1000px] md:w-[500px]"
-            style={{ borderRadius: '50% 50% 0 0', transform: 'rotate(25deg)' }}
+            className="absolute -top-20 right-1/4 -z-10 h-[500px] w-[250px] origin-top bg-purple-500/10 blur-[60px] will-change-[opacity,transform] md:h-[1000px] md:w-[500px] md:bg-purple-500/20 md:blur-[80px]"
+            style={{
+              borderRadius: '50% 50% 0 0',
+              transform: isMobile
+                ? 'rotate(25deg) translateZ(0)'
+                : 'rotate(25deg)',
+            }}
           />
 
           {/* Golden Floor Uplights */}
           <motion.div
             animate={{
               opacity: [0.4, 0.7, 0.4],
-              scale: [1, 1.2, 1],
+              scale: isMobile ? 1 : [1, 1.2, 1],
             }}
             transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-            className="from-halal-primary/40 absolute right-0 bottom-0 left-0 h-64 bg-gradient-to-t to-transparent blur-[60px]"
+            className="from-halal-primary/30 absolute right-0 bottom-0 left-0 h-64 bg-gradient-to-t to-transparent blur-[40px] will-change-[opacity] md:from-halal-primary/40 md:blur-[60px]"
+            style={{ transform: 'translateZ(0)' }}
           />
 
-          {/* Moving Laser Lights */}
-          <motion.div
-            animate={{
-              x: ['-100%', '200%'],
-              opacity: [0, 0.5, 0],
-            }}
-            transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-            className="absolute top-1/3 left-0 h-[2px] w-full -rotate-12 bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent"
-          />
-          <motion.div
-            animate={{
-              x: ['200%', '-100%'],
-              opacity: [0, 0.5, 0],
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: 'linear',
-              delay: 1,
-            }}
-            className="absolute top-1/2 left-0 h-[1px] w-full rotate-6 bg-gradient-to-r from-transparent via-purple-400/40 to-transparent"
-          />
+          {/* Moving Laser Lights - Desktop Only for Performance */}
+          {!isMobile && (
+            <>
+              <motion.div
+                animate={{
+                  x: ['-100%', '200%'],
+                  opacity: [0, 0.5, 0],
+                }}
+                transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+                className="absolute top-1/3 left-0 h-[2px] w-full -rotate-12 bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent"
+              />
+              <motion.div
+                animate={{
+                  x: ['200%', '-100%'],
+                  opacity: [0, 0.5, 0],
+                }}
+                transition={{
+                  duration: 8,
+                  repeat: Infinity,
+                  ease: 'linear',
+                  delay: 1,
+                }}
+                className="absolute top-1/2 left-0 h-[1px] w-full rotate-6 bg-gradient-to-r from-transparent via-purple-400/40 to-transparent"
+              />
+            </>
+          )}
 
-          {/* Bottom-up Light Beams */}
+          {/* Bottom-up Light Beams - Simplified on Mobile */}
           <motion.div
             animate={{
-              opacity: [0.1, 0.4, 0.1],
-              scaleX: [1, 1.5, 1],
+              opacity: isMobile ? [0.1, 0.2, 0.1] : [0.1, 0.4, 0.1],
+              scaleX: isMobile ? 1 : [1, 1.5, 1],
             }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute -bottom-20 left-1/3 -z-10 h-[800px] w-1 rotate-[15deg] bg-cyan-400/30 blur-[40px]"
+            className="absolute -bottom-20 left-1/3 -z-10 h-[400px] w-1 rotate-[15deg] bg-cyan-400/20 blur-[30px] md:h-[800px] md:blur-[40px]"
+            style={{ transform: 'translateZ(0)' }}
           />
           <motion.div
             animate={{
-              opacity: [0.1, 0.4, 0.1],
-              scaleX: [1, 1.5, 1],
+              opacity: isMobile ? [0.1, 0.2, 0.1] : [0.1, 0.4, 0.1],
+              scaleX: isMobile ? 1 : [1, 1.5, 1],
             }}
             transition={{
               duration: 4,
@@ -89,7 +121,8 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
               ease: 'easeInOut',
               delay: 2,
             }}
-            className="absolute right-1/3 -bottom-20 -z-10 h-[800px] w-1 rotate-[-15deg] bg-purple-400/30 blur-[40px]"
+            className="absolute right-1/3 -bottom-20 -z-10 h-[400px] w-1 rotate-[-15deg] bg-purple-400/20 blur-[30px] md:h-[800px] md:blur-[40px]"
+            style={{ transform: 'translateZ(0)' }}
           />
         </div>
 
@@ -104,7 +137,7 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
           <div className="from-halal-secondary via-halal-secondary/60 absolute inset-0 z-10 bg-gradient-to-b to-transparent" />
 
           {/* Golden Aura Glow Central */}
-          <div className="bg-halal-primary/20 absolute top-1/2 left-1/2 -z-10 h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-30 blur-[100px] md:h-[800px] md:w-[800px] md:blur-[180px]" />
+          <div className="bg-halal-primary/10 absolute top-1/2 left-1/2 -z-10 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-20 blur-[80px] md:h-[800px] md:w-[800px] md:opacity-30 md:blur-[180px]" />
         </motion.div>
       </div>
 
