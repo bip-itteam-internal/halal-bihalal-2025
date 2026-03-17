@@ -57,11 +57,11 @@ export function Registration() {
           </motion.div>
 
           <p className="mx-auto mt-8 max-w-2xl text-base leading-relaxed text-zinc-400/80 md:text-xl">
-            Bharata spesial{' '}
+            Bharata{' '}
             <span className="font-medium text-white">
-              konser Setia Band 2026
+              Spesial Konser Setia Band 2026 Gratis
             </span>{' '}
-            gratis tanpa perlu proses pendaftaran.
+            tanpa perlu proses pendaftaran.
           </p>
         </div>
       </div>
