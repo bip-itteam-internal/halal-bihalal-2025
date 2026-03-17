@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { adminClient } from '@/lib/supabase/admin'
 import { PermissionRole, UserRole } from '@/types'
 
 type CreateUserPayload = {
@@ -43,7 +44,6 @@ export async function GET() {
     if (auth.error) return auth.error
 
     const supabase = await createClient()
-    const admin = createClient()
 
     const [
       { data: profiles, error: profilesError },
@@ -51,18 +51,18 @@ export async function GET() {
       { data: events, error: eventsError },
       usersResponse,
     ] = await Promise.all([
-      supabase
+      adminClient
         .from('profiles')
         .select('id, full_name, role, created_at')
         .order('created_at', { ascending: false }),
-      supabase
+      adminClient
         .from('event_permissions')
         .select('id, user_id, event_id, role, created_at'),
-      supabase
+      adminClient
         .from('events')
         .select('id, name, event_date')
         .order('event_date', { ascending: false }),
-      (await admin).auth.admin.listUsers({ page: 1, perPage: 1000 }),
+      adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 }),
     ])
 
     if (profilesError) throw profilesError
@@ -103,7 +103,10 @@ export async function GET() {
     return NextResponse.json(
       {
         message: 'Gagal mengambil data user management.',
-        detail: error instanceof Error ? error.message : 'Unknown error',
+        detail:
+          error instanceof Error
+            ? error.message
+            : (error as any)?.message || String(error),
       },
       { status: 500 },
     )
@@ -142,17 +145,15 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const admin = createClient()
     const supabase = await createClient()
 
-    const { data: created, error: createError } = await (
-      await admin
-    ).auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { full_name: fullName || null },
-    })
+    const { data: created, error: createError } =
+      await adminClient.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { full_name: fullName || null },
+      })
 
     if (createError || !created.user)
       throw createError || new Error('Gagal membuat user.')
@@ -180,7 +181,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         message: 'Gagal membuat akun baru.',
-        detail: error instanceof Error ? error.message : 'Unknown error',
+        detail:
+          error instanceof Error
+            ? error.message
+            : (error as any)?.message || String(error),
       },
       { status: 500 },
     )

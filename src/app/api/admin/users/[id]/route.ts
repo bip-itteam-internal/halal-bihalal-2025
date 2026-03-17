@@ -98,7 +98,7 @@ export async function PATCH(
     return NextResponse.json(
       {
         message: 'Gagal memperbarui data user.',
-        detail: error instanceof Error ? error.message : 'Unknown error',
+        detail: error instanceof Error ? error.message : (error as any)?.message || String(error),
       },
       { status: 500 },
     )

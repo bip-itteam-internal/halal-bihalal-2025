@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { adminClient } from '@/lib/supabase/admin'
 
 type PermissionInput = {
   event_id: string
@@ -63,9 +64,7 @@ export async function PUT(
       )
     }
 
-    const admin = createClient()
-
-    const { error: deleteError } = await (await admin)
+    const { error: deleteError } = await adminClient
       .from('event_permissions')
       .delete()
       .eq('user_id', id)
@@ -79,7 +78,7 @@ export async function PUT(
         role: permission.role,
       }))
 
-      const { error: insertError } = await (await admin)
+      const { error: insertError } = await adminClient
         .from('event_permissions')
         .insert(payload)
 
@@ -93,7 +92,7 @@ export async function PUT(
     return NextResponse.json(
       {
         message: 'Gagal memperbarui permission event.',
-        detail: error instanceof Error ? error.message : 'Unknown error',
+        detail: error instanceof Error ? error.message : (error as any)?.message || String(error),
       },
       { status: 500 },
     )
