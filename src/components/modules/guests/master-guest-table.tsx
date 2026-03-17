@@ -55,7 +55,6 @@ export function MasterGuestTable({
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [isAllSelected, setIsAllSelected] = useState(false)
 
-  // Assign Event states
   const [guestsToAssign, setGuestsToAssign] = useState<
     { id: string; name: string }[]
   >([])
@@ -174,15 +173,17 @@ export function MasterGuestTable({
               </span>
               {isAllSelected ? 'Seluruh' : ''} Tamu terpilih
             </div>
-            <Button
-              size="sm"
-              onClick={handleBulkAssign}
-              className="h-8 gap-2 bg-emerald-600 hover:bg-emerald-700"
-            >
-              <CalendarPlus className="h-4 w-4" />
-              Hubungkan ke Event (
-              {isAllSelected ? totalCount : selectedIds.length})
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                onClick={handleBulkAssign}
+                className="h-8 gap-2 bg-emerald-600 hover:bg-emerald-700"
+              >
+                <CalendarPlus className="h-4 w-4" />
+                Hubungkan ke Event (
+                {isAllSelected ? totalCount : selectedIds.length})
+              </Button>
+            </div>
           </div>
 
           {!isAllSelected &&
@@ -350,9 +351,11 @@ export function MasterGuestTable({
                   <TableCell>
                     <div className="flex flex-col space-y-0.5 text-[11px] leading-tight">
                       {guest.phone && (
-                        <span className="font-medium text-slate-700">
-                          {guest.phone}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium text-slate-700">
+                            {guest.phone}
+                          </span>
+                        </div>
                       )}
                       {guest.email && (
                         <span className="text-muted-foreground max-w-[150px] truncate">

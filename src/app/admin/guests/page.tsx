@@ -42,6 +42,12 @@ export default function MasterGuestPage() {
     }
   }, [page, pageSize, searchQuery])
 
+  const handleUpdateGuest = (guestId: string, updates: Partial<Guest>) => {
+    setGuests((prev) =>
+      prev.map((g) => (g.id === guestId ? { ...g, ...updates } : g)),
+    )
+  }
+
   useEffect(() => {
     fetchGuests()
   }, [page, searchQuery, fetchGuests])
@@ -102,6 +108,7 @@ export default function MasterGuestPage() {
               totalCount={totalCount}
               searchFilter={searchQuery}
               onRefresh={fetchGuests}
+              onUpdateGuest={handleUpdateGuest}
               startNumber={(page - 1) * pageSize + 1}
               role={role || undefined}
             />

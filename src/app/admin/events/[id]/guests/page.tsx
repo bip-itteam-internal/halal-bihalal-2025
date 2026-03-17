@@ -12,10 +12,15 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
+  Users,
+  Globe,
+  Store,
+  MessageCircle,
 } from 'lucide-react'
 import Link from 'next/link'
 import { Guest, PaymentStatus } from '@/types'
 import { GuestListTable } from '@/components/modules/guests/guest-list-table'
+import { WhatsappBulkDialog } from '@/components/modules/guests/whatsapp-bulk-dialog'
 import { toast } from 'sonner'
 import {
   Select,
@@ -52,12 +57,13 @@ export default function GuestManagementPage({
   const [event, setEvent] = useState<{ name: string } | null>(null)
   const [guests, setGuests] = useState<Guest[]>([])
   const [searchQuery, setSearchQuery] = useState('')
-  const [guestType, setGuestType] = useState<GuestTypeTab>('all')
+  const [guestType, setGuestType] = useState<GuestTypeTab>('internal')
   const [status, setStatus] = useState<string>('all')
   const [payStatus, setPayStatus] = useState<string>('all')
   const [page, setPage] = useState(1)
   const [pageSize] = useState(10)
   const [totalCount, setTotalCount] = useState(0)
+  const [broadcastOpen, setBroadcastOpen] = useState(false)
   const [summary, setSummary] = useState<GuestSummary>({
     total: 0,
     confirmed: 0,
@@ -266,9 +272,11 @@ export default function GuestManagementPage({
               : 'grid-cols-[60px_1.6fr_1fr_1.4fr_1fr]'
           }`}
         >
-          {Array.from({ length: showPaymentColumns ? 7 : 5 }).map((_, index) => (
-            <Skeleton key={index} className="h-3 w-20 rounded-full" />
-          ))}
+          {Array.from({ length: showPaymentColumns ? 7 : 5 }).map(
+            (_, index) => (
+              <Skeleton key={index} className="h-3 w-20 rounded-full" />
+            ),
+          )}
         </div>
       </div>
 
@@ -319,6 +327,15 @@ export default function GuestManagementPage({
               />
             </div>
             <div className="flex items-center gap-2">
+              {guestType === 'internal' && (
+                <Button
+                  className="h-9 gap-2 rounded-xl bg-emerald-600 font-bold tracking-wide text-white uppercase shadow-lg shadow-emerald-200 transition-all hover:scale-[1.02] hover:bg-emerald-700 active:scale-[0.98]"
+                  onClick={() => setBroadcastOpen(true)}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Broadcast WA
+                </Button>
+              )}
               <Button
                 variant="outline"
                 size="icon"
@@ -338,17 +355,29 @@ export default function GuestManagementPage({
               onValueChange={(value) => setGuestType(value as GuestTypeTab)}
               className="w-full"
             >
-              <TabsList variant="line" className="h-auto flex-wrap gap-2 bg-transparent p-0">
-                <TabsTrigger value="all" className="rounded-full border px-4 py-2 text-xs">
-                  Semua
+              <TabsList
+                variant="line"
+                className="h-auto flex-wrap gap-2 bg-transparent p-0"
+              >
+                <TabsTrigger
+                  value="internal"
+                  className="flex items-center gap-2 rounded-full border px-4 py-2 text-xs"
+                >
+                  <Users className="h-3.5 w-3.5" />
+                  Internal Bharata Group
                 </TabsTrigger>
-                <TabsTrigger value="internal" className="rounded-full border px-4 py-2 text-xs">
-                  Internal
+                <TabsTrigger
+                  value="external"
+                  className="flex items-center gap-2 rounded-full border px-4 py-2 text-xs"
+                >
+                  <Globe className="h-3.5 w-3.5" />
+                  Eksternal/Umum
                 </TabsTrigger>
-                <TabsTrigger value="external" className="rounded-full border px-4 py-2 text-xs">
-                  Eksternal
-                </TabsTrigger>
-                <TabsTrigger value="tenant" className="rounded-full border px-4 py-2 text-xs">
+                <TabsTrigger
+                  value="tenant"
+                  className="flex items-center gap-2 rounded-full border px-4 py-2 text-xs"
+                >
+                  <Store className="h-3.5 w-3.5" />
                   Tenant
                 </TabsTrigger>
               </TabsList>
@@ -445,6 +474,19 @@ export default function GuestManagementPage({
               startNumber={(page - 1) * pageSize + 1}
               eventId={eventId}
               showPaymentColumns={showPaymentColumns}
+            />
+
+            <WhatsappBulkDialog
+              isOpen={broadcastOpen}
+              onOpenChange={setBroadcastOpen}
+              selectedIds={[]}
+              isAllMode={true}
+              totalCount={totalCount}
+              searchFilter={searchQuery}
+              eventId={eventId}
+              onSuccess={() => {
+                fetchEventAndGuests()
+              }}
             />
 
             {/* Pagination Controls */}

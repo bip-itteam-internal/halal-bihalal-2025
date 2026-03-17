@@ -43,8 +43,6 @@ export async function GET() {
     const auth = await assertSuperAdmin()
     if (auth.error) return auth.error
 
-    const supabase = await createClient()
-
     const [
       { data: profiles, error: profilesError },
       { data: permissions, error: permissionsError },
@@ -106,7 +104,9 @@ export async function GET() {
         detail:
           error instanceof Error
             ? error.message
-            : (error as any)?.message || String(error),
+            : typeof error === 'object' && error !== null && 'message' in error
+              ? (error as { message: string }).message
+              : String(error),
       },
       { status: 500 },
     )
@@ -184,7 +184,9 @@ export async function POST(req: NextRequest) {
         detail:
           error instanceof Error
             ? error.message
-            : (error as any)?.message || String(error),
+            : typeof error === 'object' && error !== null && 'message' in error
+              ? (error as { message: string }).message
+              : String(error),
       },
       { status: 500 },
     )

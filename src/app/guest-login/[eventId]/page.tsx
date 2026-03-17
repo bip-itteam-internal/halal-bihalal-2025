@@ -9,7 +9,9 @@ import {
   MapPin,
   Ticket,
   Phone,
+  Mail,
   ArrowRight,
+  User,
 } from 'lucide-react'
 import Image from 'next/image'
 import { formatJakartaDate } from '@/lib/utils'
@@ -39,10 +41,7 @@ import { Particles } from '@/components/ui/particles'
 import { buildInvitePath } from '@/lib/event-identifiers'
 
 const loginSchema = z.object({
-  phone: z
-    .string()
-    .min(8, 'Nomor WhatsApp tidak valid.')
-    .regex(/^[0-9+\-\s()]+$/, 'Format nomor WhatsApp tidak valid.'),
+  identifier: z.string().min(3, 'Nomor WhatsApp atau Email tidak valid.'),
 })
 
 type GuestLoginValues = z.infer<typeof loginSchema>
@@ -75,7 +74,7 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
   const form = useForm<GuestLoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      phone: '',
+      identifier: '',
     },
   })
 
@@ -224,12 +223,12 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
                       </CardTitle>
                       <CardDescription className="text-slate-400">
                         {forcedGuestType === 'internal'
-                          ? 'Silahakan masukkan nomor WhatsApp tamu internal yang telah didaftarkan.'
+                          ? 'Silakan masukkan kontak tamu internal yang telah didaftarkan.'
                           : forcedGuestType === 'tenant'
-                            ? 'Silahakan masukkan nomor WhatsApp tenant yang telah didaftarkan.'
+                            ? 'Silakan masukkan kontak tenant yang telah didaftarkan.'
                             : forcedGuestType === 'external'
-                              ? 'Silahakan masukkan nomor WhatsApp tamu umum yang telah didaftarkan.'
-                              : 'Masukkan nomor WhatsApp yang sudah terdaftar di daftar tamu.'}
+                              ? 'Masukkan nomor WhatsApp, Email, atau Nama Lengkap yang sudah terdaftar.'
+                              : 'Masukkan nomor WhatsApp, Email, atau Nama Lengkap yang sudah terdaftar.'}
                       </CardDescription>
                     </div>
 
@@ -262,27 +261,35 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
 
                         <FormField
                           control={form.control}
-                          name="phone"
-                          render={({ field }) => (
-                            <FormItem className="space-y-3">
-                              <FormLabel className="text-sm font-medium text-slate-300">
-                                Nomor WhatsApp
-                              </FormLabel>
-                              <FormControl>
-                                <div className="group relative">
-                                  <Phone className="text-halal-primary/50 group-focus-within:text-halal-primary absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 transition-colors" />
-                                  <Input
-                                    type="tel"
-                                    placeholder="08123456789"
-                                    required
-                                    className="border-halal-primary/20 focus:border-halal-primary/50 h-12 rounded-xl bg-black/40 pl-12 text-white transition-all placeholder:text-slate-600"
-                                    {...field}
-                                  />
-                                </div>
-                              </FormControl>
-                              <FormMessage className="text-xs text-red-400" />
-                            </FormItem>
-                          )}
+                          name="identifier"
+                          render={({ field }) => {
+                            const isEmailInput = field.value?.includes('@')
+                            return (
+                              <FormItem className="space-y-3">
+                                <FormLabel className="text-sm font-medium text-slate-300">
+                                  WhatsApp, Email, atau Nama Lengkap
+                                </FormLabel>
+                                <FormControl>
+                                  <div className="group relative">
+                                    {isEmailInput ? (
+                                      <Mail className="text-halal-primary/50 group-focus-within:text-halal-primary absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 transition-colors" />
+                                    ) : field.value?.match(/^[0-9]+$/) ? (
+                                      <Phone className="text-halal-primary/50 group-focus-within:text-halal-primary absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 transition-colors" />
+                                    ) : (
+                                      <User className="text-halal-primary/50 group-focus-within:text-halal-primary absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 transition-colors" />
+                                    )}
+                                    <Input
+                                      placeholder="No. WA, Email, atau Nama Lengkap"
+                                      required
+                                      className="border-halal-primary/20 focus:border-halal-primary/50 h-12 rounded-xl bg-black/40 pl-12 text-white transition-all placeholder:text-slate-600"
+                                      {...field}
+                                    />
+                                  </div>
+                                </FormControl>
+                                <FormMessage className="text-xs text-red-400" />
+                              </FormItem>
+                            )
+                          }}
                         />
 
                         <Button

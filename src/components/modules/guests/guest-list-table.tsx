@@ -12,6 +12,8 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -21,8 +23,18 @@ import {
   Clock,
   XCircle,
   FileImage,
+  Send,
+  Loader2,
+  MessageCircle,
+  Trash2,
 } from 'lucide-react'
+import {
+  bulkSendWhatsappAction,
+  sendTenantVerificationAction,
+} from '@/app/actions/whatsapp-actions'
+import { deleteGuestAction } from '@/app/actions/guest-actions'
 import { Badge } from '@/components/ui/badge'
+import { WhatsappBulkDialog } from '@/components/modules/guests/whatsapp-bulk-dialog'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import Image from 'next/image'
@@ -51,6 +63,12 @@ export function GuestListTable({
   const [loading, setLoading] = useState<string | null>(null)
   const [selectedGuestForProof, setSelectedGuestForProof] =
     useState<Guest | null>(null)
+  const [waDialogOpen, setWaDialogOpen] = useState(false)
+  const [selectedGuestForWa, setSelectedGuestForWa] = useState<Guest | null>(
+    null,
+  )
+  const [guestToDelete, setGuestToDelete] = useState<Guest | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const getWhatsappLink = (phone?: string | null) => {
     if (!phone) return null
@@ -92,6 +110,21 @@ export function GuestListTable({
           .eq('id', guestId)
 
         if (rsvpErr) throw rsvpErr
+
+        // If it's a tenant, send notification with login link
+        const guest = guests.find((g) => g.id === guestId)
+        if (guest?.guest_type === 'tenant') {
+          try {
+            const res = await sendTenantVerificationAction(guestId)
+            if (res.success) {
+              toast.success('Undangan Login Tenant terkirim via WhatsApp!')
+            } else {
+              toast.error('Pembayaran OK, tapi gagal kirim WA: ' + res.message)
+            }
+          } catch (e) {
+            console.error('Failed to send tenant verification WA:', e)
+          }
+        }
       }
 
       toast.success(
@@ -114,6 +147,7 @@ export function GuestListTable({
       setLoading(null)
     }
   }
+
 
   const getPaymentStatusBadge = (status?: string) => {
     switch (status) {
@@ -213,127 +247,168 @@ export function GuestListTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-md border bg-white">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-slate-50/50">
-            <TableHead className="w-[60px] text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
-              No
-            </TableHead>
-            <TableHead className="w-[200px] text-[10px] font-black tracking-widest text-slate-400 uppercase">
-              Nama Tamu
-            </TableHead>
-            <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
-              Tipe
-            </TableHead>
-            <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
-              Kontak
-            </TableHead>
-            <TableHead className="text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
-              Status RSVP
-            </TableHead>
-            {showPaymentColumns && (
-              <TableHead className="text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                Bayar
+    <div className="space-y-4">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-b-slate-100 bg-slate-50/50 text-nowrap">
+              <TableHead className="w-[50px] px-4 text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                #
               </TableHead>
-            )}
-            {showPaymentColumns && (
-              <TableHead className="text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                Bukti Bayar
+              <TableHead className="w-[200px] text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                Nama Tamu
               </TableHead>
-            )}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {guests.length === 0 ? (
-            <TableRow>
-              <TableCell
-                colSpan={showPaymentColumns ? 7 : 5}
-                className="text-muted-foreground h-32 text-center"
-              >
-                <div className="flex flex-col items-center justify-center gap-1">
-                  <span className="text-lg font-medium">Belum ada tamu</span>
-                  <p className="text-sm">
-                    Silakan tambahkan tamu baru atau impor data.
-                  </p>
-                </div>
-              </TableCell>
+              <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                Tipe
+              </TableHead>
+              <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                Kontak
+              </TableHead>
+              <TableHead className="text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                Status RSVP
+              </TableHead>
+              {showPaymentColumns && (
+                <TableHead className="text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                  Bayar
+                </TableHead>
+              )}
+              {showPaymentColumns && (
+                <TableHead className="text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                  Bukti Bayar
+                </TableHead>
+              )}
+              <TableHead className="w-[100px] text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                Aksi
+              </TableHead>
             </TableRow>
-          ) : (
-            guests.map((guest, index) => (
-              <TableRow
-                key={guest.id}
-                className="transition-colors hover:bg-slate-50/50"
-              >
-                <TableCell className="text-center text-sm font-semibold text-slate-600">
-                  {startNumber + index}
-                </TableCell>
-                <TableCell className="py-3 font-medium">
-                  {guest.full_name}
-                </TableCell>
-                <TableCell>{getGuestTypeLabel(guest.guest_type)}</TableCell>
-                <TableCell>
-                  <div className="flex flex-col space-y-0.5 text-[11px] leading-tight">
-                    {guest.phone && (
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-slate-700">
-                          {guest.phone}
-                        </span>
-                        {getWhatsappLink(guest.phone) && (
-                          <a
-                            href={getWhatsappLink(guest.phone) || undefined}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 transition-colors hover:bg-emerald-100 hover:text-emerald-700"
-                            aria-label={`Chat WhatsApp ${guest.full_name}`}
-                          >
-                            <FaWhatsapp className="h-3.5 w-3.5" />
-                          </a>
-                        )}
-                      </div>
-                    )}
-                    {guest.email && (
-                      <span className="text-muted-foreground max-w-[150px] truncate">
-                        {guest.email}
-                      </span>
-                    )}
+          </TableHeader>
+          <TableBody>
+            {guests.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={showPaymentColumns ? 8 : 6}
+                  className="text-muted-foreground h-32 text-center"
+                >
+                  <div className="flex flex-col items-center justify-center gap-1">
+                    <span className="text-lg font-medium">Belum ada tamu</span>
+                    <p className="text-sm">
+                      Silakan tambahkan tamu baru atau impor data.
+                    </p>
                   </div>
                 </TableCell>
-                <TableCell className="text-center">
-                  {getStatusBadge(guest.rsvp_status)}
-                </TableCell>
-                {showPaymentColumns && (
-                  <TableCell className="text-center">
-                    {getPaymentStatusBadge(guest.payment_status)}
-                  </TableCell>
-                )}
-                {showPaymentColumns && (
-                  <TableCell className="text-center">
-                    {guest.payment_proof_url ? (
-                      <div className="flex flex-col items-center gap-1.5">
-                        <button
-                          onClick={() => setSelectedGuestForProof(guest)}
-                          className="inline-flex items-center gap-1 rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600 transition-colors hover:text-blue-800"
-                        >
-                          <FileImage className="h-3 w-3" /> LIHAT
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="text-[10px] text-slate-300">-</span>
-                    )}
-                  </TableCell>
-                )}
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              guests.map((guest, index) => (
+                <TableRow
+                  key={guest.id}
+                  className="group border-b-slate-50 transition-colors hover:bg-slate-50/50"
+                >
+                  <TableCell className="text-[11px] font-bold text-slate-500 tabular-nums">
+                    {startNumber + index}
+                  </TableCell>
+                  <TableCell className="py-3 font-medium">
+                    {guest.full_name}
+                  </TableCell>
+                  <TableCell>{getGuestTypeLabel(guest.guest_type)}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-col space-y-0.5 text-[11px] leading-tight">
+                      {guest.phone && (
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-slate-700">
+                            {guest.phone}
+                          </span>
+                          <div className="flex items-center gap-1.5">
+                            {/* Original Direct Link */}
+                            <a
+                              href={getWhatsappLink(guest.phone) || undefined}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-50 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+                              title={`Buka Chat WhatsApp`}
+                            >
+                              <FaWhatsapp className="h-3.5 w-3.5" />
+                            </a>
+
+                            {/* Woo-Wa Auto Send */}
+                            {guest.guest_type === 'internal' && (
+                              <button
+                                onClick={() => setSelectedGuestForWa(guest)}
+                                className={`inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 transition-colors hover:bg-emerald-100 hover:text-emerald-700 ${loading === guest.id ? 'animate-pulse' : ''}`}
+                                title={`Kirim Undangan Otomatis (Woo-Wa)`}
+                                disabled={loading === guest.id}
+                              >
+                                {loading === guest.id ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <Send className="h-3 w-3" />
+                                )}
+                              </button>
+                            )}
+
+                            {guest.wa_sent_at && (
+                              <Badge
+                                variant="ghost"
+                                className="h-3 px-1 text-[8px] font-bold text-emerald-500 uppercase"
+                              >
+                                DONE
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {guest.email && (
+                        <span className="text-muted-foreground max-w-[150px] truncate">
+                          {guest.email}
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {getStatusBadge(guest.rsvp_status)}
+                  </TableCell>
+                  {showPaymentColumns && (
+                    <TableCell className="text-center">
+                      {getPaymentStatusBadge(guest.payment_status)}
+                    </TableCell>
+                  )}
+                  {showPaymentColumns && (
+                    <TableCell className="text-center">
+                      {guest.payment_proof_url ? (
+                        <div className="flex flex-col items-center gap-1.5">
+                          <button
+                            onClick={() => setSelectedGuestForProof(guest)}
+                            className="inline-flex items-center gap-1 rounded-full border border-blue-100 bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-600 transition-colors hover:text-blue-800"
+                          >
+                            <FileImage className="h-3 w-3" /> LIHAT
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-[10px] text-slate-300">-</span>
+                      )}
+                    </TableCell>
+                  )}
+                  <TableCell className="text-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-slate-400 hover:bg-red-50 hover:text-red-500"
+                      onClick={() => setGuestToDelete(guest)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       <Dialog
         open={!!selectedGuestForProof}
         onOpenChange={(open) => !open && setSelectedGuestForProof(null)}
       >
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-h-[95vh] max-w-md overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold tracking-widest text-slate-400 uppercase">
               Verifikasi Pembayaran
@@ -342,16 +417,15 @@ export function GuestListTable({
               {selectedGuestForProof?.full_name}
             </p>
           </DialogHeader>
-          <Alert className="border-amber-200 bg-amber-50 text-amber-900">
-            <AlertTitle className="text-xs font-bold uppercase">
-              Periksa Transaksi Dulu
+          <Alert className="border-l-4 border-amber-200 bg-amber-50 text-amber-900">
+            <AlertTitle className="text-[10px] font-bold uppercase">
+              Konfirmasi Dana
             </AlertTitle>
-            <AlertDescription className="text-[11px] leading-relaxed">
-              Pastikan dana benar-benar sudah masuk ke rekening tujuan dan
-              nominalnya sesuai sebelum menekan tombol verifikasi atau penolakan.
+            <AlertDescription className="text-[10px] leading-relaxed">
+              Pastikan dana sudah masuk ke rekening sebelum verifikasi.
             </AlertDescription>
           </Alert>
-          <div className="mt-2 flex aspect-[3/4] w-full items-center justify-center overflow-hidden rounded-2xl border bg-slate-50 shadow-inner">
+          <div className="group relative mt-2 flex max-h-[400px] w-full items-center justify-center overflow-hidden rounded-2xl border bg-slate-50 shadow-inner">
             {selectedGuestForProof?.payment_proof_url && (
               <Image
                 src={selectedGuestForProof.payment_proof_url}
@@ -359,9 +433,12 @@ export function GuestListTable({
                 width={400}
                 height={533}
                 unoptimized
-                className="h-full w-full object-contain"
+                className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
               />
             )}
+            <div className="absolute right-2 bottom-2 rounded-full bg-black/50 px-2 py-1 text-[8px] text-white backdrop-blur-sm">
+              Click to view full
+            </div>
           </div>
 
           {selectedGuestForProof?.payment_status === 'pending' && (
@@ -412,6 +489,159 @@ export function GuestListTable({
           )}
         </DialogContent>
       </Dialog>
+      <Dialog
+        open={!!selectedGuestForWa}
+        onOpenChange={(open) => !open && setSelectedGuestForWa(null)}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                <MessageCircle className="h-4 w-4" />
+              </div>
+              Kirim Undangan WA
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Apakah Anda yakin ingin mengirim undangan otomatis via WhatsApp ke{' '}
+              <span className="font-bold text-slate-900">
+                {selectedGuestForWa?.full_name}
+              </span>
+              ?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4 text-[11px] leading-relaxed text-emerald-800">
+            <p className="mb-1 font-semibold tracking-wider uppercase">
+              Preview Pesan:
+            </p>
+            <p className="italic">
+              "Yth. *{selectedGuestForWa?.full_name}*... 🌙 UNDANGAN SILATURAHMI
+              & HALAL BIHALAL 2025..."
+            </p>
+          </div>
+          <DialogFooter className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setSelectedGuestForWa(null)}
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!selectedGuestForWa) return
+                const guestId = selectedGuestForWa.id
+                const guestName = selectedGuestForWa.full_name
+                setSelectedGuestForWa(null)
+
+                try {
+                  setLoading(guestId)
+                  const eventName =
+                    guests.find((g) => g.id === guestId)?.guest_events?.[0]
+                      ?.events?.name || 'Silaturahmi & Halal Bihalal 2026'
+                  const res = await bulkSendWhatsappAction(
+                    [guestId],
+                    eventName,
+                    propEventId || '',
+                  )
+
+                  if (res.success) {
+                    toast.success(`Berhasil dikirim ke ${guestName}`)
+                    if (onUpdateGuest) {
+                      onUpdateGuest(guestId, {
+                        wa_sent_at: new Date().toISOString(),
+                      })
+                    } else {
+                      onRefresh()
+                    }
+                  } else {
+                    toast.error(res.message)
+                  }
+                } catch (error) {
+                  toast.error('Gagal mengirim pesan')
+                  console.error(error)
+                } finally {
+                  setLoading(null)
+                }
+              }}
+            >
+              Kirim Sekarang
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!guestToDelete}
+        onOpenChange={(open) => !open && setGuestToDelete(null)}
+      >
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <Trash2 className="h-4 w-4" />
+              </div>
+              Hapus Tamu
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Apakah Anda yakin ingin menghapus{' '}
+              <span className="font-bold text-slate-900">
+                {guestToDelete?.full_name}
+              </span>{' '}
+              dari daftar tamu? Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setGuestToDelete(null)}
+              disabled={isDeleting}
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!guestToDelete) return
+                try {
+                  setIsDeleting(true)
+                  const res = await deleteGuestAction(
+                    guestToDelete.id,
+                    propEventId,
+                  )
+                  if (res.success) {
+                    toast.success(res.message)
+                    setGuestToDelete(null)
+                    onRefresh()
+                  } else {
+                    toast.error(res.message)
+                  }
+                } catch (error) {
+                  toast.error('Gagal menghapus tamu')
+                  console.error(error)
+                } finally {
+                  setIsDeleting(false)
+                }
+              }}
+              className="bg-red-600 text-white transition-all hover:bg-red-700"
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                'Hapus Sekarang'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <WhatsappBulkDialog
+        isOpen={waDialogOpen}
+        onOpenChange={setWaDialogOpen}
+        selectedIds={[]}
+        eventId={propEventId}
+        onSuccess={() => {
+          onRefresh()
+        }}
+      />
     </div>
   )
 }

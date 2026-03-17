@@ -15,7 +15,6 @@ export function AccessBanner({ eventName }: AccessBannerProps) {
   })
   const internalLoginLink = `/guest-login/${eventSlug}?type=internal`
   const tenantLoginLink = `/tenant-login/${eventSlug}`
-  const tenantAccessLink = `/register/${eventSlug}/tenant`
 
   return (
     <section className="relative z-10 overflow-hidden py-16 md:py-24">

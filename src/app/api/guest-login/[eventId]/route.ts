@@ -13,10 +13,11 @@ export async function POST(
   { params }: { params: Promise<{ eventId: string }> },
 ) {
   try {
-    const { eventId: identifier } = await params
+    const { eventId: identifierParam } = await params // Renamed to avoid conflict with body.identifier
     const body = await req.json()
 
-    const phone = typeof body.phone === 'string' ? body.phone.trim() : ''
+    const identifier =
+      typeof body.identifier === 'string' ? body.identifier.trim() : ''
     const guestType =
       body.guest_type === 'internal'
         ? 'internal'
@@ -26,15 +27,15 @@ export async function POST(
             ? 'external'
             : null
 
-    if (!phone) {
+    if (!identifier) {
       return NextResponse.json(
-        { message: 'Nomor WhatsApp wajib diisi.' },
+        { message: 'Nomor WhatsApp atau Email wajib diisi.' },
         { status: 400 },
       )
     }
 
     const supabase = adminClient
-    const eventId = await resolveEventId(supabase, identifier)
+    const eventId = await resolveEventId(supabase, identifierParam)
     if (!eventId) {
       return NextResponse.json(
         { message: 'Event tidak ditemukan.' },
@@ -42,33 +43,48 @@ export async function POST(
       )
     }
 
+    const isPhone = /^[0-9]+$/.test(identifier) && !identifier.includes('@')
+    const isEmail = identifier.includes('@')
+    const normalizedIdentifier = isEmail
+      ? identifier.toLowerCase()
+      : isPhone
+        ? normalizePhone(identifier)
+        : identifier.toLowerCase()
+
     const { data: eventGuests, error } = await supabase
       .from('guest_events')
-      .select('guests!inner(id, phone, guest_type, invitation_code, created_at)')
+      .select(
+        'guests!inner(id, full_name, phone, email, guest_type, invitation_code, created_at)',
+      )
       .eq('event_id', eventId)
       .in(
         'guests.guest_type',
         guestType ? [guestType] : ['internal', 'external', 'tenant'],
       )
-      .not('guests.phone', 'is', null)
       .order('guests(created_at)', { ascending: false })
-      .limit(500)
+      .limit(1000)
 
     if (error) throw error
 
-    const normalizedInputPhone = normalizePhone(phone)
+    const matchedGuestObject = (eventGuests || []).find((eg) => {
+      const g = eg.guests as unknown as Guest & {
+        email?: string
+        full_name?: string
+      }
 
-    const matchedGuestObject: {
-      id: string
-      phone: string
-      guest_type: string
-      invitation_code: string | null
-    } | null = (eventGuests || []).find((eg) => {
-      const g = eg.guests as unknown as Guest
-      return normalizePhone(g.phone || '') === normalizedInputPhone
+      if (isEmail) {
+        return g.email?.toLowerCase() === normalizedIdentifier
+      } else if (isPhone) {
+        return normalizePhone(g.phone || '') === normalizedIdentifier
+      } else {
+        // Search by Full Name (Exact Match, Case Insensitive)
+        return g.full_name?.toLowerCase() === normalizedIdentifier
+      }
     })?.guests as unknown as {
       id: string
+      full_name: string
       phone: string
+      email: string
       guest_type: string
       invitation_code: string | null
     }
@@ -76,7 +92,7 @@ export async function POST(
     if (!matchedGuestObject) {
       return NextResponse.json(
         {
-          message: 'Nomor WhatsApp tidak terdaftar untuk event ini.',
+          message: `${isEmail ? 'Email' : isPhone ? 'Nomor WhatsApp' : 'Nama'} tidak terdaftar untuk event ini.`,
         },
         { status: 404 },
       )

@@ -23,7 +23,7 @@ export function TenantRegisterClient({
   event,
 }: TenantRegisterClientProps) {
   const router = useRouter()
-  const [authMode, setAuthMode] = useState<'register' | 'login'>('register')
+  const authMode = 'register'
   const [paymentFile, setPaymentFile] = useState<File | null>(null)
 
   return (

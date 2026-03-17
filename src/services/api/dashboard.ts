@@ -167,10 +167,16 @@ export async function getDashboardData() {
     rsvpStats,
     paymentStats,
     checkinStats,
-    recentCheckins: (recentCheckinsRes.data || []).map((item: any) => ({
-      ...item,
-      guests: Array.isArray(item.guests) ? item.guests[0] : item.guests || null,
-      events: Array.isArray(item.events) ? item.events[0] : item.events || null,
-    })) as DashboardRecentCheckin[],
+    recentCheckins: (recentCheckinsRes.data || []).map(
+      (item: Record<string, unknown>) => ({
+        ...item,
+        guests: Array.isArray(item.guests)
+          ? item.guests[0]
+          : item.guests || null,
+        events: Array.isArray(item.events)
+          ? item.events[0]
+          : item.events || null,
+      }),
+    ) as DashboardRecentCheckin[],
   }
 }

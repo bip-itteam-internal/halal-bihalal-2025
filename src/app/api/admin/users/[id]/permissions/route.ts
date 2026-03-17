@@ -92,7 +92,12 @@ export async function PUT(
     return NextResponse.json(
       {
         message: 'Gagal memperbarui permission event.',
-        detail: error instanceof Error ? error.message : (error as any)?.message || String(error),
+        detail:
+          error instanceof Error
+            ? error.message
+            : typeof error === 'object' && error !== null && 'message' in error
+              ? (error as { message: string }).message
+              : String(error),
       },
       { status: 500 },
     )
