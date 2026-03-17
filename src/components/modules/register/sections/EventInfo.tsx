@@ -27,18 +27,7 @@ export function EventInfo({ date, location, guestRules }: EventInfoProps) {
             icon: Calendar,
             label: 'WAKTU PELAKSANAAN',
             value: date ? formatJakartaDate(date, 'PPPP') : 'TBA',
-            sub: (() => {
-              const externalRule = guestRules?.find(
-                (r) => r.guest_type === 'external',
-              )
-              const timeStr = externalRule?.start_time
-                ? externalRule.start_time.substring(0, 5).replace(':', '.') +
-                  ' WIB'
-                : date
-                  ? formatJakartaDate(date, 'p')
-                  : 'TBA'
-              return `Pukul ${timeStr} - Selesai`
-            })(),
+
             customContent: guestRules && guestRules.length > 0 && (
               <div className="mt-6 flex flex-col gap-3 border-t border-white/5 pt-6">
                 <div className="flex flex-col gap-2">

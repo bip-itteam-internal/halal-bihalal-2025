@@ -177,14 +177,16 @@ export function TenantRegisterClient({
               <Button
                 variant="link"
                 size="sm"
-                onClick={() =>
-                  setAuthMode(authMode === 'register' ? 'login' : 'register')
-                }
+                onClick={() => {
+                  const eventSlug = slugify(event.name || event.id, {
+                    lower: true,
+                    strict: true,
+                  })
+                  router.push(`/tenant-login/${eventSlug}`)
+                }}
                 className="text-halal-primary h-auto p-0 text-[10px] font-black tracking-[0.2em] uppercase hover:text-white"
               >
-                {authMode === 'register'
-                  ? 'Sudah Daftar? Klik di sini'
-                  : 'Belum Daftar? Klik di sini'}
+                Sudah Daftar? Klik di sini untuk Masuk
               </Button>
             </div>
           </div>

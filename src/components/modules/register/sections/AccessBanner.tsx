@@ -14,6 +14,7 @@ export function AccessBanner({ eventName }: AccessBannerProps) {
     strict: true,
   })
   const internalLoginLink = `/guest-login/${eventSlug}?type=internal`
+  const tenantLoginLink = `/tenant-login/${eventSlug}`
   const tenantAccessLink = `/register/${eventSlug}/tenant`
 
   return (
@@ -84,24 +85,24 @@ export function AccessBanner({ eventName }: AccessBannerProps) {
                     Booth Access
                   </p>
                   <h3 className="text-2xl font-black text-white uppercase">
-                    Tenant UMKM
+                    Login Tenant UMKM
                   </h3>
                 </div>
               </div>
               <p className="max-w-md text-sm leading-relaxed text-zinc-300">
-                Daftar, login, atau perbarui data tenant untuk akses booth dan
-                unggah bukti pembayaran.
+                Akses khusus bagi tenant UMKM yang sudah terdaftar.
               </p>
-              <Link href={tenantAccessLink} className="mt-auto">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-halal-primary/30 text-halal-primary hover:bg-halal-primary/10 w-full rounded-2xl bg-transparent"
-                >
-                  Buka Akses Tenant
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
+              <div className="mt-auto flex flex-col gap-3">
+                <Link href={tenantLoginLink}>
+                  <Button
+                    size="lg"
+                    className="bg-halal-primary w-full rounded-2xl text-[#071416] hover:bg-amber-300"
+                  >
+                    Masuk Sekarang
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
             </div>
           </motion.div>
         </div>
