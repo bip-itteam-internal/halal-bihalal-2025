@@ -121,7 +121,7 @@ export function RegistrationSuccess({
         </Button>
         {!inline && (
           <Link
-            href="/halal-bihalal-dan-spesial-konser-wali-band-2026"
+            href="/halal-bihalal-dan-spesial-konser-setia-band-2026"
             className="inline-flex items-center gap-2 text-xs font-bold tracking-widest text-zinc-500 uppercase transition-colors hover:text-white"
           >
             Kembali ke Beranda

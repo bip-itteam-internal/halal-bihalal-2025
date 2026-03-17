@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
 
 export function Registration() {
-
   return (
     <section className="relative z-10 overflow-hidden py-16 md:py-24">
       {/* Background Decor */}
@@ -36,10 +35,33 @@ export function Registration() {
             </span>
           </h2>
 
-          <p className="mx-auto max-w-2xl text-base leading-relaxed text-zinc-400/80 md:text-xl">
-            Rayakan kebersamaan di acara{' '}
-            <span className="font-medium text-white">silaturahmi akbar</span>{' '}
-            ini secara gratis tanpa perlu proses pendaftaran.
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.6 }}
+            className="group relative mx-auto mt-4 px-8 py-3"
+          >
+            {/* Soft Glow Background */}
+            <div className="bg-halal-primary/5 group-hover:bg-halal-primary/10 absolute inset-0 -z-10 blur-xl transition-all duration-500" />
+
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex items-center gap-4">
+                <div className="via-halal-primary/30 h-px w-8 bg-gradient-to-r from-transparent to-transparent" />
+                <span className="font-outfit text-2xl font-black tracking-tighter text-white md:text-4xl">
+                  KUOTA 1000 ORANG
+                </span>
+                <div className="via-halal-primary/30 h-px w-8 bg-gradient-to-r from-transparent to-transparent" />
+              </div>
+            </div>
+          </motion.div>
+
+          <p className="mx-auto mt-8 max-w-2xl text-base leading-relaxed text-zinc-400/80 md:text-xl">
+            Bharata spesial{' '}
+            <span className="font-medium text-white">
+              konser Setia Band 2026
+            </span>{' '}
+            gratis tanpa perlu proses pendaftaran.
           </p>
         </div>
       </div>
