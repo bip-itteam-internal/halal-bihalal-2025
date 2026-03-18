@@ -10,10 +10,12 @@ import { SlotReel } from '@/components/modules/doorprize/slot-reel'
 import confetti from 'canvas-confetti'
 import { FloatingParticles } from '@/components/shared/floating-particles'
 import { audioManager } from '@/lib/audio-manager'
+import { DoorprizeRulesModal } from '@/components/modules/doorprize/doorprize-rules-modal'
 import { cn } from '@/lib/utils'
 import { Guest } from '@/types'
 
 export default function SlotMachinePage() {
+  const [isRulesOpen, setIsRulesOpen] = useState(true)
   const {
     candidates,
     aliveParticipants,
@@ -422,6 +424,22 @@ export default function SlotMachinePage() {
 
       {/* Action Area Padding */}
       <div className="mt-8 h-12" />
+
+      <DoorprizeRulesModal
+        gameTitle="Jackpot Arena"
+        isOpen={isRulesOpen}
+        onClose={() => setIsRulesOpen(false)}
+        rules={[
+          "Mesin memiliki 3 kolom: Unit/Alamat, Inisial, dan Nama.",
+          "Tekan 'PULL LEVER' untuk memutar mesin jackpot.",
+          "Hati-hati! Sistem mungkin mengalami 'glitch' sebelum jackpot.",
+          "Menangkan hadiah utama saat ketiga kolom berhenti tepat."
+        ]}
+        controls={[
+          { key: "Click", action: "Pull Lever (Tarik Tuas)" },
+          { key: "Reset", action: "Muat Ulang Mesin" }
+        ]}
+      />
     </div>
   )
 }

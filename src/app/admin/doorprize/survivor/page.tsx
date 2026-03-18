@@ -9,9 +9,12 @@ import { DoorprizeGrid } from '@/components/modules/doorprize/doorprize-grid'
 import { WinnerBanner } from '@/components/modules/doorprize/winner-banner'
 import { FloatingParticles } from '@/components/shared/floating-particles'
 import { CountdownOverlay } from '@/components/modules/doorprize/countdown-overlay'
+import { DoorprizeRulesModal } from '@/components/modules/doorprize/doorprize-rules-modal'
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
 export default function SurvivorDoorprizePage() {
+  const [isRulesOpen, setIsRulesOpen] = useState(true)
   const {
     candidates,
     aliveIds,
@@ -183,6 +186,23 @@ export default function SurvivorDoorprizePage() {
       </div>
 
       <WinnerBanner winner={winner} onReset={reset} />
+
+      <DoorprizeRulesModal
+        gameTitle="Survivor Elimination"
+        isOpen={isRulesOpen}
+        onClose={() => setIsRulesOpen(false)}
+        rules={[
+          "Peserta dieliminasi secara bertahap dalam beberapa kloter.",
+          "Peserta yang masih 'Alive' (berwarna putih) berhak lanjut.",
+          "Pemenang adalah 1 orang terakhir yang tersisa di layar.",
+          "Musik akan berubah lebih tegang saat sisa 10 orang terakhir."
+        ]}
+        controls={[
+          { key: "Space / Enter", action: "Mulai Eliminasi" },
+          { key: "R", action: "Reset Peserta" },
+          { key: "Stop", action: "Berhenti Darurat" }
+        ]}
+      />
     </div>
   )
 }

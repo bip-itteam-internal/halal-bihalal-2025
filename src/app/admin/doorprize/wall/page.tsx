@@ -8,8 +8,11 @@ import { useEnvelopeWall } from '@/hooks/use-envelope-wall'
 import { EnvelopeCard } from '@/components/modules/doorprize/envelope-card'
 import { WinnerBanner } from '@/components/modules/doorprize/winner-banner'
 import { FloatingParticles } from '@/components/shared/floating-particles'
+import { DoorprizeRulesModal } from '@/components/modules/doorprize/doorprize-rules-modal'
+import { useState } from 'react'
 
 export default function WallOfFortunePage() {
+  const [isRulesOpen, setIsRulesOpen] = useState(true)
   const {
     mapping,
     openedIds,
@@ -157,6 +160,22 @@ export default function WallOfFortunePage() {
       <WinnerBanner 
         winner={lastWinner} 
         onReset={() => setLastWinner(null)} 
+      />
+
+      <DoorprizeRulesModal
+        gameTitle="Wall of Fortune"
+        isOpen={isRulesOpen}
+        onClose={() => setIsRulesOpen(false)}
+        rules={[
+          "Pilih satu angka amplop yang tampil di layar utama.",
+          "Satu amplop berisi satu identitas tamu yang beruntung.",
+          "Pastikan peserta yang terpilih hadir di lokasi acara.",
+          "Setelah dibuka, amplop akan tertanda 'Winner'."
+        ]}
+        controls={[
+          { key: "Click", action: "Pilih Amplop" },
+          { key: "Reset", action: "Muat Ulang Dinding" }
+        ]}
       />
 
       <style jsx global>{`
