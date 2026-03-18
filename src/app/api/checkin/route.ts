@@ -53,53 +53,74 @@ export async function POST(req: NextRequest) {
 
     // 3. Identify Step based on Check-in History
     // First Scan -> exchange, Second Scan -> entrance
+    // Special case for Tenant: Only 1 scan directly to entrance
     let determinedStep: 'exchange' | 'entrance' = 'exchange'
 
-    const { data: exchangeDone } = await supabase
-      .from('checkins')
-      .select('id')
-      .eq('guest_id', guest.id)
-      .eq('event_id', event_id)
-      .eq('step', 'exchange')
-      .maybeSingle()
-
-    if (exchangeDone) {
+    if (guest.guest_type === 'tenant') {
       determinedStep = 'entrance'
-    }
-
-    // 4. Check for existing 'entrance' to prevent triple scan
-    if (determinedStep === 'entrance') {
-      const { data: entranceDone } = await supabase
+    } else {
+      const { data: exchangeDone } = await supabase
         .from('checkins')
         .select('id')
         .eq('guest_id', guest.id)
         .eq('event_id', event_id)
-        .eq('step', 'entrance')
+        .eq('step', 'exchange')
         .maybeSingle()
 
-      if (entranceDone) {
-        return NextResponse.json(
-          { message: `Tamu ${guest.full_name} sudah masuk sebelumnya.`, guest },
-          { status: 409 },
-        )
+      if (exchangeDone) {
+        determinedStep = 'entrance'
       }
     }
 
+    // 4. Check for existing scan to prevent duplicate
+    const { data: alreadyScanned } = await supabase
+      .from('checkins')
+      .select('id')
+      .eq('guest_id', guest.id)
+      .eq('event_id', event_id)
+      .eq('step', determinedStep)
+      .maybeSingle()
+
+    if (alreadyScanned) {
+      const stepLabel = 
+        guest.guest_type === 'tenant' 
+          ? 'Masuk Konser' 
+          : determinedStep === 'exchange' 
+            ? 'Hadir Halal Bihalal' 
+            : 'Masuk Konser'
+            
+      return NextResponse.json(
+        { message: `Tamu ${guest.full_name} sudah ${stepLabel} sebelumnya.`, guest },
+        { status: 409 },
+      )
+    }
+
     // 5. Record Check-in
+    const { data: { user }, error: authErr } = await supabase.auth.getUser()
+    
+    if (authErr) {
+      console.error('Auth User Fetch Error:', authErr)
+    }
+    
+    console.log('Current Scanner User:', user?.id || 'NO USER FOUND')
+
     const { data: newCheckin, error: regErr } = await supabase
       .from('checkins')
       .insert({
         guest_id: guest.id,
         event_id: event_id,
         step: determinedStep,
+        checkin_by: user?.id || null,
       })
       .select()
     if (regErr) throw regErr
 
     const successMessage =
-      determinedStep === 'exchange'
-        ? `Presensi Berhasil`
-        : `Check-in Masuk Berhasil`
+      guest.guest_type === 'tenant'
+        ? `Check-in Masuk Berhasil`
+        : determinedStep === 'exchange'
+          ? `Presensi Berhasil`
+          : `Check-in Masuk Berhasil`
 
     return NextResponse.json(
       {
