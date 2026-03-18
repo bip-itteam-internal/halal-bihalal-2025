@@ -109,3 +109,50 @@ export async function PATCH(
     )
   }
 }
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const auth = await assertSuperAdmin()
+    if (auth.error) return auth.error
+
+    const { id } = await params
+
+    if (!id) {
+      return NextResponse.json(
+        { message: 'User ID tidak valid.' },
+        { status: 400 },
+      )
+    }
+
+    // 1. Hapus dari Supabase Auth
+    const { error: authError } = await adminClient.auth.admin.deleteUser(id)
+    if (authError) throw authError
+
+    // 2. Hapus dari tabel profiles
+    const supabase = await createClient()
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .delete()
+      .eq('id', id)
+
+    if (profileError) throw profileError
+
+    return NextResponse.json({ message: 'User berhasil dihapus secara permanen.' })
+  } catch (error: unknown) {
+    return NextResponse.json(
+      {
+        message: 'Gagal menghapus user.',
+        detail:
+          error instanceof Error
+            ? error.message
+            : typeof error === 'object' && error !== null && 'message' in error
+              ? (error as { message: string }).message
+              : String(error),
+      },
+      { status: 500 },
+    )
+  }
+}
