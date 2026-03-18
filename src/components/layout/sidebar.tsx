@@ -61,12 +61,6 @@ const items = [
     roles: ['super_admin', 'admin', 'staff'] as UserRole[],
   },
   {
-    title: 'Scanner',
-    url: '/admin/scanner',
-    icon: ShieldCheck,
-    roles: ['super_admin', 'admin', 'staff'] as UserRole[],
-  },
-  {
     title: 'Users',
     url: '/admin/users',
     icon: Users,
@@ -99,7 +93,7 @@ export function Sidebar({
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
-  const { role, clear: clearProfile } = useProfile()
+  const { profile, role, clear: clearProfile } = useProfile()
   const [isLogoutOpen, setIsLogoutOpen] = React.useState(false)
   const [isLoggingOut, setIsLoggingOut] = React.useState(false)
 
@@ -134,7 +128,9 @@ export function Sidebar({
                     <ShieldCheck className="size-4" />
                   </div>
                   <div className="flex flex-col gap-0.5 leading-none">
-                    <span className="font-semibold">Bharata Event</span>
+                    <span className="font-semibold text-slate-900">
+                      Bharata Event
+                    </span>
                     <span className="text-[11px] opacity-70">
                       Management Panel
                     </span>
@@ -147,7 +143,9 @@ export function Sidebar({
 
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>Menu</SidebarGroupLabel>
+            <SidebarGroupLabel className="px-4 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+              Main Menu
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {visibleItems.map((item) => {
@@ -158,20 +156,34 @@ export function Sidebar({
                   const isItemActive =
                     item.url === '/admin/dashboard' ? activeExact : isActive
 
+                  const handleItemClick = (e: React.MouseEvent) => {
+                    if (item.newTab && typeof window !== 'undefined') {
+                      e.preventDefault()
+                      const width = 1280
+                      const height = 720
+                      const left = (window.screen.width - width) / 2
+                      const top = (window.screen.height - height) / 2
+
+                      window.open(
+                        item.url,
+                        'DoorprizeArena',
+                        `width=${width},height=${height},top=${top},left=${left},menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes`,
+                      )
+                    }
+                  }
+
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton
                         asChild
                         isActive={isItemActive}
                         tooltip={item.title}
+                        onClick={handleItemClick}
+                        className="py-5"
                       >
-                        <Link
-                          href={item.url}
-                          target={item.newTab ? '_blank' : undefined}
-                          rel={item.newTab ? 'noopener noreferrer' : undefined}
-                        >
-                          <item.icon />
-                          <span>{item.title}</span>
+                        <Link href={item.url}>
+                          <item.icon className="scale-110" />
+                          <span className="font-medium">{item.title}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -183,14 +195,34 @@ export function Sidebar({
         </SidebarContent>
 
         <SidebarFooter>
+          {profile && (
+            <div className="mx-2 mb-2 rounded-xl border bg-slate-50/50 p-3">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white shadow-sm ring-2 ring-white">
+                  <span className="text-[14px] font-bold uppercase">
+                    {(profile.full_name || 'A').charAt(0)}
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-bold text-slate-900">
+                    {profile.full_name || 'Administrator'}
+                  </p>
+                  <p className="truncate text-[10px] font-medium text-slate-500 lowercase">
+                    {profile.email}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
                 tooltip="Keluar"
                 onClick={() => setIsLogoutOpen(true)}
+                className="hover:bg-red-50 hover:text-red-600"
               >
                 <LogOut />
-                <span>Keluar</span>
+                <span className="font-medium text-[13px]">Logout</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>

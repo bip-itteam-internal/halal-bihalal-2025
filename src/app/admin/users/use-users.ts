@@ -6,6 +6,7 @@ import {
   createUser as apiCreateUser,
   updateUserRole,
   updateUserPermissions,
+  deleteUser as apiDeleteUser,
   ManagedUser,
   EventOption,
 } from '@/services/api/users'
@@ -79,65 +80,65 @@ export function useUsers() {
         role: 'staff',
       })
       await fetchData()
+      return true
     } catch (error: unknown) {
       toast.error(
         error instanceof Error ? error.message : 'Gagal membuat akun.',
       )
+      return false
     } finally {
       setSubmitting(false)
     }
   }
 
-  const handleUpdateUser = async (user: ManagedUser) => {
+  const handleUpdateRole = async (userId: string, role: UserRole) => {
     try {
       setSubmitting(true)
-      const role = roleDraftByUserId[user.id]
-      const permsDraft = permissionDraftByUserId[user.id] || {}
-
-      // 1. Update Role
-      await updateUserRole(user.id, role)
-
-      // 2. Update Permissions
-      const permissions = Object.entries(permsDraft)
-        .filter(([, role]) => role === 'manager' || role === 'scanner')
-        .map(([event_id, role]) => ({
-          event_id,
-          role: role as PermissionRole,
-        }))
-
-      await updateUserPermissions(user.id, permissions)
-
-      toast.success('Data user berhasil diperbarui.')
+      await updateUserRole(userId, role)
+      toast.success('Role berhasil diperbarui.')
       await fetchData()
     } catch (error: unknown) {
-      toast.error(
-        error instanceof Error ? error.message : 'Gagal update data user.',
-      )
+      toast.error(error instanceof Error ? error.message : 'Gagal update role.')
     } finally {
       setSubmitting(false)
     }
   }
 
-  const handleSavePermissionsFromDialog = async () => {
-    if (!activePermissionUser) return
+  const handleUpdatePermission = async (userId: string, eventId: string, role: string) => {
     try {
-      const permsDraft = permissionDraftByUserId[activePermissionUser.id] || {}
-      const permissions = Object.entries(permsDraft)
-        .filter(([, role]) => role === 'manager' || role === 'scanner')
-        .map(([event_id, role]) => ({
-          event_id,
-          role: role as PermissionRole,
+      setSubmitting(true)
+      const currentDraft = permissionDraftByUserId[userId] || {}
+      const newDraft = { ...currentDraft, [eventId]: role }
+
+      const permissions = Object.entries(newDraft)
+        .filter(([, r]) => r === 'manager' || r === 'scanner')
+        .map(([e_id, r]) => ({
+          event_id: e_id,
+          role: r as PermissionRole,
         }))
 
-      await updateUserPermissions(activePermissionUser.id, permissions)
+      await updateUserPermissions(userId, permissions)
+      toast.success('Permission berhasil diperbarui.')
+      await fetchData()
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Gagal update permission.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
-      toast.success('Permission event berhasil disimpan.')
-      setActivePermissionUser(null)
+  const handleConfirmDeleteUser = async (userId: string) => {
+    try {
+      setSubmitting(true)
+      await apiDeleteUser(userId)
+      toast.success('User berhasil dihapus.')
       await fetchData()
     } catch (error: unknown) {
       toast.error(
-        error instanceof Error ? error.message : 'Gagal menyimpan permission.',
+        error instanceof Error ? error.message : 'Gagal menghapus user.',
       )
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -161,7 +162,8 @@ export function useUsers() {
     permissionDraftByUserId,
     setPermissionDraftByUserId,
     handleCreateUser,
-    handleUpdateUser,
-    handleSavePermissionsFromDialog,
+    handleUpdateRole,
+    handleUpdatePermission,
+    handleConfirmDeleteUser,
   }
 }

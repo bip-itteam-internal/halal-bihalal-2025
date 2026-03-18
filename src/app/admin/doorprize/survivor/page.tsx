@@ -172,7 +172,7 @@ export default function SurvivorDoorprizePage() {
 
       <CountdownOverlay count={countdown} />
 
-      <div className="flex-1 overflow-auto pt-0">
+      <div className="flex-1 overflow-hidden">
         <DoorprizeGrid
           aliveParticipants={aliveParticipants}
           lastBatch={lastBatch}

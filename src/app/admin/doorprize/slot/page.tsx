@@ -25,7 +25,7 @@ export default function SlotMachinePage() {
   >('idle')
   const [reelTargets, setReelTargets] = useState<
     [number | null, number | null, number | null]
-  >([null, null, null])
+  >([0, 0, 0])
   const [reelStatus, setReelStatus] = useState<[boolean, boolean, boolean]>([
     false,
     false,
@@ -41,18 +41,23 @@ export default function SlotMachinePage() {
 
   // Prepare 3 different sets of data for the reels
   const locationOptions = useMemo(
-    () => Array.from(new Set(candidates.map((c) => c.address || 'Hadirin'))),
+    () => [
+      'Bharata Group',
+      ...Array.from(new Set(candidates.map((c) => c.address || 'Hadirin'))),
+    ],
     [candidates],
   )
   const initialOptions = useMemo(
-    () =>
-      Array.from(
+    () => [
+      'Bharata Group',
+      ...Array.from(
         new Set(candidates.map((c) => c.full_name[0].toUpperCase())),
       ).sort(),
+    ],
     [candidates],
   )
   const nameOptions = useMemo(
-    () => candidates.map((c) => c.full_name),
+    () => ['Bharata Group', ...candidates.map((c) => c.full_name)],
     [candidates],
   )
 
@@ -148,7 +153,7 @@ export default function SlotMachinePage() {
   const handleReset = () => {
     reset()
     setLocalWinner(null)
-    setReelTargets([null, null, null])
+    setReelTargets([0, 0, 0])
     setIsShaking(false)
     setSpinPhase('idle')
     setHasCelebrated(false)

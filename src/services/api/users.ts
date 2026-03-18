@@ -84,3 +84,14 @@ export async function updateUserPermissions(
     throw new Error(data.message || 'Gagal update permissions.')
   }
 }
+
+export async function deleteUser(userId: string) {
+  const res = await fetch(`/api/admin/users/${userId}`, {
+    method: 'DELETE',
+  })
+
+  if (!res.ok) {
+    const data = await res.json()
+    throw new Error(data.message || 'Gagal menghapus user.')
+  }
+}

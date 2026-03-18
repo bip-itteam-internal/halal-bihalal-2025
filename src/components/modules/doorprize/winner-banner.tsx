@@ -50,11 +50,11 @@ export function WinnerBanner({ winner, onReset }: WinnerBannerProps) {
                   CONGRATULATIONS
                 </p>
                 <div className="space-y-6">
-                  <h1 className="bg-gradient-to-b from-white via-amber-200 to-amber-500 bg-clip-text text-[13vw] leading-[0.85] font-black tracking-tighter text-transparent drop-shadow-[0_0_120px_rgba(251,191,36,0.4)]">
+                  <h1 className="bg-gradient-to-b from-white via-amber-200 to-amber-500 bg-clip-text text-[8vw] leading-[1] font-black tracking-tighter text-transparent drop-shadow-[0_0_120px_rgba(251,191,36,0.4)]">
                     {winner.full_name}
                   </h1>
                   {winner.address && (
-                    <p className="text-4xl font-bold tracking-[0.5em] text-amber-200/60 uppercase">
+                    <p className="text-2xl font-bold tracking-[0.5em] text-amber-200/60 uppercase">
                       {winner.address}
                     </p>
                   )}

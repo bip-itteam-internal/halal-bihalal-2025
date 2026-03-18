@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Timer, Trophy, Star, ArrowRight, Zap, Target, LayoutGrid } from 'lucide-react'
+import { Timer, Trophy, Star, ArrowRight, Zap, LayoutGrid } from 'lucide-react'
 import Link from 'next/link'
 import { useDoorprize } from '@/hooks/use-doorprize'
 import { Particles, ShootingStars } from '@/components/ui/particles'
@@ -15,17 +15,6 @@ import {
 } from '@/components/ui/card'
 
 const GAMES = [
-  {
-    id: 'quick',
-    title: 'Spinner Wheel',
-    description:
-      'Putar roda keberuntungan untuk memilih pemenang secara acak dengan visual yang menarik.',
-    icon: Target,
-    color: 'from-sky-500 to-indigo-700',
-    url: '/admin/doorprize/quick',
-    stats: 'Interactive Spin',
-    tag: 'BARU',
-  },
   {
     id: 'wall',
     title: 'Wall of Fortune',

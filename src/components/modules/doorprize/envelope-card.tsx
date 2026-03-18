@@ -30,7 +30,7 @@ export function EnvelopeCard({ number, guestName, isOpened, onClick }: EnvelopeC
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 1.1, rotate: 5 }}
-            className="w-full h-full bg-gradient-to-br from-red-600 to-red-800 rounded-lg border-2 border-amber-500/50 shadow-lg flex items-center justify-center overflow-hidden"
+            className="w-full h-full bg-gradient-to-br from-red-600 to-red-800 rounded-lg border-2 border-amber-500/50 group-hover:border-amber-400 group-hover:shadow-[0_0_15px_rgba(245,158,11,0.3)] shadow-lg flex items-center justify-center overflow-hidden transition-all duration-200"
           >
             {/* Envelope Pattern */}
             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]" />
@@ -42,9 +42,6 @@ export function EnvelopeCard({ number, guestName, isOpened, onClick }: EnvelopeC
             <span className="relative z-10 text-xl font-black text-amber-200 drop-shadow-md">
               {number}
             </span>
-
-            {/* Shine Effect */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
           </motion.div>
         ) : (
           <motion.div

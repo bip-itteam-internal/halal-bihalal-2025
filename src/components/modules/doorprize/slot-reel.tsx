@@ -34,7 +34,7 @@ export function SlotReel({ options, targetIndex, isSpinning, delay, isSlowMo, on
     } else if (targetIndex !== null) {
       stopSpin(targetIndex)
     }
-  }, [isSpinning, targetIndex])
+  }, [isSpinning, targetIndex, options])
 
   const startSpin = async () => {
     // Endless loop animation

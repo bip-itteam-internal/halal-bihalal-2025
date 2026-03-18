@@ -35,8 +35,8 @@ export function LandingClient({ events, guestRules }: LandingClientProps) {
         />
 
         {/* Cinematic Lighting - Optimized for Mobile */}
-        <div className="bg-halal-primary/5 absolute top-[-10%] left-[-10%] h-[70%] w-[70%] rounded-full blur-[80px] md:bg-halal-primary/10 md:animate-pulse md:blur-[120px]" />
-        <div className="bg-halal-accent/10 absolute right-[-10%] bottom-[-10%] h-[70%] w-[70%] rounded-full blur-[80px] md:bg-halal-accent/20 md:blur-[120px]" />
+        <div className="bg-halal-primary/5 md:bg-halal-primary/10 absolute top-[-10%] left-[-10%] h-[70%] w-[70%] rounded-full blur-[80px] md:animate-pulse md:blur-[120px]" />
+        <div className="bg-halal-accent/10 md:bg-halal-accent/20 absolute right-[-10%] bottom-[-10%] h-[70%] w-[70%] rounded-full blur-[80px] md:blur-[120px]" />
 
         {/* Global Noise / Grain */}
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/simple-dashed.png')] opacity-[0.05]" />

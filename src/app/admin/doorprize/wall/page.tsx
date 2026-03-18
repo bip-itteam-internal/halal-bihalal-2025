@@ -77,8 +77,7 @@ export default function WallOfFortunePage() {
              <p className="font-bold tracking-[0.5em] uppercase">Preparing Wall...</p>
           </div>
         ) : (
-          Object.keys(mapping).map((key) => {
-            const num = parseInt(key)
+          Array.from({ length: Object.keys(mapping).length }, (_, i) => i + 1).map((num) => {
             const guest = mapping[num]
             return (
               <EnvelopeCard

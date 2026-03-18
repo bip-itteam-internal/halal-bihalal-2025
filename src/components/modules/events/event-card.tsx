@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card'
-import { formatJakartaDate } from '@/lib/utils'
+import { cn, formatJakartaDate } from '@/lib/utils'
 import { Event } from '@/types'
 
 interface EventCardProps {
@@ -15,7 +15,11 @@ interface EventCardProps {
   canManageEvent: boolean
 }
 
-export function EventCard({ event, eventCounts, canManageEvent }: EventCardProps) {
+export function EventCard({
+  event,
+  eventCounts,
+  canManageEvent,
+}: EventCardProps) {
   const remainingExternalQuota = Math.max(
     0,
     (event.external_quota ?? 0) - eventCounts.external,
@@ -27,64 +31,67 @@ export function EventCard({ event, eventCounts, canManageEvent }: EventCardProps
 
   return (
     <Card className="flex h-full flex-col overflow-hidden border-slate-200 py-0 shadow-sm">
-      <CardContent className="flex flex-1 flex-col items-center justify-center gap-4 px-5 py-8 text-center">
-        <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-3xl border bg-white">
+      <CardContent className="flex flex-1 flex-row items-center gap-4 px-4 py-4 text-left">
+        <div className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border bg-white shadow-sm">
           {event.logo_url ? (
             <Image
               src={event.logo_url}
               alt={`Logo ${event.name}`}
               fill
-              sizes="96px"
-              className="object-contain p-3"
+              sizes="80px"
+              className="object-contain p-2"
             />
           ) : (
-            <CalendarDays className="h-10 w-10 text-slate-400" />
+            <CalendarDays className="h-8 w-8 text-slate-400" />
           )}
         </div>
 
-        <div className="space-y-2">
-          <div className="flex flex-wrap items-center justify-center gap-2">
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <div className="flex flex-wrap items-center gap-1.5">
             <Badge
               variant="outline"
-              className={
+              className={cn(
+                'h-5 px-1.5 text-[10px] font-medium capitalize',
                 event.event_type === 'public'
-                  ? 'border-sky-300 bg-sky-50 text-sky-700 capitalize'
-                  : 'border-amber-300 bg-amber-50 text-amber-700 capitalize'
-              }
+                  ? 'border-sky-200 bg-sky-50 text-sky-700'
+                  : 'border-amber-200 bg-amber-50 text-amber-700',
+              )}
             >
               {event.event_type === 'public' ? 'Publik' : 'Internal'}
             </Badge>
             <Badge
               variant="outline"
-              className={
+              className={cn(
+                'h-5 px-1.5 text-[10px] font-medium',
                 event.public_reg_status === 'open'
-                  ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-                  : 'border-slate-300 bg-slate-50 text-slate-600'
-              }
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                  : 'border-slate-200 bg-slate-50 text-slate-600',
+              )}
             >
               {event.public_reg_status === 'open' ? 'Buka' : 'Tutup'}
             </Badge>
           </div>
 
-          <CardTitle className="line-clamp-2 text-lg leading-tight text-slate-950">
+          <CardTitle className="text-base leading-snug font-bold text-slate-950">
             {event.name}
           </CardTitle>
 
-          <div className="space-y-2 pt-1">
-            <div className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">
-              <CalendarDays className="h-3.5 w-3.5" />
+          <div className="flex flex-col gap-1.5 pt-0.5">
+            <div className="inline-flex w-fit items-center gap-1.5 rounded-md bg-slate-100/80 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+              <CalendarDays className="h-3 w-3" />
               <span>
                 {event.event_date
-                  ? formatJakartaDate(event.event_date, 'PPP p')
+                  ? formatJakartaDate(event.event_date, 'PPPP')
                   : 'Waktu belum diatur'}
               </span>
             </div>
 
             {event.event_type === 'public' && (
-              <div className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-50 px-3 py-1 text-xs font-medium text-slate-600">
-                <Users className="h-3.5 w-3.5" />
+              <div className="inline-flex w-fit items-center gap-1.5 rounded-md bg-slate-100/80 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                <Users className="h-3 w-3" />
                 <span>
-                  Sisa kuota umum {remainingExternalQuota} • tenant {remainingTenantQuota}
+                  Sisa kuota umum {remainingExternalQuota} • tenant{' '}
+                  {remainingTenantQuota}
                 </span>
               </div>
             )}

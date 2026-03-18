@@ -18,31 +18,43 @@ export function useDoorprize() {
   const fetchCandidates = async () => {
     try {
       setLoading(true)
-      const savedCandidates = localStorage.getItem('doorprize_candidates')
-      const savedAliveIds = localStorage.getItem('doorprize_alive_ids')
-
-      if (savedCandidates && savedAliveIds) {
-        setCandidates(JSON.parse(savedCandidates))
-        setAliveIds(new Set(JSON.parse(savedAliveIds)))
-        setLoading(false)
-        return
-      }
 
       const res = await fetch('/api/admin/doorprize/eligible')
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
 
       const guestData = data.candidates || []
-      setCandidates(guestData)
-      setAliveIds(new Set(guestData.map((g: Guest) => g.id)))
 
+      // Sync candidates with latest database
+      setCandidates(guestData)
       localStorage.setItem('doorprize_candidates', JSON.stringify(guestData))
-      localStorage.setItem(
-        'doorprize_alive_ids',
-        JSON.stringify(guestData.map((g: Guest) => g.id)),
-      )
+
+      // Decide how to handle aliveIds
+      const savedAliveIds = localStorage.getItem('doorprize_alive_ids')
+      if (savedAliveIds) {
+        const parsedAlive = JSON.parse(savedAliveIds)
+        // Only use saved alive IDs if all of them still exist in the new guest list
+        const latestIds = new Set(guestData.map((g: Guest) => g.id))
+        const isValid = parsedAlive.every((id: string) => latestIds.has(id))
+
+        if (isValid && parsedAlive.length > 0) {
+          setAliveIds(new Set(parsedAlive))
+        } else {
+          // Reset if database list has changed to avoid inconsistency
+          setAliveIds(new Set(guestData.map((g: Guest) => g.id)))
+        }
+      } else {
+        setAliveIds(new Set(guestData.map((g: Guest) => g.id)))
+      }
     } catch (err: unknown) {
       console.error(err)
+      // Fallback to local storage only if network fails
+      const savedCandidates = localStorage.getItem('doorprize_candidates')
+      const savedAliveIds = localStorage.getItem('doorprize_alive_ids')
+      if (savedCandidates) {
+        setCandidates(JSON.parse(savedCandidates))
+        if (savedAliveIds) setAliveIds(new Set(JSON.parse(savedAliveIds)))
+      }
     } finally {
       setLoading(false)
     }
