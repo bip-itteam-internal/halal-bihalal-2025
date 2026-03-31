@@ -126,7 +126,6 @@ export function EksternalRegisterClient({
             {authMode === 'register' ? (
               <RegistrationForm
                 eventIdentifier={eventIdentifier}
-                forcedGuestType="external"
                 onSuccess={(data) => {
                   const eventSlug = slugify(event.name || event.id, {
                     lower: true,
