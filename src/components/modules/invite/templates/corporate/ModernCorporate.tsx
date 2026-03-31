@@ -17,6 +17,10 @@ interface TemplateProps {
   setIsOpen: (open: boolean) => void
   onRSVP: (status: 'confirmed' | 'declined' | 'pending') => void
   isUpdating: boolean
+  paymentStatus?: 'pending' | 'verified' | 'rejected'
+  paymentProofUrl?: string | null
+  isUpdatingPaymentProof?: boolean
+  onUpdatePaymentProof?: (file: File) => Promise<void>
   openGate?: string | null
   startTime?: string | null
   onTicketView?: (visible: boolean) => void
@@ -29,6 +33,10 @@ export function ModernCorporate({
   setIsOpen,
   onRSVP,
   isUpdating,
+  paymentStatus,
+  paymentProofUrl,
+  isUpdatingPaymentProof,
+  onUpdatePaymentProof,
   openGate,
   startTime,
   onTicketView,
