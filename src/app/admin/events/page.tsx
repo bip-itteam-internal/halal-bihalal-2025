@@ -10,14 +10,11 @@ import { CreateEventSheet } from '@/components/modules/events/create-event-sheet
 import { PageHeader } from '@/components/shared/page-header'
 import { useProfile } from '@/hooks/use-profile'
 import { Event } from '@/types'
-import { getEventCounts, getEvents } from '@/services/api/events'
+import { getEvents } from '@/services/api/events'
 import { EventCard } from '@/components/modules/events/event-card'
 
 export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([])
-  const [registrationsByEvent, setRegistrationsByEvent] = useState<
-    Record<string, { external: number; tenant: number }>
-  >({})
   const { role } = useProfile()
   const [loading, setLoading] = useState(true)
 
@@ -26,12 +23,6 @@ export default function EventsPage() {
       setLoading(true)
       const data = await getEvents()
       setEvents(data)
-
-      const eventIds = data.map((event) => event.id)
-      if (eventIds.length > 0) {
-        const counts = await getEventCounts(eventIds)
-        setRegistrationsByEvent(counts)
-      }
     } catch (err) {
       console.error('Error fetching events:', err)
     } finally {
@@ -116,9 +107,6 @@ export default function EventsPage() {
               <EventCard
                 key={event.id}
                 event={event}
-                eventCounts={
-                  registrationsByEvent[event.id] || { external: 0, tenant: 0 }
-                }
                 canManageEvent={canManageEvent}
               />
             ))}
