@@ -23,8 +23,6 @@ function ScannerContent() {
     cameraError,
     lastResult,
     setLastResult,
-    autoCloseCamera,
-    setAutoCloseCamera,
     successDialogOpen,
     setSuccessDialogOpen,
     errorDialogOpen,
@@ -34,17 +32,11 @@ function ScannerContent() {
   const handleConfirmSuccess = () => {
     setSuccessDialogOpen(false)
     setLastResult(null)
-    if (autoCloseCamera) {
-      startScanner()
-    }
   }
 
   const handleConfirmError = () => {
     setErrorDialogOpen(false)
     setLastResult(null)
-    if (autoCloseCamera) {
-      startScanner()
-    }
   }
 
   const handleDialogChange = (open: boolean) => {
@@ -63,8 +55,6 @@ function ScannerContent() {
             eventName={selectedEventName}
             scanning={scanning}
             selectedEventId={selectedEventId}
-            autoCloseCamera={autoCloseCamera}
-            setAutoCloseCamera={setAutoCloseCamera}
             onStart={startScanner}
             onStop={stopScanner}
             error={cameraError}

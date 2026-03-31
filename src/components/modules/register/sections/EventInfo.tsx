@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import { Calendar, MapPin, Mic2, Users, Store, Music } from 'lucide-react'
+import { Calendar, MapPin, Mic2, Users, Music } from 'lucide-react'
 import { formatJakartaDate } from '@/lib/utils'
 import { EventGuestRule } from '@/types'
 
@@ -31,9 +31,12 @@ export function EventInfo({ date, location, guestRules }: EventInfoProps) {
             customContent: guestRules && guestRules.length > 0 && (
               <div className="mt-6 flex flex-col gap-3 border-t border-white/5 pt-6">
                 <div className="flex flex-col gap-2">
-                  {[...(guestRules || [])]
+                  {guestRules
+                    .filter((rule) =>
+                      ['internal', 'external'].includes(rule.guest_type),
+                    )
                     .sort((a, b) => {
-                      const order = { internal: 0, tenant: 1, external: 2 }
+                      const order = { internal: 0, external: 1 }
                       return (
                         (order[a.guest_type as keyof typeof order] ?? 99) -
                         (order[b.guest_type as keyof typeof order] ?? 99)
@@ -42,11 +45,7 @@ export function EventInfo({ date, location, guestRules }: EventInfoProps) {
                     .map((rule) => {
                       const isInternal = rule.guest_type === 'internal'
                       const Icon =
-                        rule.guest_type === 'internal'
-                          ? Users
-                          : rule.guest_type === 'tenant'
-                            ? Store
-                            : Music
+                        rule.guest_type === 'internal' ? Users : Music
 
                       return (
                         <div
@@ -68,11 +67,9 @@ export function EventInfo({ date, location, guestRules }: EventInfoProps) {
                               <Icon className="h-4 w-4" />
                             </div>
                             <span className="text-[10px] font-bold tracking-[0.1em] text-zinc-400 uppercase">
-                              {rule.guest_type === 'tenant'
-                                ? 'Open Gate Booth UMKM'
-                                : isInternal
-                                  ? 'Open Gate Internal'
-                                  : 'Open Gate Umum'}
+                              {isInternal
+                                ? 'Open Gate Internal'
+                                : 'Open Gate Umum'}
                             </span>
                           </div>
                           <span

@@ -17,14 +17,12 @@ import { Badge } from '@/components/ui/badge'
 interface RegistrationSuccessProps {
   invitationCode: string
   registeredName: string
-  registeredGuestType: 'external' | 'tenant'
   inline?: boolean
 }
 
 export function RegistrationSuccess({
   invitationCode,
   registeredName,
-  registeredGuestType,
   inline = false,
 }: RegistrationSuccessProps) {
   const content = (
@@ -92,7 +90,7 @@ export function RegistrationSuccess({
               variant="secondary"
               className={inline ? 'border-none bg-amber-500 text-black' : ''}
             >
-              {registeredGuestType === 'tenant' ? 'TENANT' : 'EKSTERNAL'}
+              EKSTERNAL
             </Badge>
             <span
               className={

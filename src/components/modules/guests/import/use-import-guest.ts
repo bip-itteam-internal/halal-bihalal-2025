@@ -256,7 +256,7 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
 
       const guestsToInsert = finalPreviewData.map((g) => ({
         full_name: g.full_name,
-        guest_type: ['internal', 'external', 'tenant'].includes(g.guest_type)
+        guest_type: ['internal', 'external'].includes(g.guest_type)
           ? g.guest_type
           : 'internal',
         phone: g.phone || null,

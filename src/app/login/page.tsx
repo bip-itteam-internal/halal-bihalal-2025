@@ -59,27 +59,38 @@ export default function LoginPage() {
     }
 
     // Fetch and cache profile immediately
+    let profile = null
     if (authData.user) {
-      const { data: profile } = await supabase
+      const { data: profileData } = await supabase
         .from('profiles')
         .select('id, role, full_name')
         .eq('id', authData.user.id)
         .single()
+      
+      profile = profileData
 
-      if (profile) {
+      if (profileData) {
         const { profileStorage } = await import('@/lib/auth/profile-storage')
         profileStorage.save({
-          id: profile.id,
-          role: profile.role,
-          full_name: profile.full_name,
+          id: profileData.id,
+          role: profileData.role,
+          full_name: profileData.full_name,
           email: authData.user.email,
         })
       }
     }
 
-    // Set flag to show PWA modal on dashboard
-    sessionStorage.setItem('showPwaModal', 'true')
-    router.push('/admin/dashboard')
+    // Set flag to show PWA modal on dashboard if admin
+    if (profile && (profile.role === 'admin' || profile.role === 'super_admin')) {
+      sessionStorage.setItem('showPwaModal', 'true')
+    }
+    
+    // Redirect based on role
+    if (profile && profile.role === 'staff') {
+      router.push('/admin/events')
+    } else {
+      router.push('/admin/dashboard')
+    }
   }
 
   return (

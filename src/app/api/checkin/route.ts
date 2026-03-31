@@ -53,23 +53,18 @@ export async function POST(req: NextRequest) {
 
     // 3. Identify Step based on Check-in History
     // First Scan -> exchange, Second Scan -> entrance
-    // Special case for Tenant: Only 1 scan directly to entrance
     let determinedStep: 'exchange' | 'entrance' = 'exchange'
 
-    if (guest.guest_type === 'tenant') {
-      determinedStep = 'entrance'
-    } else {
-      const { data: exchangeDone } = await supabase
-        .from('checkins')
-        .select('id')
-        .eq('guest_id', guest.id)
-        .eq('event_id', event_id)
-        .eq('step', 'exchange')
-        .maybeSingle()
+    const { data: exchangeDone } = await supabase
+      .from('checkins')
+      .select('id')
+      .eq('guest_id', guest.id)
+      .eq('event_id', event_id)
+      .eq('step', 'exchange')
+      .maybeSingle()
 
-      if (exchangeDone) {
-        determinedStep = 'entrance'
-      }
+    if (exchangeDone) {
+      determinedStep = 'entrance'
     }
 
     // 4. Check for existing scan to prevent duplicate
@@ -82,27 +77,43 @@ export async function POST(req: NextRequest) {
       .maybeSingle()
 
     if (alreadyScanned) {
-      const stepLabel = 
-        guest.guest_type === 'tenant' 
-          ? 'Masuk Konser' 
-          : determinedStep === 'exchange' 
-            ? 'Hadir Halal Bihalal' 
-            : 'Masuk Konser'
-            
+      const stepLabel =
+        determinedStep === 'exchange' ? 'Hadir Halal Bihalal' : 'Masuk Konser'
+
       return NextResponse.json(
-        { message: `Tamu ${guest.full_name} sudah ${stepLabel} sebelumnya.`, guest },
+        {
+          message: `Tamu ${guest.full_name} sudah ${stepLabel} sebelumnya.`,
+          guest,
+        },
         { status: 409 },
       )
     }
 
     // 5. Record Check-in
-    const { data: { user }, error: authErr } = await supabase.auth.getUser()
-    
-    if (authErr) {
-      console.error('Auth User Fetch Error:', authErr)
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json(
+        { message: 'Sesi petugas berakhir. Silakan login kembali.' },
+        { status: 401 },
+      )
     }
-    
-    console.log('Current Scanner User:', user?.id || 'NO USER FOUND')
+
+    // Optional: Verify role if needed, but usually any logged in staff/admin can scan
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile || !['super_admin', 'admin', 'staff'].includes(profile.role)) {
+      return NextResponse.json(
+        { message: 'Anda tidak memiliki otoritas untuk menscan.' },
+        { status: 403 },
+      )
+    }
 
     const { data: newCheckin, error: regErr } = await supabase
       .from('checkins')
@@ -110,17 +121,15 @@ export async function POST(req: NextRequest) {
         guest_id: guest.id,
         event_id: event_id,
         step: determinedStep,
-        checkin_by: user?.id || null,
+        checkin_by: user.id,
       })
       .select()
     if (regErr) throw regErr
 
     const successMessage =
-      guest.guest_type === 'tenant'
-        ? `Check-in Masuk Berhasil`
-        : determinedStep === 'exchange'
-          ? `Presensi Berhasil`
-          : `Check-in Masuk Berhasil`
+      determinedStep === 'exchange'
+        ? `Presensi Berhasil`
+        : `Check-in Masuk Berhasil`
 
     return NextResponse.json(
       {

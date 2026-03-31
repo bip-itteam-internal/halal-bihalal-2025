@@ -1,4 +1,4 @@
-export type GuestType = 'internal' | 'external' | 'tenant'
+export type GuestType = 'internal' | 'external'
 export type RSVPStatus = 'pending' | 'confirmed' | 'declined'
 export type PaymentStatus = 'pending' | 'verified' | 'rejected'
 export type RegistrationSource = 'admin_invite' | 'public_registration'
@@ -8,7 +8,6 @@ export type CheckinStep = 'exchange' | 'entrance'
 export type LegacySessionType = 'siang' | 'malam'
 
 export type GuestMetadata = {
-  umkm_product?: string
   [key: string]:
     | string
     | number
@@ -27,15 +26,14 @@ export interface Event {
   logo_url?: string | null
   wa_template?: string | null
   external_quota: number
-  tenant_quota: number
   public_reg_status: PublicRegistrationStatus
   event_type?: EventType | null
   template_id?: string | null
   is_paid: boolean
-  is_tenant_paid: boolean
   price_external: number
   payment_info?: string | null
   created_at: string
+  event_guest_rules?: EventGuestRule[]
 }
 
 export interface Guest {

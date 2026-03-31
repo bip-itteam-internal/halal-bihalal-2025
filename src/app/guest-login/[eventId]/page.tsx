@@ -3,7 +3,6 @@
 import { useState, use, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
-  MoveLeft,
   Loader2,
   CalendarDays,
   MapPin,
@@ -144,23 +143,7 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
 
       <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-8 md:px-6">
         <div className="mx-auto w-full max-w-4xl space-y-8">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="flex items-center justify-start">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.back()}
-                className="hover:bg-halal-primary/10 border-halal-primary/30 text-halal-primary rounded-full bg-black/40 backdrop-blur-md transition-all"
-              >
-                <MoveLeft className="mr-2 h-4 w-4" />
-                Kembali
-              </Button>
-            </div>
-          </motion.div>
+
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}

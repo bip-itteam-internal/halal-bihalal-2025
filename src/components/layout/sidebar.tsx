@@ -12,7 +12,6 @@ import {
   CalendarDays,
   Users,
   BookOpen,
-  UserCheck,
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -47,7 +46,7 @@ const items = [
     title: 'Dashboard',
     url: '/admin/dashboard',
     icon: LayoutDashboard,
-    roles: ['super_admin', 'admin', 'staff'] as UserRole[],
+    roles: ['super_admin', 'admin'] as UserRole[],
   },
   {
     title: 'Master Tamu',
@@ -59,12 +58,6 @@ const items = [
     title: 'Events',
     url: '/admin/events',
     icon: CalendarDays,
-    roles: ['super_admin', 'admin', 'staff'] as UserRole[],
-  },
-  {
-    title: 'Check-in Log',
-    url: '/admin/checkins',
-    icon: UserCheck,
     roles: ['super_admin', 'admin', 'staff'] as UserRole[],
   },
   {

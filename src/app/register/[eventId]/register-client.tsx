@@ -14,13 +14,11 @@ import { RegistrationForm } from '@/components/modules/register/registration-for
 type RegisterEventClientProps = {
   eventIdentifier: string
   event: Event
-  initialType: 'external' | 'tenant' | null
 }
 
 export function RegisterEventClient({
   eventIdentifier,
   event,
-  initialType,
 }: RegisterEventClientProps) {
   const router = useRouter()
 
@@ -44,7 +42,6 @@ export function RegisterEventClient({
               <div className="lg:border-l lg:pl-6">
                 <RegistrationForm
                   eventIdentifier={eventIdentifier}
-                  forcedGuestType={initialType}
                   onSuccess={(data) => {
                     const eventSlug = slugify(event.name || event.id, {
                       lower: true,

@@ -148,15 +148,6 @@ export function MasterGuestTable({
             Eksternal
           </Badge>
         )
-      case 'tenant':
-        return (
-          <Badge
-            variant="outline"
-            className="border-purple-200 bg-purple-50 font-normal text-purple-700"
-          >
-            Tenant
-          </Badge>
-        )
       default:
         return type
     }

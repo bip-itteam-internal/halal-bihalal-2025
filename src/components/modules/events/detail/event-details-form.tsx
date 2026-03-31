@@ -190,7 +190,6 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
   const internalLoginPath = `/guest-login/${slug}?type=internal`
   const internalLoginUrl = origin ? `${origin}${internalLoginPath}` : internalLoginPath
   const publicRegisterUrl = origin ? `${origin}/register/${slug}/eksternal` : ''
-  const tenantRegisterUrl = origin ? `${origin}/register/${slug}/tenant` : ''
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -231,7 +230,6 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
       },
       quota: {
         external_quota: draftEvent.external_quota,
-        tenant_quota: draftEvent.tenant_quota,
       },
       links: {
         name: draftEvent.name,
@@ -239,7 +237,6 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
       payment: {
         public_reg_status: draftEvent.public_reg_status,
         is_paid: draftEvent.is_paid,
-        is_tenant_paid: draftEvent.is_tenant_paid,
         price_external: draftEvent.price_external,
         payment_info: draftEvent.payment_info,
       },
@@ -408,21 +405,13 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
             </div>
           </div>
 
-          <div className="grid w-full grid-cols-2 gap-3 sm:max-w-sm">
+          <div className="grid w-full grid-cols-1 gap-3 sm:max-w-xs">
             <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
               <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-400 uppercase">
                 Kuota Umum
               </p>
               <p className="mt-1 text-2xl font-bold text-slate-900">
                 {event.external_quota ?? 0}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <p className="text-[11px] font-semibold tracking-[0.18em] text-slate-400 uppercase">
-                Kuota Tenant
-              </p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">
-                {event.tenant_quota ?? 0}
               </p>
             </div>
           </div>
@@ -460,12 +449,11 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
           <SectionCard
             icon={<Users className="h-5 w-5" />}
             title="Kuota Publik"
-            description="Kuota pendaftaran publik untuk jalur umum dan tenant."
+            description="Kuota pendaftaran publik untuk jalur umum."
             action={editButton('quota')}
           >
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="grid gap-5">
               <DetailItem label="Kuota Eksternal" value={event.external_quota ?? 0} />
-              <DetailItem label="Kuota Tenant" value={event.tenant_quota ?? 0} />
             </div>
           </SectionCard>
 
@@ -513,23 +501,7 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <FieldLabel>Pendaftaran Tenant</FieldLabel>
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <Input value={tenantRegisterUrl} readOnly className="h-9 min-w-0 text-xs" />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="h-9 w-full shrink-0 sm:w-auto"
-                    onClick={() =>
-                      copyText(tenantRegisterUrl, 'Link pendaftaran tenant disalin!')
-                    }
-                  >
-                    <Copy className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </div>
+
             </div>
           </SectionCard>
         </div>
@@ -548,10 +520,6 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
               <DetailItem
                 label="Tamu Umum Berbayar"
                 value={event.is_paid ? 'Aktif' : 'Tidak aktif'}
-              />
-              <DetailItem
-                label="Tenant Berbayar"
-                value={event.is_tenant_paid ? 'Aktif' : 'Tidak aktif'}
               />
               <DetailItem
                 label="Harga Tiket Umum"
@@ -704,7 +672,7 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
             )}
 
             {activeSection === 'quota' && (
-              <div className="grid gap-4 sm:grid-cols-2">
+               <div className="grid gap-4">
                 <div className="space-y-2">
                   <FieldLabel required>Kuota Eksternal</FieldLabel>
                   <Input
@@ -715,20 +683,6 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
                       setDraftEvent((prev) => ({
                         ...prev,
                         external_quota: Number(e.target.value) || 0,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <FieldLabel required>Kuota Tenant</FieldLabel>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={draftEvent.tenant_quota}
-                    onChange={(e) =>
-                      setDraftEvent((prev) => ({
-                        ...prev,
-                        tenant_quota: Number(e.target.value) || 0,
                       }))
                     }
                   />
@@ -788,22 +742,7 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
                     />
                   </div>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900">Tenant berbayar</p>
-                      <p className="text-xs leading-relaxed text-slate-500">
-                        Aktifkan jika tenant wajib unggah bukti transfer sebelum diverifikasi.
-                      </p>
-                    </div>
-                    <Switch
-                      checked={!!draftEvent.is_tenant_paid}
-                      onCheckedChange={(checked) =>
-                        setDraftEvent((prev) => ({ ...prev, is_tenant_paid: checked }))
-                      }
-                    />
-                  </div>
-                </div>
+
                 <div className="space-y-2">
                   <FieldLabel>Harga Tiket Umum</FieldLabel>
                   <div className="relative">

@@ -38,13 +38,6 @@ export function useScanner() {
   const [manualError, setManualError] = useState('')
   const [lastResult, setLastResult] = useState<ScanResult | null>(null)
 
-  const [autoCloseCamera, _setAutoCloseCamera] = useState(true)
-  const autoCloseRef = useRef(true)
-  const setAutoCloseCamera = (val: boolean) => {
-    autoCloseRef.current = val
-    _setAutoCloseCamera(val)
-  }
-
   const [successDialogOpen, setSuccessDialogOpen] = useState(false)
   const [errorDialogOpen, setErrorDialogOpen] = useState(false)
 
@@ -99,7 +92,7 @@ export function useScanner() {
     source: 'manual' | 'scan' = 'manual',
   ) => {
     const eventId = selectedEventIdRef.current
-    if (!payload || !eventId || submitting) return false
+    if (!payload || !eventId || submitting || successDialogOpen || errorDialogOpen) return false
 
     try {
       setSubmitting(true)
@@ -184,14 +177,6 @@ export function useScanner() {
         { facingMode: 'environment' },
         { fps: 10 },
         async (decodedText) => {
-          // Cegah scan ganda: matikan scanner segera setelah kode terdeteksi
-          if (autoCloseRef.current) {
-            await stopScanner()
-          } else {
-            // Jika kamera tetap standby, tambahkan delay manual agar tidak scan beruntun
-            // Tapi dalam konteks ini, kita prioritaskan flow dengan dialog
-          }
-          
           await submitCheckin(decodedText, 'scan')
         },
         () => undefined,
@@ -231,8 +216,6 @@ export function useScanner() {
     setManualError,
     lastResult,
     setLastResult,
-    autoCloseCamera,
-    setAutoCloseCamera,
     successDialogOpen,
     setSuccessDialogOpen,
     errorDialogOpen,

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-export async function GET() {
+export async function GET(req: Request) {
   const supabase = await createClient()
 
   try {
@@ -17,12 +17,15 @@ export async function GET() {
       .eq('id', user.id)
       .single()
 
-    if (!profile || !['super_admin', 'admin'].includes(profile.role)) {
+    if (!profile || !['super_admin', 'admin', 'staff'].includes(profile.role)) {
       return NextResponse.json({ message: 'Forbidden' }, { status: 403 })
     }
 
-    // Fetch checkins with guest and event info (simplified to debug)
-    const { data, error } = await supabase
+    const { searchParams } = new URL(req.url)
+    const eventId = searchParams.get('event_id')
+
+    // Fetch checkins with guest and event info
+    let query = supabase
       .from('checkins')
       .select(`
         *,
@@ -35,18 +38,29 @@ export async function GET() {
           name
         )
       `)
-      .order('checkin_time', { ascending: false })
+
+    if (eventId) {
+      query = query.eq('event_id', eventId)
+    }
+
+    const { data, error } = await query.order('checkin_time', { ascending: false })
 
     if (error) throw error
 
     // Manual Join: Fetch all profiles to link with checkin_by
-    const { data: profiles } = await supabase
+    const { data: profiles, error: profileErr } = await supabase
       .from('profiles')
-      .select('id, full_name, email')
+      .select('id, full_name')
+
+    if (profileErr) {
+      console.error('Profile fetch error:', profileErr)
+    }
 
     const enrichedData = (data || []).map(item => ({
       ...item,
-      staff: profiles?.find(p => p.id === item.checkin_by) || null
+      staff: item.checkin_by 
+        ? profiles?.find(p => p.id === item.checkin_by) || null 
+        : null
     }))
 
     return NextResponse.json(enrichedData)

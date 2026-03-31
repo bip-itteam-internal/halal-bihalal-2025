@@ -19,7 +19,6 @@ export interface DashboardEvent {
 export interface DashboardBreakdown {
   internal: number
   external: number
-  tenant: number
 }
 
 export interface DashboardRSVPStats {
@@ -121,10 +120,9 @@ export async function getDashboardData() {
       const guestType = item.guest_type as GuestType | null
       if (guestType === 'internal') acc.internal += 1
       if (guestType === 'external') acc.external += 1
-      if (guestType === 'tenant') acc.tenant += 1
       return acc
     },
-    { internal: 0, external: 0, tenant: 0 },
+    { internal: 0, external: 0 },
   )
 
   const rsvpStats = (rsvpRes.data || []).reduce<DashboardRSVPStats>(

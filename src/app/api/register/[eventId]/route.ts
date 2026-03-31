@@ -64,10 +64,7 @@ export async function POST(
       phone,
       guest_type: guestType,
       address,
-      metadata,
     } = body
-
-    const umkmProduct = metadata?.umkm_product || ''
 
     if (!fullName || !phone) {
       return NextResponse.json(
@@ -79,9 +76,7 @@ export async function POST(
     // 1. Check Event Status and Quota
     const { data: event, error: eventErr } = await supabase
       .from('events')
-      .select(
-        'public_reg_status, external_quota, tenant_quota, is_paid, is_tenant_paid, price_external',
-      )
+      .select('public_reg_status, external_quota, is_paid, price_external')
       .eq('id', eventId)
       .single()
 
@@ -100,10 +95,7 @@ export async function POST(
     }
 
     // 2. Check if payment required
-    const isPaymentRequired =
-      guestType === 'tenant'
-        ? event.is_tenant_paid
-        : event.is_paid && (event.price_external || 0) > 0
+    const isPaymentRequired = event.is_paid && (event.price_external || 0) > 0
 
     const paymentProofUrl = body.payment_proof_url || null
 
@@ -124,8 +116,7 @@ export async function POST(
       .eq('event_id', eventId)
       .eq('guests.guest_type', guestType)
 
-    const limit =
-      guestType === 'tenant' ? event.tenant_quota : event.external_quota
+    const limit = event.external_quota
     if (currentGuests && currentGuests >= (limit || 0)) {
       return NextResponse.json(
         { message: 'Kuota pendaftaran untuk tipe ini sudah penuh.' },
@@ -141,7 +132,6 @@ export async function POST(
       .single()
 
     if (existingGuest) {
-      // Check if already in this event
       const { data: existingMap } = await supabase
         .from('guest_events')
         .select('id')
@@ -157,7 +147,7 @@ export async function POST(
       }
     }
 
-    // 3. Register Guest (Master Profile)
+    // 3. Register Guest
     const invitationCode =
       existingGuest?.invitation_code || `INV-${generateRandomCode(6)}`
 
@@ -170,7 +160,7 @@ export async function POST(
           phone,
           address: address || '',
           guest_type: guestType,
-          metadata: guestType === 'tenant' ? { umkm_product: umkmProduct } : {},
+          metadata: {},
           registration_source: 'public_registration',
           rsvp_status: isPaymentRequired ? 'pending' : 'confirmed',
           invitation_code: invitationCode,
@@ -182,7 +172,6 @@ export async function POST(
       guestId = guest.id
     } else {
       guestId = existingGuest.id
-      // Update existing guest info if needed
       await supabase
         .from('guests')
         .update({
@@ -191,10 +180,7 @@ export async function POST(
           rsvp_status: isPaymentRequired ? 'pending' : 'confirmed',
           guest_type: guestType,
           invitation_code: invitationCode,
-          metadata:
-            guestType === 'tenant'
-              ? { umkm_product: umkmProduct }
-              : existingGuest.metadata,
+          metadata: existingGuest.metadata,
         })
         .eq('id', guestId)
     }

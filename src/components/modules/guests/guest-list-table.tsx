@@ -30,7 +30,6 @@ import {
 } from 'lucide-react'
 import {
   bulkSendWhatsappAction,
-  sendTenantVerificationAction,
 } from '@/app/actions/whatsapp-actions'
 import { deleteGuestAction } from '@/app/actions/guest-actions'
 import { Badge } from '@/components/ui/badge'
@@ -111,20 +110,7 @@ export function GuestListTable({
 
         if (rsvpErr) throw rsvpErr
 
-        // If it's a tenant, send notification with login link
-        const guest = guests.find((g) => g.id === guestId)
-        if (guest?.guest_type === 'tenant') {
-          try {
-            const res = await sendTenantVerificationAction(guestId)
-            if (res.success) {
-              toast.success('Undangan Login Tenant terkirim via WhatsApp!')
-            } else {
-              toast.error('Pembayaran OK, tapi gagal kirim WA: ' + res.message)
-            }
-          } catch (e) {
-            console.error('Failed to send tenant verification WA:', e)
-          }
-        }
+
       }
 
       toast.success(
@@ -230,15 +216,6 @@ export function GuestListTable({
         return (
           <Badge variant="outline" className="text-[9px] font-normal uppercase">
             Eksternal
-          </Badge>
-        )
-      case 'tenant':
-        return (
-          <Badge
-            variant="outline"
-            className="border-purple-200 bg-purple-50 text-[9px] font-normal text-purple-700 uppercase"
-          >
-            Tenant
           </Badge>
         )
       default:

@@ -143,23 +143,6 @@ export function EksternalRegisterClient({
                 hideHeader
               />
             )}
-
-            <div className="mt-8 border-t border-white/5 pt-6 text-center">
-              <p className="mb-2 text-[10px] tracking-widest text-zinc-500 uppercase">
-                Ingin mendaftar sebagai tenant?
-              </p>
-              <Button
-                variant="link"
-                className="text-halal-primary h-auto p-0 text-[10px] font-black tracking-[0.2em] uppercase hover:text-white"
-                onClick={() =>
-                  router.push(
-                    `/register/${slugify(event.name || '', { lower: true, strict: true })}/tenant`,
-                  )
-                }
-              >
-                Pendaftaran Booth UMKM &rarr;
-              </Button>
-            </div>
           </div>
         </div>
       </div>

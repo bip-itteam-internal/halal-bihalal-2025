@@ -38,7 +38,7 @@ import {
 
 const guestSchema = z.object({
   full_name: z.string().min(3, 'Nama lengkap wajib diisi (min 3 karakter)'),
-  guest_type: z.enum(['internal', 'external', 'tenant']),
+  guest_type: z.enum(['internal', 'external']),
   phone: z.string().optional(),
   email: z
     .string()
@@ -233,9 +233,6 @@ export function AddGuestSheet({
                         <SelectItem value="external">
                           Eksternal (Tamu Umum)
                         </SelectItem>
-                        <SelectItem value="tenant">
-                          Tenant (Vendor/UMKM)
-                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -367,30 +364,7 @@ export function AddGuestSheet({
                 )}
               />
 
-              {form.watch('guest_type') === 'tenant' && (
-                <div className="space-y-3 rounded-lg border border-purple-100 bg-purple-50 p-4">
-                  <p className="text-xs font-semibold tracking-wider text-purple-700 uppercase">
-                    Informasi Tenant
-                  </p>
-                  <FormItem>
-                    <FormLabel className="text-purple-900">
-                      Nama Produk / Usaha
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="cth. Kopi Kenangan"
-                        onChange={(e) => {
-                          const metadata = form.getValues().metadata || {}
-                          form.setValue('metadata', {
-                            ...metadata,
-                            umkm_product: e.target.value,
-                          })
-                        }}
-                      />
-                    </FormControl>
-                  </FormItem>
-                </div>
-              )}
+
             </form>
           </Form>
         </div>

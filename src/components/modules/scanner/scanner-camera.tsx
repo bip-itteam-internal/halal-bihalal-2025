@@ -1,14 +1,11 @@
 import { QrCode, Camera, CameraOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface ScannerCameraProps {
   scanning: boolean
   eventName: string
   selectedEventId: string
-  autoCloseCamera: boolean
-  setAutoCloseCamera: (val: boolean) => void
   onStart: () => void
   onStop: () => void
   error?: string
@@ -18,8 +15,6 @@ export function ScannerCamera({
   eventName,
   scanning,
   selectedEventId,
-  autoCloseCamera,
-  setAutoCloseCamera,
   onStart,
   onStop,
   error,
@@ -62,8 +57,7 @@ export function ScannerCamera({
                 <QrCode className="h-8 w-8 text-white" />
               </div>
               <span className="max-w-[200px] text-[11px] leading-relaxed font-medium text-white">
-                Kamera belum aktif. Klik Mulai untuk menscan tiket atau gelang
-                tamu.
+                Kamera belum aktif. Klik Mulai untuk menscan tiket tamu.
               </span>
             </div>
           )}
@@ -71,22 +65,6 @@ export function ScannerCamera({
 
         {/* Compact Controls Area */}
         <div className="space-y-4 p-4">
-          <div className="flex items-center justify-between rounded-xl bg-slate-50 p-3 ring-1 ring-slate-100">
-            <div className="space-y-0.5">
-              <p className="text-[12px] font-bold text-slate-700">
-                Auto-close kamera
-              </p>
-              <p className="text-[10px] font-medium text-slate-500">
-                Tutup otomatis setelah scan berhasil
-              </p>
-            </div>
-            <Switch
-              checked={autoCloseCamera}
-              onCheckedChange={setAutoCloseCamera}
-              className="scale-90"
-            />
-          </div>
-
           <div className="grid grid-cols-2 gap-3">
             <Button
               onClick={onStart}

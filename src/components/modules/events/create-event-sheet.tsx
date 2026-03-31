@@ -59,9 +59,7 @@ const eventSchema = z.object({
   event_time: z.string().optional().default('08:00'),
   location: z.string().optional(),
   external_quota: z.number().min(0),
-  tenant_quota: z.number().min(0),
   is_paid: z.boolean().default(false),
-  is_tenant_paid: z.boolean().default(false),
   price_external: z.number().optional().default(0),
   payment_info: z.string().optional(),
 })
@@ -89,9 +87,7 @@ export function CreateEventSheet({
       template_id: null,
       location: '',
       external_quota: 1000,
-      tenant_quota: 50,
       is_paid: false,
-      is_tenant_paid: false,
       price_external: 0,
       payment_info: '',
     },
@@ -117,10 +113,8 @@ export function CreateEventSheet({
           event_date: toJakartaISOString(values.event_date, values.event_time),
           location: values.location,
           external_quota: values.external_quota,
-          tenant_quota: values.tenant_quota,
           public_reg_status: 'closed',
           is_paid: values.is_paid,
-          is_tenant_paid: values.is_tenant_paid,
           price_external: values.price_external,
           payment_info: values.payment_info,
         },
@@ -353,28 +347,7 @@ export function CreateEventSheet({
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name="is_tenant_paid"
-                        render={({ field }) => (
-                          <FormItem className="mt-2 flex flex-col space-y-2">
-                            <FormLabel className="text-xs">
-                              Tenant/Booth UMKM
-                            </FormLabel>
-                            <div className="flex items-center gap-2">
-                              <FormControl>
-                                <Switch
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <span className="text-[11px] font-medium text-slate-500">
-                                {field.value ? 'Berbayar' : 'Gratis'}
-                              </span>
-                            </div>
-                          </FormItem>
-                        )}
-                      />
+
                     </div>
                     <FormField
                       control={form.control}
@@ -418,7 +391,7 @@ export function CreateEventSheet({
                 )}
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <FormField
                   control={form.control}
                   name="external_quota"
@@ -433,19 +406,7 @@ export function CreateEventSheet({
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="tenant_quota"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Kuota Tenant</FormLabel>
-                      <FormControl>
-                        <Input type="number" min="0" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
               </div>
             </form>
           </Form>

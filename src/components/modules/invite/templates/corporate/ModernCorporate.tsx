@@ -2,13 +2,12 @@
 
 import React, { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Clock, Building2, ExternalLink, Loader2, Upload } from 'lucide-react'
+import { Building2 } from 'lucide-react'
 import { EventTicket } from '@/components/shared/EventTicket'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { formatJakartaDate } from '@/lib/utils'
 import { Guest, Event as AppEvent } from '@/types'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import Image from 'next/image'
 
 interface TemplateProps {
@@ -18,10 +17,6 @@ interface TemplateProps {
   setIsOpen: (open: boolean) => void
   onRSVP: (status: 'confirmed' | 'declined' | 'pending') => void
   isUpdating: boolean
-  paymentStatus?: 'pending' | 'verified' | 'rejected'
-  paymentProofUrl?: string | null
-  isUpdatingPaymentProof?: boolean
-  onUpdatePaymentProof?: (file: File) => Promise<void>
   openGate?: string | null
   startTime?: string | null
   onTicketView?: (visible: boolean) => void
@@ -34,33 +29,17 @@ export function ModernCorporate({
   setIsOpen,
   onRSVP,
   isUpdating,
-  paymentStatus,
-  paymentProofUrl,
-  isUpdatingPaymentProof,
-  onUpdatePaymentProof,
   openGate,
   startTime,
   onTicketView,
 }: TemplateProps) {
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const file = event.target.files?.[0]
-    event.target.value = ''
-    if (!file || !onUpdatePaymentProof) return
-    await onUpdatePaymentProof(file)
-  }
-
-  const shouldSkipCover =
-    guest.guest_type === 'external' || guest.guest_type === 'tenant'
-
+  const shouldSkipCover = guest.guest_type === 'external'
   const showingTicket = guest.rsvp_status === 'confirmed' && isOpen
 
   useEffect(() => {
     onTicketView?.(showingTicket)
   }, [showingTicket, onTicketView])
 
-  // 1. Confirmed View (Ticket) - Only show if open
   if (guest.rsvp_status === 'confirmed' && isOpen) {
     return (
       <motion.div
@@ -79,13 +58,7 @@ export function ModernCorporate({
             primaryColor="slate"
             logoUrl={event.logo_url || undefined}
             openGate={openGate || undefined}
-            guestType={
-              guest.guest_type === 'tenant'
-                ? 'Booth UMKM'
-                : guest.guest_type === 'external'
-                  ? 'Umum'
-                  : 'Internal'
-            }
+            guestType={guest.guest_type === 'external' ? 'Umum' : 'Internal'}
             eventTime={
               startTime
                 ? startTime.substring(0, 5).replace(':', '.') + ' WIB'
@@ -110,7 +83,6 @@ export function ModernCorporate({
     )
   }
 
-  // 3. Information View (Pending/Declined)
   return (
     <motion.div
       key="content-corp"
@@ -145,133 +117,62 @@ export function ModernCorporate({
             </>
           )}
 
-          {/* Subtle decoration */}
           <div className="absolute top-0 right-0 h-full w-1/2 bg-gradient-to-l from-blue-500/10 to-transparent" />
         </div>
 
         <CardContent className="space-y-8">
           <div className="grid grid-cols-2 gap-x-6 gap-y-6">
-            {[
-              {
-                label: 'Nama',
-                value: guest.full_name || '',
-              },
-              {
-                label: 'Tipe Tamu',
-                value:
-                  guest.guest_type === 'tenant'
-                    ? 'Tenant UMKM'
-                    : guest.guest_type === 'external'
-                      ? 'Umum'
-                      : 'Internal',
-              },
-              {
-                label: 'Tanggal',
-                value: formatJakartaDate(event.event_date, 'PPP'),
-              },
-              {
-                label: 'Waktu & Open Gate',
-                value:
-                  [
-                    openGate &&
-                      `Gate ${openGate.substring(0, 5).replace(':', '.')}`,
-                    startTime &&
-                      `Mulai ${startTime.substring(0, 5).replace(':', '.')}`,
-                  ]
-                    .filter(Boolean)
-                    .join(' • ') + ' WIB',
-                full: true,
-              },
-              {
-                label: 'Lokasi',
-                value: event.location || 'Segera diinfokan',
-                full: true,
-              },
-            ]
-              .filter(Boolean)
-              .map(
-                (
-                  item: { label: string; value: string; full?: boolean } | null,
-                  id,
-                ) =>
-                  item && (
-                    <div
-                      key={id}
-                      className={`${item.full ? 'col-span-2' : ''}`}
-                    >
-                      <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
-                        {item.label}
-                      </p>
-                      <p className="text-sm font-bold text-slate-900">
-                        {item.value}
-                      </p>
-                    </div>
-                  ),
-              )}
+            <div>
+              <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                Nama
+              </p>
+              <p className="text-sm font-bold text-slate-900">
+                {guest.full_name || ''}
+              </p>
+            </div>
+            <div>
+              <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                Tipe Tamu
+              </p>
+              <p className="text-sm font-bold text-slate-900">
+                {guest.guest_type === 'external' ? 'Umum' : 'Internal'}
+              </p>
+            </div>
+            <div>
+              <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                Tanggal
+              </p>
+              <p className="text-sm font-bold text-slate-900">
+                {formatJakartaDate(event.event_date, 'PPP')}
+              </p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                Waktu & Open Gate
+              </p>
+              <p className="text-sm font-bold text-slate-900">
+                {[
+                  openGate &&
+                    `Gate ${openGate.substring(0, 5).replace(':', '.')}`,
+                  startTime &&
+                    `Mulai ${startTime.substring(0, 5).replace(':', '.')}`,
+                ]
+                  .filter(Boolean)
+                  .join(' • ') + ' WIB'}
+              </p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                Lokasi
+              </p>
+              <p className="text-sm font-bold text-slate-900">
+                {event.location || 'Segera diinfokan'}
+              </p>
+            </div>
           </div>
-          {guest.guest_type === 'tenant' && (
-            <Alert className="border-blue-200 bg-blue-50">
-              <AlertTitle className="text-blue-800">
-                Informasi Tenant UMKM
-              </AlertTitle>
-
-              <AlertDescription className="text-xs leading-relaxed text-blue-700">
-                Tenant diharapkan hadir lebih awal untuk persiapan booth.
-                <br />
-                <span className="font-semibold">
-                  Open Gate UMKM: 12:30 WIB – Selesai
-                </span>
-              </AlertDescription>
-            </Alert>
-          )}
 
           <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6">
-            {guest.guest_type === 'tenant' && paymentStatus === 'pending' ? (
-              <div className="space-y-4 text-center">
-                <div className="mx-auto w-fit rounded-full bg-amber-100 p-3">
-                  <Clock className="h-6 w-6 text-amber-600" />
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-bold text-slate-900 uppercase">
-                    Menunggu Verifikasi
-                  </p>
-                  <p className="text-[11px] leading-relaxed text-slate-500">
-                    Bukti pembayaran Anda sedang dalam proses verifikasi oleh
-                    admin. Tiket akan tersedia setelah pembayaran diverifikasi.
-                  </p>
-                </div>
-                {paymentProofUrl && (
-                  <a
-                    href={paymentProofUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-blue-200 bg-white px-4 text-[10px] font-bold text-blue-600 uppercase shadow-sm"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    Lihat Bukti Bayar
-                  </a>
-                )}
-                {onUpdatePaymentProof && (
-                  <label className="cursor-pointer">
-                    <input
-                      type="file"
-                      accept="image/*,.pdf"
-                      className="hidden"
-                      onChange={handleFileChange}
-                      disabled={isUpdatingPaymentProof}
-                    />
-                    <span className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-[10px] font-bold text-slate-700 uppercase shadow-sm">
-                      {isUpdatingPaymentProof ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Upload className="h-4 w-4" />
-                      )}
-                      Update Bukti
-                    </span>
-                  </label>
-                )}
-              </div>
-            ) : guest.rsvp_status === 'pending' ? (
+            {guest.rsvp_status === 'pending' ? (
               <div className="space-y-5 text-center">
                 <div className="space-y-2">
                   <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
@@ -302,20 +203,23 @@ export function ModernCorporate({
             ) : (
               <div className="space-y-3 py-4 text-center">
                 <p className="text-sm font-bold tracking-tight text-slate-900 uppercase">
-                  Terima kasih atas konfirmasinya.
+                  {guest.rsvp_status === 'confirmed' ? 'Terima kasih atas konfirmasinya' : 'Anda berhalangan hadir'}
                 </p>
                 <p className="text-xs leading-relaxed text-slate-500">
-                  Kami telah mencatat bahwa Anda berhalangan hadir. Semoga kita
-                  dapat berjumpa di agenda perusahaan selanjutnya.
+                  {guest.rsvp_status === 'confirmed'
+                    ? 'Sampai jumpa di lokasi acara!'
+                    : 'Kami telah mencatat bahwa Anda berhalangan hadir. Semoga kita dapat berjumpa di agenda perusahaan selanjutnya.'}
                 </p>
-                <Button
-                  variant="link"
-                  size="sm"
-                  onClick={() => onRSVP('confirmed')}
-                  className="text-[10px] font-bold tracking-widest text-blue-600 uppercase"
-                >
-                  Ubah Menjadi Hadir
-                </Button>
+                {guest.rsvp_status === 'declined' && (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    onClick={() => onRSVP('confirmed')}
+                    className="text-[10px] font-bold tracking-widest text-blue-600 uppercase"
+                  >
+                    Ubah Menjadi Hadir
+                  </Button>
+                )}
               </div>
             )}
           </div>

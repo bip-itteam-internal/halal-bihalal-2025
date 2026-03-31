@@ -119,7 +119,7 @@ export function EventTicket({
         }}
       >
         {/* Top Part */}
-        <div className="rounded-t-[2.5rem] bg-white p-8 pb-4">
+        <div className="rounded-t-[2.5rem] bg-white p-6 pb-2">
           <div className="flex items-start justify-between">
             <div className="space-y-1">
               <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
@@ -168,9 +168,9 @@ export function EventTicket({
           </div>
 
           {/* Middle Section: Event Details */}
-          <div className="mt-6 space-y-4 border-t border-dashed border-slate-100 pt-6">
+          <div className="mt-4 space-y-3 border-t border-dashed border-slate-100 pt-4">
             {/* Full Date - Large & Prominent */}
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <p className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">
                 Hari & Tanggal
               </p>
@@ -181,7 +181,7 @@ export function EventTicket({
 
             {/* Time Grid (Open Gate & Start Time) */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
                   Open Gate
                 </p>
@@ -192,7 +192,7 @@ export function EventTicket({
                 </p>
               </div>
 
-              <div className="space-y-1 text-right">
+              <div className="space-y-0.5 text-right">
                 <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
                   Waktu Mulai
                 </p>
@@ -204,7 +204,7 @@ export function EventTicket({
 
             {/* Info Grid (Location & Category) */}
             <div className="grid grid-cols-2 gap-x-4">
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
                   Lokasi
                 </p>
@@ -212,7 +212,7 @@ export function EventTicket({
                   {location}
                 </p>
               </div>
-              <div className="space-y-1 text-right">
+              <div className="space-y-0.5 text-right">
                 <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
                   Kategori
                 </p>
@@ -224,8 +224,8 @@ export function EventTicket({
           </div>
 
           {/* Bottom Section: Guest Info */}
-          <div className="mt-8 grid grid-cols-2 gap-x-4 border-t border-dashed border-slate-100 pt-6">
-            <div className="space-y-1.5">
+          <div className="mt-4 grid grid-cols-2 gap-x-4 border-t border-dashed border-slate-100 pt-4">
+            <div className="space-y-1">
               <p className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
                 Nama Tamu
               </p>
@@ -238,7 +238,7 @@ export function EventTicket({
 
         {/* Perforation (Real Cutout) */}
         <div
-          className="relative flex h-8 w-full items-center"
+          className="relative flex h-6 w-full items-center"
           style={{
             backgroundImage: `radial-gradient(circle at 0px 50%, transparent 10px, white 10.5px), radial-gradient(circle at 100% 50%, transparent 10px, white 10.5px)`,
             backgroundSize: '51% 100%',
@@ -250,7 +250,7 @@ export function EventTicket({
         </div>
 
         {/* Bottom Part (QR Section) */}
-        <div className="flex flex-col items-center rounded-b-[2.5rem] bg-white p-8 pt-6">
+        <div className="flex flex-col items-center rounded-b-[2.5rem] bg-white p-6 pt-4">
           <div className="rounded-[1rem] bg-white p-6 shadow-xl ring-1 ring-slate-100">
             <QRCode
               value={entryCode}
@@ -260,12 +260,12 @@ export function EventTicket({
               level="H"
             />
           </div>
-          <div className="mt-6 flex flex-col items-center gap-1">
+          <div className="mt-4 flex flex-col items-center gap-1">
             <p className="font-mono text-2xl font-black tracking-[0.4em] text-slate-900">
               {entryCode}
             </p>
           </div>
-          <div className="mt-6 flex flex-col items-center gap-1">
+          <div className="mt-4 flex flex-col items-center gap-1">
             <p className="text-xs text-slate-900">
               Tunjukkan QR ini kepada petugas
             </p>
@@ -307,8 +307,7 @@ export function EventTicket({
               Informasi E-Ticket
             </DialogTitle>
             <DialogDescription className="text-sm leading-relaxed text-slate-600">
-              Ini adalah e-ticket resmi untuk kehadiran dan penukaran gelang di
-              lokasi acara.
+              Ini adalah e-ticket resmi untuk kehadiran di lokasi acara.
               <br />
               <br />
               <span className="font-semibold text-slate-800">

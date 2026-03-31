@@ -11,6 +11,7 @@ import {
   ArrowRight,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 import { AppLayout } from '@/components/layout/app-layout'
 import { StatsCard } from '@/components/shared/stats-card'
@@ -106,7 +107,6 @@ export default function AdminDashboardPage() {
   const [guestTypeStats, setGuestTypeStats] = useState<DashboardBreakdown>({
     internal: 0,
     external: 0,
-    tenant: 0,
   })
   const [rsvpStats, setRsvpStats] = useState<DashboardRSVPStats>({
     confirmed: 0,
@@ -124,6 +124,13 @@ export default function AdminDashboardPage() {
   })
   const [recentCheckins, setRecentCheckins] = useState<DashboardRecentCheckin[]>([])
   const { role } = useProfile()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && role === 'staff') {
+      router.replace('/admin/events')
+    }
+  }, [role, loading, router])
 
   const fetchDashboard = useCallback(async () => {
     try {
@@ -315,7 +322,6 @@ export default function AdminDashboardPage() {
             items={[
               { label: 'Internal', value: guestTypeStats.internal },
               { label: 'Eksternal', value: guestTypeStats.external },
-              { label: 'Tenant', value: guestTypeStats.tenant },
             ]}
           />
           <MetricPanel

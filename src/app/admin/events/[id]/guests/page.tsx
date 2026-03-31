@@ -14,7 +14,6 @@ import {
   Filter,
   Users,
   Globe,
-  Store,
   MessageCircle,
 } from 'lucide-react'
 import Link from 'next/link'
@@ -32,7 +31,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
 
-type GuestTypeTab = 'all' | 'internal' | 'external' | 'tenant'
+type GuestTypeTab = 'all' | 'internal' | 'external'
 
 type GuestSummary = {
   total: number
@@ -372,13 +371,6 @@ export default function GuestManagementPage({
                 >
                   <Globe className="h-3.5 w-3.5" />
                   Eksternal/Umum
-                </TabsTrigger>
-                <TabsTrigger
-                  value="tenant"
-                  className="flex items-center gap-2 rounded-full border px-4 py-2 text-xs"
-                >
-                  <Store className="h-3.5 w-3.5" />
-                  Tenant
                 </TabsTrigger>
               </TabsList>
             </Tabs>

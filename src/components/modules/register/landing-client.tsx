@@ -6,7 +6,7 @@ import { Event, EventGuestRule } from '@/types'
 import { Hero } from './sections/Hero'
 import { EventInfo } from './sections/EventInfo'
 import { Registration } from './sections/Registration'
-import { TenantBanner } from './sections/TenantBanner'
+
 import { AccessBanner } from './sections/AccessBanner'
 import { Footer } from './sections/Footer'
 import { ScrollToTop } from '@/components/ui/scroll-to-top'
@@ -55,7 +55,7 @@ export function LandingClient({ events, guestRules }: LandingClientProps) {
           location={mainEvent?.location || undefined}
           guestRules={guestRules?.filter((r) => r.event_id === mainEvent?.id)}
         />
-        <TenantBanner eventName={mainEvent.name || ''} />
+
         <div id="register-section">
           {mainEvent && <AccessBanner eventName={mainEvent.name || ''} />}
         </div>

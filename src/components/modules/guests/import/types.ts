@@ -1,6 +1,6 @@
 export interface RawGuest {
   full_name: string
-  guest_type: 'internal' | 'external' | 'tenant'
+  guest_type: 'internal' | 'external'
   phone: string
   email?: string
   address?: string

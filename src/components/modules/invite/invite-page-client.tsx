@@ -10,7 +10,6 @@ import { InvitationStatus } from '@/components/modules/invite/invitation-status'
 import { MosaicBackground } from '@/components/modules/invite/mosaic-background'
 import { TemplateRenderer } from '@/components/modules/invite/TemplateRenderer'
 import { INVITATION_TEMPLATES as templates } from '@/lib/constants/templates'
-import { FloatingMusicPlayer } from '@/components/modules/invite/music-player'
 import { FloatingWhatsApp } from '@/components/ui/floating-whatsapp'
 
 type InvitePageClientProps = {
@@ -41,19 +40,8 @@ export function InvitePageClient({
   )
   const [isUpdatingPaymentProof, setIsUpdatingPaymentProof] = useState(false)
   const [isOpen, setIsOpen] = useState(
-    initialGuest.guest_type === 'tenant' || initialGuest.guest_type === 'external',
+    initialGuest.guest_type === 'external',
   )
-  const [shouldPlayMusic, setShouldPlayMusic] = useState(true)
-  const [isTicketView, setIsTicketView] = useState(false)
-
-  useEffect(() => {
-    if (isOpen && !isTicketView) {
-      setShouldPlayMusic(true)
-    } else if (isTicketView) {
-      setShouldPlayMusic(false)
-    }
-  }, [isOpen, isTicketView])
-
   useEffect(() => {
     document.title = `Undangan ${guest.full_name} - ${event.name}`
   }, [event.name, guest.full_name])
@@ -172,24 +160,11 @@ export function InvitePageClient({
             onUpdatePaymentProof={handleUpdatePaymentProof}
             openGate={openGate}
             startTime={startTime}
-            onTicketView={setIsTicketView}
           />
         </AnimatePresence>
       </div>
 
-      {!isTicketView && event.template_id === 'festive-halal' && (
-        <FloatingMusicPlayer
-          url="https://bbqtqcwjjzzfbyrlehdc.supabase.co/storage/v1/object/public/event-assets/music/lebaran.mp3"
-          autoPlay={shouldPlayMusic}
-        />
-      )}
-
-      <FloatingWhatsApp
-        phone="6289676258026"
-        containerClassName={
-          !isTicketView && event.template_id === 'festive-halal' ? 'right-24' : 'right-6'
-        }
-      />
+      <FloatingWhatsApp phone="6289676258026" />
     </div>
   )
 }

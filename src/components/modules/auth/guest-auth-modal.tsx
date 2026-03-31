@@ -17,7 +17,7 @@ interface GuestAuthModalProps {
   onClose: () => void
   eventId: string
   eventName: string
-  guestType: 'internal' | 'tenant' | 'external'
+  guestType: 'internal' | 'external'
   defaultTab?: 'login' | 'register'
 }
 
@@ -33,7 +33,6 @@ export function GuestAuthModal({
   const [successData, setSuccessData] = useState<{
     invitation_code: string
     registeredName: string
-    registrationType: 'external' | 'tenant'
   } | null>(null)
 
   // Reset tab when modal opens with a different default
@@ -59,7 +58,6 @@ export function GuestAuthModal({
             <RegistrationSuccess
               invitationCode={successData.invitation_code}
               registeredName={successData.registeredName}
-              registeredGuestType={successData.registrationType}
               inline
             />
           </div>
@@ -103,7 +101,6 @@ export function GuestAuthModal({
                 <TabsContent value="register" className="mt-0 outline-none">
                   <RegistrationForm
                     eventIdentifier={eventId}
-                    forcedGuestType={guestType as 'external' | 'tenant'}
                     onSuccess={(data) => setSuccessData(data)}
                     hideHeader
                   />

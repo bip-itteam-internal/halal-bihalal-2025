@@ -49,7 +49,7 @@ export function ScannerManualInput({
         <DialogHeader>
           <DialogTitle>Input Manual</DialogTitle>
           <DialogDescription>
-            Gunakan jika QR tidak terbaca (ID tamu/kode undangan/gelang).
+            Gunakan jika QR tidak terbaca (ID tamu/kode undangan).
           </DialogDescription>
         </DialogHeader>
 

@@ -35,26 +35,7 @@ export function Registration() {
             </span>
           </h2>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.6 }}
-            className="group relative mx-auto mt-4 px-8 py-3"
-          >
-            {/* Soft Glow Background */}
-            <div className="bg-halal-primary/5 group-hover:bg-halal-primary/10 absolute inset-0 -z-10 blur-xl transition-all duration-500" />
 
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex items-center gap-4">
-                <div className="via-halal-primary/30 h-px w-8 bg-gradient-to-r from-transparent to-transparent" />
-                <span className="font-outfit text-2xl font-black tracking-tighter text-white md:text-4xl">
-                  KUOTA 1000 ORANG
-                </span>
-                <div className="via-halal-primary/30 h-px w-8 bg-gradient-to-r from-transparent to-transparent" />
-              </div>
-            </div>
-          </motion.div>
 
           <p className="mx-auto mt-8 max-w-2xl text-base leading-relaxed text-zinc-400/80 md:text-xl">
             Bharata{' '}

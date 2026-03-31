@@ -19,7 +19,6 @@ import {
 const GUEST_TYPES: { label: string; value: GuestType }[] = [
   { label: 'Internal (Staf)', value: 'internal' },
   { label: 'External (Umum)', value: 'external' },
-  { label: 'Tenant UMKM', value: 'tenant' },
 ]
 
 interface EventGuestRulesManagerProps {

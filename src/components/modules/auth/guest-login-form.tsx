@@ -31,7 +31,7 @@ type GuestLoginValues = z.infer<typeof loginSchema>
 
 interface GuestLoginFormProps {
   eventId: string
-  guestType: 'internal' | 'tenant' | 'external'
+  guestType: 'internal' | 'external'
   onSuccess?: () => void
   hideHeader?: boolean
 }

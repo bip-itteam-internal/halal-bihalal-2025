@@ -92,7 +92,6 @@ export function UploadStep({
             {[
               { id: 'internal', label: 'Internal' },
               { id: 'external', label: 'Eksternal' },
-              { id: 'tenant', label: 'Tenant' },
             ].map((t) => (
               <div
                 key={t.id}

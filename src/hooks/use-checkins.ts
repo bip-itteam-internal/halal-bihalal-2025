@@ -22,14 +22,18 @@ export interface CheckinLog {
   } | null
 }
 
-export function useCheckins() {
+export function useCheckins(eventId?: string) {
   const [loading, setLoading] = useState(true)
   const [checkins, setCheckins] = useState<CheckinLog[]>([])
 
   const fetchCheckins = useCallback(async () => {
     try {
       setLoading(true)
-      const res = await fetch('/api/admin/checkins')
+      const url = eventId 
+        ? `/api/admin/checkins?event_id=${eventId}`
+        : '/api/admin/checkins'
+        
+      const res = await fetch(url)
       if (!res.ok) {
         const error = await res.json()
         throw new Error(error.message || 'Gagal memuat log check-in')
@@ -41,7 +45,7 @@ export function useCheckins() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [eventId])
 
   useEffect(() => {
     fetchCheckins()

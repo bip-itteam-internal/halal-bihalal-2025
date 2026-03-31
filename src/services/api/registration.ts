@@ -1,7 +1,7 @@
 export interface RegisterGuestPayload {
   full_name: string
   phone: string
-  guest_type: 'external' | 'tenant'
+  guest_type: 'external'
   address: string
   metadata?: Record<string, unknown>
   payment_proof_url?: string

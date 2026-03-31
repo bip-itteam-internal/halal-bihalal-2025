@@ -7,7 +7,6 @@ export const registrationSchema = z.object({
     .min(8, 'Nomor WhatsApp tidak valid.')
     .regex(/^[0-9+\-\s()]+$/, 'Format nomor WhatsApp tidak valid.'),
   address: z.string().optional(),
-  umkm_product: z.string().optional(),
 })
 
 export type RegistrationFormValues = z.infer<typeof registrationSchema>

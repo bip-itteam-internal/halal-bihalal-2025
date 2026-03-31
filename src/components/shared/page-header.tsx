@@ -23,8 +23,12 @@ export function PageHeader({
     <div className={cn('flex min-w-0 items-center gap-2 sm:gap-3', className)}>
       {backHref && (
         <Link href={backHref} className="shrink-0">
-          <Button variant="ghost" size="icon" className="-ml-1 h-8 w-8">
-            <ChevronLeft className="h-4 w-4" />
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="h-9 w-9 bg-white shadow-sm hover:bg-slate-50 border-slate-200"
+          >
+            <ChevronLeft className="h-5 w-5 text-slate-600" />
           </Button>
         </Link>
       )}

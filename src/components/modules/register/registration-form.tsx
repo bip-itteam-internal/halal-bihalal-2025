@@ -11,7 +11,6 @@ import { registerGuest } from '@/services/api/registration'
 
 // Modular Components
 import { RegistrationFormHeader } from './components/form-header'
-import { GuestTypeToggle } from './components/guest-type-toggle'
 import { FormFields } from './components/form-fields'
 import { SubmitButton } from './components/submit-button'
 
@@ -23,11 +22,9 @@ import {
 
 interface RegistrationFormProps {
   eventIdentifier: string
-  forcedGuestType: 'external' | 'tenant' | null
   onSuccess: (data: {
     invitation_code: string
     registeredName: string
-    registrationType: 'external' | 'tenant'
   }) => void
   hideHeader?: boolean
   paymentFile?: File | null
@@ -36,7 +33,6 @@ interface RegistrationFormProps {
 
 export function RegistrationForm({
   eventIdentifier,
-  forcedGuestType,
   onSuccess,
   hideHeader = false,
   paymentFile: externalPaymentFile,
@@ -56,9 +52,6 @@ export function RegistrationForm({
   const effectiveSetPaymentFile =
     setExternalPaymentFile || setInternalPaymentFile
 
-  const [registrationType, setRegistrationType] = useState<
-    'external' | 'tenant'
-  >(forcedGuestType === 'tenant' ? 'tenant' : 'external')
   const [eventData, setEventData] = useState<Event | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const supabase = createClient()
@@ -78,10 +71,7 @@ export function RegistrationForm({
     fetchEvent()
   }, [eventIdentifier])
 
-  const isPaid =
-    registrationType === 'tenant'
-      ? eventData?.is_tenant_paid
-      : eventData?.is_paid && (eventData.price_external || 0) > 0
+  const isPaid = eventData?.is_paid && (eventData.price_external || 0) > 0
 
   const form = useForm<RegistrationFormValues>({
     resolver: zodResolver(registrationSchema),
@@ -89,7 +79,6 @@ export function RegistrationForm({
       full_name: '',
       phone: '',
       address: '',
-      umkm_product: '',
     },
   })
 
@@ -100,29 +89,8 @@ export function RegistrationForm({
 
     try {
       const cleanedAddress = values.address?.trim() || ''
-      const cleanedUmkmProduct = values.umkm_product?.trim() || ''
 
-      if (registrationType === 'tenant') {
-        let hasValidationError = false
-        if (!cleanedAddress) {
-          form.setError('address', {
-            type: 'manual',
-            message: 'Alamat tenant wajib diisi.',
-          })
-          hasValidationError = true
-        }
-        if (!cleanedUmkmProduct) {
-          form.setError('umkm_product', {
-            type: 'manual',
-            message: 'Produk UMKM wajib diisi.',
-          })
-          hasValidationError = true
-        }
-        if (hasValidationError) {
-          setRegisterLoading(false)
-          return
-        }
-      } else if (!cleanedAddress) {
+      if (!cleanedAddress) {
         form.setError('address', {
           type: 'manual',
           message: 'Alamat wajib diisi.',
@@ -166,19 +134,15 @@ export function RegistrationForm({
       const data = await registerGuest(eventIdentifier, {
         full_name: values.full_name,
         phone: values.phone,
-        guest_type: registrationType,
+        guest_type: 'external',
         address: cleanedAddress,
         payment_proof_url: paymentProofUrl,
-        metadata:
-          registrationType === 'tenant'
-            ? { umkm_product: cleanedUmkmProduct }
-            : {},
+        metadata: {},
       })
 
       onSuccess({
         invitation_code: data.invitation_code,
         registeredName: values.full_name,
-        registrationType: registrationType,
       })
     } catch (err: unknown) {
       setRegisterError(
@@ -192,7 +156,7 @@ export function RegistrationForm({
   return (
     <div className="space-y-4">
       {!hideHeader && (
-        <RegistrationFormHeader forcedGuestType={forcedGuestType} />
+        <RegistrationFormHeader />
       )}
 
       <Form {...form}>
@@ -204,16 +168,8 @@ export function RegistrationForm({
             </Alert>
           )}
 
-          {!forcedGuestType && (
-            <GuestTypeToggle
-              registrationType={registrationType}
-              setRegistrationType={setRegistrationType}
-            />
-          )}
-
           <FormFields
             form={form}
-            registrationType={registrationType}
             isPaid={isPaid}
             paymentFile={effectivePaymentFile}
             setPaymentFile={effectiveSetPaymentFile}

@@ -5,7 +5,7 @@ export async function getEvents() {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('events')
-    .select('*')
+    .select('*, event_guest_rules(*)')
     .order('created_at', { ascending: false })
 
   if (error) throw error
@@ -33,16 +33,14 @@ export async function getEventCounts(eventIds: string[]) {
       const eventId = typedItem.event_id
       const guest = typedItem.guests
 
-      if (!guest || guest.registration_source !== 'public_registration') {
-        return acc
-      }
-
       if (!acc[eventId]) {
         acc[eventId] = { external: 0, tenant: 0 }
       }
 
-      if (guest.guest_type === 'tenant') acc[eventId].tenant += 1
-      if (guest.guest_type === 'external') acc[eventId].external += 1
+      if (guest) {
+        if (guest.guest_type === 'external') acc[eventId].external += 1
+        if (guest.guest_type === 'internal') acc[eventId].tenant += 1
+      }
 
       return acc
     },
@@ -54,7 +52,7 @@ export async function getEventById(id: string) {
   const supabase = createClient()
   const { data, error } = await supabase
     .from('events')
-    .select('*')
+    .select('*, event_guest_rules(*)')
     .eq('id', id)
     .single()
 
@@ -64,30 +62,27 @@ export async function getEventById(id: string) {
 
 export async function updateEvent(id: string, payload: Partial<Event>) {
   const supabase = createClient()
-  console.log('Attempting update for event:', id, payload)
+  
+  // Remove complex objects before update if any
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { event_guest_rules, ...updateData } = payload as any;
 
-  // Update with select('id') to check if rows were actually affected
-  const { data, error, status } = await supabase
+  const { data, error } = await supabase
     .from('events')
-    .update(payload)
+    .update(updateData)
     .eq('id', id)
     .select('id')
 
   if (error) {
-    console.error('Update failed. Status:', status, 'Error:', error)
     throw error
   }
 
   if (!data || data.length === 0) {
-    // This happens if ID doesn't match or RLS blocks the update
     throw new Error(
       'Gagal menyimpan: Event tidak ditemukan atau Anda tidak memiliki izin akses (RLS).',
     )
   }
 
-  console.log('Update success, affected rows:', data.length)
-
-  // Fetch the full updated object
   return await getEventById(id)
 }
 

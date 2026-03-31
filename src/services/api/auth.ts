@@ -1,6 +1,6 @@
 export interface GuestLoginPayload {
   phone: string
-  guest_type?: 'internal' | 'tenant' | 'external'
+  guest_type?: 'internal' | 'external'
 }
 
 export interface GuestLoginResponse {
