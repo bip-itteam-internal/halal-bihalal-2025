@@ -50,4 +50,4 @@ VALUES ('UUID_USER', 'UUID_EVENT', 'scanner');
 
 ## 5. Tips Keamanan
 - Role `super_admin` sebaiknya hanya diberikan kepada 1-2 orang pengembang utama.
-- Gunakan role `scanner` untuk HP petugas di lapangan agar data tamu aman dari perubahan tidak sengaja.
+- Gunakan role `scanner` untuk HP panitia di lapangan agar data tamu aman dari perubahan tidak sengaja.

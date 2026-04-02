@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { message: 'Sesi petugas berakhir. Silakan login kembali.' },
+        { message: 'Sesi panitia berakhir. Silakan login kembali.' },
         { status: 401 },
       )
     }

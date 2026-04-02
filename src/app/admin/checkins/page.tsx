@@ -34,7 +34,7 @@ function CheckinLogContent({ eventId }: { eventId?: string }) {
                 <TableHead className="font-bold text-slate-800">Nama Tamu</TableHead>
                 {!eventId && <TableHead className="font-bold text-slate-800">Event</TableHead>}
                 <TableHead className="font-bold text-slate-800">Tahap (Step)</TableHead>
-                <TableHead className="font-bold text-slate-800">Petugas (Scanner)</TableHead>
+                <TableHead className="font-bold text-slate-800">Panitia (Scanner)</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

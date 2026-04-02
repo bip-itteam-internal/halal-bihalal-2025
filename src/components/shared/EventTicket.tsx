@@ -267,7 +267,7 @@ export function EventTicket({
           </div>
           <div className="mt-4 flex flex-col items-center gap-1">
             <p className="text-xs text-slate-900">
-              Tunjukkan QR ini kepada petugas
+              Tunjukkan QR ini kepada panitia
             </p>
           </div>
         </div>
@@ -314,7 +314,7 @@ export function EventTicket({
                 Penting:
               </span>{' '}
               Simpan tiket ini baik-baik. Anda bisa mengunduhnya sebagai gambar.
-              Tunjukkan kode bar pada tiket ini kepada petugas di lokasi acara.
+              Tunjukkan kode bar pada tiket ini kepada panitia di lokasi acara.
             </DialogDescription>
           </DialogHeader>
           <Button onClick={() => setShowInfoModal(false)}>Saya Mengerti</Button>
