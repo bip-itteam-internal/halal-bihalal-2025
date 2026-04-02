@@ -20,6 +20,8 @@ import Link from 'next/link'
 import { Guest, PaymentStatus } from '@/types'
 import { GuestListTable } from '@/components/modules/guests/guest-list-table'
 import { WhatsappBulkDialog } from '@/components/modules/guests/whatsapp-bulk-dialog'
+import { ImportGuestSheet } from '@/components/modules/guests/import-guest-sheet'
+import { AddGuestSheet } from '@/components/modules/guests/add-guest-sheet'
 import { toast } from 'sonner'
 import {
   Select,
@@ -335,6 +337,8 @@ export default function GuestManagementPage({
                   Broadcast WA
                 </Button>
               )}
+              <ImportGuestSheet eventId={eventId} onSuccess={fetchEventAndGuests} />
+              <AddGuestSheet eventId={eventId} onSuccess={fetchEventAndGuests} />
               <Button
                 variant="outline"
                 size="icon"

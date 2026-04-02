@@ -59,12 +59,10 @@ export async function POST(
     }
 
     const body = await request.json()
-    const {
-      full_name: fullName,
-      phone,
-      guest_type: guestType,
-      address,
-    } = body
+    const { full_name: fullName, guest_type: guestType, address } = body
+
+    // Normalize phone number (digits only)
+    const phone = body.phone ? String(body.phone).replace(/\D/g, '') : null
 
     if (!fullName || !phone) {
       return NextResponse.json(

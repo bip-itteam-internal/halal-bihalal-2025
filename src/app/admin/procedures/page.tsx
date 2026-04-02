@@ -153,9 +153,9 @@ export default function ProceduresPage() {
                   <ul className="space-y-3">
                     {[
                       'Membuat event baru melalui menu Events.',
-                      'Mengimpor daftar tamu dari Excel ke menu Master Tamu.',
-                      'Memastikan mapping kolom sudah sesuai agar data bersih.',
-                      'Menghubungkan tamu ke event yang telah dibuat.',
+                      'Masuk ke detail event untuk mengelola tamu spesifik.',
+                      'Mengimpor atau menambah tamu langsung di dalam halaman event tersebut.',
+                      'Memastikan data tamu sudah sesuai untuk pengiriman undangan.',
                     ].map((text, i) => (
                       <li
                         key={i}

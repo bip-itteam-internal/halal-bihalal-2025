@@ -113,13 +113,15 @@ export function AddGuestSheet({
       setIsSubmitting(true)
 
       // 1. Insert into Master Guest list
+      const normalizedPhone = values.phone ? values.phone.replace(/\D/g, '') : null
+
       const { data: newGuest, error: guestError } = await supabase
         .from('guests')
         .insert([
           {
             full_name: values.full_name,
             guest_type: values.guest_type,
-            phone: values.phone || null,
+            phone: normalizedPhone,
             email: values.email || null,
             address: values.address || null,
             metadata: values.metadata || {},

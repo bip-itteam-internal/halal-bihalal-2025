@@ -15,8 +15,3 @@ export interface ColumnMapping {
   email: string
   address: string
 }
-
-export interface EventOption {
-  id: string
-  name: string
-}

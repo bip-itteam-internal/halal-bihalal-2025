@@ -48,12 +48,7 @@ const items = [
     icon: LayoutDashboard,
     roles: ['super_admin', 'admin'] as UserRole[],
   },
-  {
-    title: 'Master Tamu',
-    url: '/admin/guests',
-    icon: Users,
-    roles: ['super_admin', 'admin'] as UserRole[],
-  },
+
   {
     title: 'Events',
     url: '/admin/events',

@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
 import { generateRandomCode } from '@/lib/utils'
-import { RawGuest, ImportStep, ColumnMapping, EventOption } from './types'
+import { RawGuest, ImportStep, ColumnMapping } from './types'
 
 export function useImportGuest(eventId: string, onSuccess?: () => void) {
   const supabase = createClient()
@@ -13,11 +13,6 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
   const [isProcessing, setIsProcessing] = useState(false)
   const [step, setStep] = useState<ImportStep>('upload')
   const [error, setError] = useState<string | null>(null)
-
-  // Events Selection state
-  const [events, setEvents] = useState<EventOption[]>([])
-  const [selectedEventIds, setSelectedEventIds] = useState<string[]>([])
-  const [loadingEvents, setLoadingEvents] = useState(false)
   const [defaultGuestType, setDefaultGuestType] =
     useState<RawGuest['guest_type']>('internal')
   const [skipDuplicates, setSkipDuplicates] = useState(true)
@@ -36,28 +31,6 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const fetchEvents = useCallback(async () => {
-    try {
-      setLoadingEvents(true)
-      const { data, error } = await supabase
-        .from('events')
-        .select('id, name')
-        .order('created_at', { ascending: false })
-      if (error) throw error
-      setEvents(data || [])
-    } catch (err) {
-      console.error('Error fetching events:', err)
-    } finally {
-      setLoadingEvents(false)
-    }
-  }, [supabase])
-
-  useEffect(() => {
-    if (isOpen && !eventId) {
-      fetchEvents()
-    }
-  }, [isOpen, eventId, fetchEvents])
-
   const resetState = () => {
     setStep('upload')
     setPreviewData([])
@@ -71,7 +44,6 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
       address: '',
     })
     setError(null)
-    setSelectedEventIds([])
     setDefaultGuestType('internal')
     setSkipDuplicates(true)
     if (fileInputRef.current) fileInputRef.current.value = ''
@@ -223,25 +195,43 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
 
       // Check against database if skipping
       if (skipDuplicates) {
-        const phonesToCheck = finalPreviewData
-          .map((g) => g.phone?.replace(/\D/g, ''))
-          .filter(Boolean) as string[]
+        // Fetch ALL existing phone numbers in batches to avoid Supabase 1000-row limit
+        let allExistingPhonesNormalized = new Set<string>()
+        let page = 0
+        const pageSize = 1000
+        let hasMore = true
 
-        if (phonesToCheck.length > 0) {
-          const { data: existing } = await supabase
+        while (hasMore) {
+          const { data, error: fetchError } = await supabase
             .from('guests')
             .select('phone')
-            .in('phone', phonesToCheck)
+            .not('phone', 'is', null)
+            .range(page * pageSize, (page + 1) * pageSize - 1)
 
-          if (existing && existing.length > 0) {
-            const existingPhones = new Set(
-              existing.map((e) => e.phone?.replace(/\D/g, '')),
-            )
-            finalPreviewData = finalPreviewData.filter((g) => {
-              const p = g.phone?.replace(/\D/g, '')
-              return !p || !existingPhones.has(p)
+          if (fetchError) throw fetchError
+
+          if (data && data.length > 0) {
+            data.forEach((e) => {
+              const normalized = e.phone?.replace(/\D/g, '')
+              if (normalized) allExistingPhonesNormalized.add(normalized)
             })
+
+            if (data.length < pageSize) {
+              hasMore = false
+            } else {
+              page++
+            }
+          } else {
+            hasMore = false
           }
+        }
+
+        if (allExistingPhonesNormalized.size > 0) {
+          finalPreviewData = finalPreviewData.filter((g) => {
+            if (!g.phone) return true
+            const p = g.phone.replace(/\D/g, '')
+            return !allExistingPhonesNormalized.has(p)
+          })
         }
       }
 
@@ -254,40 +244,51 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
         return
       }
 
-      const guestsToInsert = finalPreviewData.map((g) => ({
-        full_name: g.full_name,
-        guest_type: ['internal', 'external'].includes(g.guest_type)
-          ? g.guest_type
-          : 'internal',
-        phone: g.phone || null,
-        email: g.email || null,
-        address: g.address || null,
-        registration_source: 'admin_invite',
-        rsvp_status: 'pending',
-        invitation_code: `INV-${generateRandomCode(6)}`,
-      }))
+      const guestsToInsert = finalPreviewData.map((g) => {
+        // Normalize phone for storage to prevent future 409s
+        const normalizedPhone = g.phone ? g.phone.replace(/\D/g, '') : null
+
+        return {
+          full_name: g.full_name,
+          guest_type: ['internal', 'external'].includes(g.guest_type)
+            ? g.guest_type
+            : 'internal',
+          phone: normalizedPhone,
+          email: g.email || null,
+          address: g.address || null,
+          registration_source: 'admin_invite',
+          rsvp_status: 'pending',
+          invitation_code: `INV-${generateRandomCode(6)}`,
+        }
+      })
 
       const { data: insertedGuests, error: insertError } = await supabase
         .from('guests')
         .insert(guestsToInsert)
         .select('id')
 
-      if (insertError) throw insertError
+      if (insertError) {
+        // Specifically handle 409 Conflict or 23505 Unique Violation
+        if (insertError.code === '23505' || insertError.message?.includes('409')) {
+          throw new Error(
+            'Beberapa data yang Anda masukkan masih terdeteksi duplikat oleh sistem database. Silakan periksa kembali file Anda.',
+          )
+        }
+        throw insertError
+      }
 
-      const targetEventIds = eventId ? [eventId] : selectedEventIds
+      const targetEventId = eventId
       if (
-        targetEventIds.length > 0 &&
+        targetEventId &&
         insertedGuests &&
         insertedGuests.length > 0
       ) {
-        const mappings: { guest_id: string; event_id: string }[] = []
-        targetEventIds
-          .filter((id) => id !== 'none')
-          .forEach((eid) => {
-            insertedGuests.forEach((ig) => {
-              mappings.push({ guest_id: ig.id, event_id: eid })
-            })
-          })
+        const mappings: { guest_id: string; event_id: string }[] = insertedGuests.map(
+          (ig: { id: string }) => ({
+            guest_id: ig.id,
+            event_id: targetEventId,
+          }),
+        )
 
         if (mappings.length > 0) {
           const { error: mapError } = await supabase
@@ -317,10 +318,6 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
     setStep,
     isProcessing,
     error,
-    events,
-    selectedEventIds,
-    setSelectedEventIds,
-    loadingEvents,
     rawFileData,
     availableColumns,
     columnMapping,

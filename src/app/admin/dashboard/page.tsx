@@ -61,7 +61,11 @@ function MetricPanel({
 }: {
   title: string
   description: string
-  items: Array<{ label: string; value: number; tone?: 'default' | 'good' | 'warn' }>
+  items: Array<{
+    label: string
+    value: number
+    tone?: 'default' | 'good' | 'warn'
+  }>
 }) {
   return (
     <Card className="h-full">
@@ -75,7 +79,9 @@ function MetricPanel({
             key={item.label}
             className="flex items-center justify-between rounded-xl border bg-slate-50/70 px-3 py-2"
           >
-            <span className="text-sm font-medium text-slate-600">{item.label}</span>
+            <span className="text-sm font-medium text-slate-600">
+              {item.label}
+            </span>
             <span
               className={`text-lg font-black ${
                 item.tone === 'good'
@@ -122,7 +128,9 @@ export default function AdminDashboardPage() {
     exchange: 0,
     entrance: 0,
   })
-  const [recentCheckins, setRecentCheckins] = useState<DashboardRecentCheckin[]>([])
+  const [recentCheckins, setRecentCheckins] = useState<
+    DashboardRecentCheckin[]
+  >([])
   const { role } = useProfile()
   const router = useRouter()
 
@@ -162,12 +170,7 @@ export default function AdminDashboardPage() {
       description: 'Atur event, guest rules, dan landing page.',
       icon: <CalendarDays className="h-4 w-4" />,
     },
-    {
-      href: '/admin/guests',
-      label: 'Master Guests',
-      description: 'Lihat dan rapikan seluruh tamu lintas event.',
-      icon: <Users className="h-4 w-4" />,
-    },
+
     {
       href: '/admin/scanner',
       label: 'Buka Scanner',
@@ -302,8 +305,12 @@ export default function AdminDashboardPage() {
                           {action.icon}
                         </div>
                         <div className="space-y-1">
-                          <p className="font-semibold text-slate-900">{action.label}</p>
-                          <p className="text-sm text-slate-500">{action.description}</p>
+                          <p className="font-semibold text-slate-900">
+                            {action.label}
+                          </p>
+                          <p className="text-sm text-slate-500">
+                            {action.description}
+                          </p>
                         </div>
                       </div>
                       <ArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
@@ -374,10 +381,18 @@ export default function AdminDashboardPage() {
                   {loading ? (
                     Array.from({ length: 5 }).map((_, index) => (
                       <TableRow key={index}>
-                        <TableCell><Skeleton className="h-4 w-28" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-36" /></TableCell>
-                        <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
-                        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-28" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-36" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-6 w-20 rounded-full" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-24" />
+                        </TableCell>
                       </TableRow>
                     ))
                   ) : recentCheckins.length === 0 ? (
@@ -397,7 +412,7 @@ export default function AdminDashboardPage() {
                             <p className="font-medium text-slate-900">
                               {item.guests?.full_name || '-'}
                             </p>
-                            <p className="text-xs capitalize text-slate-500">
+                            <p className="text-xs text-slate-500 capitalize">
                               {item.guests?.guest_type || '-'}
                             </p>
                           </div>
@@ -429,10 +444,7 @@ export default function AdminDashboardPage() {
             <CardContent className="space-y-3">
               {loading ? (
                 Array.from({ length: 4 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="rounded-2xl border px-4 py-4"
-                  >
+                  <div key={index} className="rounded-2xl border px-4 py-4">
                     <Skeleton className="h-4 w-40" />
                     <Skeleton className="mt-2 h-3 w-24" />
                   </div>
@@ -449,7 +461,9 @@ export default function AdminDashboardPage() {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-1">
-                        <p className="font-semibold text-slate-900">{event.name}</p>
+                        <p className="font-semibold text-slate-900">
+                          {event.name}
+                        </p>
                         <p className="text-sm text-slate-500">
                           {formatJakartaDate(event.event_date, 'PPP')}
                         </p>
@@ -468,7 +482,11 @@ export default function AdminDashboardPage() {
                     {role !== 'staff' && (
                       <div className="mt-3">
                         <Link href={`/admin/events/${event.id}`}>
-                          <Button variant="ghost" size="sm" className="h-8 px-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-0"
+                          >
                             Buka Detail
                           </Button>
                         </Link>

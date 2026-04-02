@@ -1,19 +1,15 @@
 'use client'
 
-import { FileUp, Calendar, Loader2, UserCog } from 'lucide-react'
+import { FileUp, Loader2, UserCog } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { EventOption, RawGuest } from './types'
+import { RawGuest } from './types'
 
 interface UploadStepProps {
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void
   fileInputRef: React.RefObject<HTMLInputElement | null>
-  loadingEvents: boolean
-  events: EventOption[]
-  selectedEventIds: string[]
-  setSelectedEventIds: (ids: string[] | ((prev: string[]) => string[])) => void
   defaultGuestType: RawGuest['guest_type']
   setDefaultGuestType: (type: RawGuest['guest_type']) => void
   hasFile: boolean
@@ -25,10 +21,6 @@ interface UploadStepProps {
 export function UploadStep({
   onFileUpload,
   fileInputRef,
-  loadingEvents,
-  events,
-  selectedEventIds,
-  setSelectedEventIds,
   defaultGuestType,
   setDefaultGuestType,
   hasFile,
@@ -126,7 +118,6 @@ export function UploadStep({
           </p>
         </div>
 
-        {/* 2.5 Skip Duplicates Toggle */}
         <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white p-5">
           <div className="space-y-1">
             <span className="text-[11px] font-semibold text-slate-800">
@@ -142,95 +133,6 @@ export function UploadStep({
             className="data-[state=checked]:border-primary data-[state=checked]:bg-primary h-5 w-5 rounded-md border-slate-200 transition-all"
             onCheckedChange={(checked) => setSkipDuplicates(!!checked)}
           />
-        </div>
-
-        {/* 3. Event Selection */}
-        <div className="space-y-3 rounded-2xl border border-slate-100 bg-white p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50 text-orange-600">
-                <Calendar className="h-3.5 w-3.5" />
-              </div>
-              <span className="text-[11px] font-semibold text-slate-800">
-                Hubungkan ke Acara
-              </span>
-            </div>
-            {selectedEventIds.length > 0 && (
-              <Badge
-                variant="secondary"
-                className="h-5 bg-orange-100 px-2 text-[9px] font-bold text-orange-700"
-              >
-                {selectedEventIds.length} Terpilih
-              </Badge>
-            )}
-          </div>
-
-          <div className="scrollbar-none max-h-[140px] space-y-1 overflow-y-auto rounded-xl border border-slate-50 bg-slate-50/30 p-1">
-            {loadingEvents ? (
-              <div className="flex h-20 items-center justify-center gap-3 text-[10px] font-bold tracking-widest text-slate-400">
-                <Loader2 className="text-primary h-4 w-4 animate-spin" />
-                Mohon tunggu...
-              </div>
-            ) : events.length === 0 ? (
-              <div className="py-8 text-center text-[10px] font-bold text-slate-400 italic">
-                Sistem tidak menemukan acara aktif.
-              </div>
-            ) : (
-              events.map((ev) => {
-                const isSelected = selectedEventIds.includes(ev.id)
-                return (
-                  <button
-                    key={ev.id}
-                    onClick={() => {
-                      if (isSelected) {
-                        setSelectedEventIds((prev) =>
-                          prev.filter((id) => id !== ev.id),
-                        )
-                      } else {
-                        setSelectedEventIds((prev) => [...prev, ev.id])
-                      }
-                    }}
-                    className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-all ${
-                      isSelected
-                        ? 'border-orange-200 bg-white'
-                        : 'border-transparent hover:border-slate-100 hover:bg-white'
-                    }`}
-                  >
-                    <div
-                      className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-md border transition-all ${
-                        isSelected
-                          ? 'border-orange-500 bg-orange-500'
-                          : 'border-slate-300 bg-white group-hover:border-slate-400'
-                      }`}
-                    >
-                      {isSelected && (
-                        <svg
-                          className="h-3 w-3 text-white"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={4}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      )}
-                    </div>
-                    <span
-                      className={`truncate text-[11px] font-bold tracking-tight ${
-                        isSelected ? 'text-slate-900' : 'text-slate-600'
-                      }`}
-                    >
-                      {ev.name}
-                    </span>
-                  </button>
-                )
-              })
-            )}
-          </div>
         </div>
       </div>
     </div>

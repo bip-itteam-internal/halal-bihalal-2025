@@ -36,10 +36,6 @@ export function ImportGuestSheet({
     setStep,
     isProcessing,
     error,
-    events,
-    selectedEventIds,
-    setSelectedEventIds,
-    loadingEvents,
     rawFileData,
     availableColumns,
     columnMapping,
@@ -136,10 +132,6 @@ export function ImportGuestSheet({
               <UploadStep
                 fileInputRef={fileInputRef}
                 onFileUpload={handleFileUpload}
-                loadingEvents={loadingEvents}
-                events={events}
-                selectedEventIds={selectedEventIds}
-                setSelectedEventIds={setSelectedEventIds}
                 defaultGuestType={defaultGuestType}
                 setDefaultGuestType={setDefaultGuestType}
                 hasFile={rawFileData.length > 0}
