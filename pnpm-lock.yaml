@@ -47,9 +47,6 @@ importers:
       framer-motion:
         specifier: ^12.35.0
         version: 12.35.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      html-to-image:
-        specifier: ^1.11.13
-        version: 1.11.13
       html5-qrcode:
         specifier: ^2.3.8
         version: 2.3.8
@@ -3323,9 +3320,6 @@ packages:
   hono@4.12.5:
     resolution: {integrity: sha512-3qq+FUBtlTHhtYxbxheZgY8NIFnkkC/MR8u5TTsr7YZ3wixryQ3cCwn3iZbg8p8B88iDBBAYSfZDS75t8MN7Vg==}
     engines: {node: '>=16.9.0'}
-
-  html-to-image@1.11.13:
-    resolution: {integrity: sha512-cuOPoI7WApyhBElTTb9oqsawRvZ0rHhaHwghRLlTuffoD1B2aDemlCruLeZrUIIdvG7gs9xeELEPm6PhuASqrg==}
 
   html5-qrcode@2.3.8:
     resolution: {integrity: sha512-jsr4vafJhwoLVEDW3n1KvPnCCXWaQfRng0/EEYk1vNcQGcG/htAdhJX0be8YyqMoSz7+hZvOZSTAepsabiuhiQ==}
@@ -8703,8 +8697,6 @@ snapshots:
   hexoid@2.0.0: {}
 
   hono@4.12.5: {}
-
-  html-to-image@1.11.13: {}
 
   html5-qrcode@2.3.8: {}
 
