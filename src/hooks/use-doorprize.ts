@@ -19,7 +19,8 @@ export function useDoorprize() {
     try {
       setLoading(true)
 
-      const res = await fetch('/api/admin/doorprize/eligible')
+      const timestamp = new Date().getTime()
+      const res = await fetch(`/api/admin/doorprize/eligible?t=${timestamp}`)
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
 

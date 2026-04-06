@@ -141,6 +141,7 @@ export default function SlotMachinePage() {
         setIsShaking(true)
         setTimeout(() => {
           const nextAttempt = currentAttempt + 1
+          setCurrentAttempt(nextAttempt)
           if (localWinner) {
             runSpinStep(nextAttempt, totalPlannedFails, localWinner)
           }
