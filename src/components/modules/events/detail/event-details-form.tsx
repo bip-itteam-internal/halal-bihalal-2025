@@ -19,8 +19,20 @@ import {
   Users,
   Wallet,
   X,
+  Navigation,
 } from 'lucide-react'
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
+
+const MapPicker = dynamic(() => import('./map-picker'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-64 w-full items-center justify-center rounded-2xl bg-slate-100 italic text-slate-400">
+      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      Memuat Peta...
+    </div>
+  ),
+})
 
 import { INVITATION_TEMPLATES as templates } from '@/lib/constants/templates'
 import { cn, formatJakartaDate } from '@/lib/utils'
@@ -445,14 +457,20 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
               <div className="sm:col-span-2">
                 <DetailItem label="Lokasi" value={event.location || 'Belum diisi'} />
               </div>
-              <DetailItem
-                label="Latitude"
-                value={event.latitude?.toString() || 'Belum diatur'}
-              />
-              <DetailItem
-                label="Longitude"
-                value={event.longitude?.toString() || 'Belum diatur'}
-              />
+              <div className="flex items-center gap-2">
+                <Navigation className="h-4 w-4 text-emerald-500" />
+                <DetailItem
+                  label="Latitude"
+                  value={event.latitude?.toString() || 'Belum diatur'}
+                />
+              </div>
+              <div className="flex items-center gap-2 border-l border-slate-100 pl-4">
+                <Navigation className="h-4 w-4 text-emerald-500" />
+                <DetailItem
+                  label="Longitude"
+                  value={event.longitude?.toString() || 'Belum diatur'}
+                />
+              </div>
             </div>
           </SectionCard>
 
@@ -706,6 +724,24 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
                         }))
                       }
                     />
+                  </div>
+
+                  <div className="space-y-2 sm:col-span-2">
+                    <FieldLabel>Pilih di Peta</FieldLabel>
+                    <MapPicker
+                      lat={draftEvent.latitude || null}
+                      lng={draftEvent.longitude || null}
+                      onChange={(lat, lng) =>
+                        setDraftEvent((prev) => ({
+                          ...prev,
+                          latitude: parseFloat(lat.toFixed(6)),
+                          longitude: parseFloat(lng.toFixed(6)),
+                        }))
+                      }
+                    />
+                    <p className="text-[10px] text-slate-500">
+                      Klik pada peta untuk memindahkan penanda lokasi acara secara presisi.
+                    </p>
                   </div>
                 </div>
               </>
