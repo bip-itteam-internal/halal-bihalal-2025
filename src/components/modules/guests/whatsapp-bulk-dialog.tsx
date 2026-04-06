@@ -156,19 +156,6 @@ export function WhatsappBulkDialog({
 
         {status === 'idle' && (
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                Nama Acara di Pesan
-              </label>
-              <input
-                type="text"
-                value={eventName}
-                onChange={(e) => setEventName(e.target.value)}
-                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm font-bold transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none"
-                placeholder="Nama Acara..."
-              />
-            </div>
-
             <div className="space-y-3 rounded-2xl border border-amber-100 bg-amber-50 p-4">
               <div className="flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 text-amber-600" />
