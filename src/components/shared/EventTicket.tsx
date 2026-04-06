@@ -100,7 +100,9 @@ export function EventTicket({
               {/* continer untuk open gate umum nya */}
               <div className="space-y-0.5">
                 <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
-                  Open Gate Umum
+                  {guestType?.toLowerCase() === 'internal'
+                    ? 'Open Gate Halal Bihalal'
+                    : 'Open Gate Spesial Konser'}
                 </span>
                 <p className="text-sm leading-none font-semibold text-slate-900">
                   {openGate ? `${openGate.substring(0, 5)}` : '12:00'} WIB
