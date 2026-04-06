@@ -46,7 +46,9 @@ const guestSchema = z.object({
     .optional()
     .or(z.literal('')),
   address: z.string().optional(),
-  metadata: z.any().optional(),
+  registration_number: z.coerce.number().optional(),
+  shirt_size: z.string().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
 type GuestFormValues = z.infer<typeof guestSchema>
@@ -74,6 +76,8 @@ export function AddGuestSheet({
       phone: '',
       email: '',
       address: '',
+      registration_number: undefined,
+      shirt_size: '',
     },
   })
 
@@ -112,24 +116,24 @@ export function AddGuestSheet({
     try {
       setIsSubmitting(true)
 
-      // 1. Insert into Master Guest list
       const normalizedPhone = values.phone ? values.phone.replace(/\D/g, '') : null
+
+      const guestData: Record<string, unknown> = {
+        full_name: values.full_name,
+        guest_type: values.guest_type,
+        phone: normalizedPhone,
+        email: values.email || null,
+        address: values.address || null,
+        shirt_size: values.shirt_size || null,
+        metadata: values.metadata || {},
+        registration_source: 'admin_invite',
+        rsvp_status: 'pending',
+        invitation_code: `INV-${generateRandomCode(6)}`,
+      }
 
       const { data: newGuest, error: guestError } = await supabase
         .from('guests')
-        .insert([
-          {
-            full_name: values.full_name,
-            guest_type: values.guest_type,
-            phone: normalizedPhone,
-            email: values.email || null,
-            address: values.address || null,
-            metadata: values.metadata || {},
-            registration_source: 'admin_invite',
-            rsvp_status: 'pending',
-            invitation_code: `INV-${generateRandomCode(6)}`,
-          },
-        ])
+        .insert([guestData])
         .select()
         .single()
 
@@ -141,10 +145,20 @@ export function AddGuestSheet({
       if (targetEventIds.length > 0) {
         const mappings = targetEventIds
           .filter((id) => id !== 'none')
-          .map((eid) => ({
-            guest_id: newGuest.id,
-            event_id: eid,
-          }))
+          .map((eid) => {
+            const mapping: Record<string, unknown> = {
+              guest_id: newGuest.id,
+              event_id: eid,
+            }
+
+            // Only assign reg number if set and we are in a single event context
+            // or if we want to assign same reg number to multiple events (less common)
+            if (values.registration_number) {
+              mapping.registration_number = values.registration_number
+            }
+
+            return mapping
+          })
 
         if (mappings.length > 0) {
           const { error: eventError } = await supabase
@@ -365,6 +379,55 @@ export function AddGuestSheet({
                   </FormItem>
                 )}
               />
+
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="registration_number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nomor Urut</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="cth. 1"
+                          {...field}
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="shirt_size"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ukuran Kaos</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Pilih ukuran" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {['S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map((size) => (
+                            <SelectItem key={size} value={size}>
+                              {size}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
 
             </form>

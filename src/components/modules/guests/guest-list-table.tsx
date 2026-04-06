@@ -27,10 +27,9 @@ import {
   Loader2,
   MessageCircle,
   Trash2,
+  Link,
 } from 'lucide-react'
-import {
-  bulkSendWhatsappAction,
-} from '@/app/actions/whatsapp-actions'
+import { bulkSendWhatsappAction } from '@/app/actions/whatsapp-actions'
 import { deleteGuestAction } from '@/app/actions/guest-actions'
 import { Badge } from '@/components/ui/badge'
 import { WhatsappBulkDialog } from '@/components/modules/guests/whatsapp-bulk-dialog'
@@ -45,7 +44,6 @@ interface GuestListTableProps {
   guests: Guest[]
   onRefresh: () => void
   onUpdateGuest?: (guestId: string, updates: Partial<Guest>) => void
-  startNumber?: number
   eventId?: string
   showPaymentColumns?: boolean
 }
@@ -54,7 +52,6 @@ export function GuestListTable({
   guests,
   onRefresh,
   onUpdateGuest,
-  startNumber = 1,
   eventId: propEventId,
   showPaymentColumns = true,
 }: GuestListTableProps) {
@@ -109,8 +106,6 @@ export function GuestListTable({
           .eq('id', guestId)
 
         if (rsvpErr) throw rsvpErr
-
-
       }
 
       toast.success(
@@ -133,7 +128,6 @@ export function GuestListTable({
       setLoading(null)
     }
   }
-
 
   const getPaymentStatusBadge = (status?: string) => {
     switch (status) {
@@ -201,27 +195,6 @@ export function GuestListTable({
     }
   }
 
-  const getGuestTypeLabel = (type: string) => {
-    switch (type) {
-      case 'internal':
-        return (
-          <Badge
-            variant="secondary"
-            className="text-[9px] font-normal uppercase"
-          >
-            Internal
-          </Badge>
-        )
-      case 'external':
-        return (
-          <Badge variant="outline" className="text-[9px] font-normal uppercase">
-            Eksternal
-          </Badge>
-        )
-      default:
-        return type
-    }
-  }
 
   return (
     <div className="space-y-4">
@@ -229,14 +202,20 @@ export function GuestListTable({
         <Table>
           <TableHeader>
             <TableRow className="border-b-slate-100 bg-slate-50/50 text-nowrap">
-              <TableHead className="w-[50px] px-4 text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                #
+              <TableHead className="w-[80px] px-4 text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                No. Reg
               </TableHead>
               <TableHead className="w-[200px] text-[10px] font-black tracking-widest text-slate-400 uppercase">
                 Nama Tamu
               </TableHead>
+              <TableHead className="w-[120px] text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                Kode
+              </TableHead>
               <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                Tipe
+                Instansi/Alamat
+              </TableHead>
+              <TableHead className="text-center text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                Baju
               </TableHead>
               <TableHead className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
                 Kontak
@@ -263,7 +242,7 @@ export function GuestListTable({
             {guests.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={showPaymentColumns ? 8 : 6}
+                  colSpan={showPaymentColumns ? 10 : 8}
                   className="text-muted-foreground h-32 text-center"
                 >
                   <div className="flex flex-col items-center justify-center gap-1">
@@ -275,18 +254,35 @@ export function GuestListTable({
                 </TableCell>
               </TableRow>
             ) : (
-              guests.map((guest, index) => (
+              guests.map((guest) => (
                 <TableRow
                   key={guest.id}
                   className="group border-b-slate-50 transition-colors hover:bg-slate-50/50"
                 >
-                  <TableCell className="text-[11px] font-bold text-slate-500 tabular-nums">
-                    {startNumber + index}
+                  <TableCell className="px-4 text-[11px] font-bold text-slate-900 tabular-nums">
+                    {guest.registration_number || '-'}
                   </TableCell>
                   <TableCell className="py-3 font-medium">
                     {guest.full_name}
                   </TableCell>
-                  <TableCell>{getGuestTypeLabel(guest.guest_type)}</TableCell>
+                  <TableCell className="font-mono text-[11px] font-medium text-slate-500">
+                    {guest.invitation_code || '-'}
+                  </TableCell>
+                  <TableCell className="max-w-[200px] truncate text-[11px]">
+                    {guest.address || '-'}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {guest.shirt_size ? (
+                      <Badge
+                        variant="outline"
+                        className="border-slate-200 bg-slate-50 text-[10px] font-bold text-slate-600"
+                      >
+                        {guest.shirt_size}
+                      </Badge>
+                    ) : (
+                      <span className="text-slate-300">-</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-col space-y-0.5 text-[11px] leading-tight">
                       {guest.phone && (
@@ -365,14 +361,32 @@ export function GuestListTable({
                     </TableCell>
                   )}
                   <TableCell className="text-center">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-slate-400 hover:bg-red-50 hover:text-red-500"
-                      onClick={() => setGuestToDelete(guest)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center justify-center gap-1">
+                      {guest.invitation_code && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                          title="Salin Link Undangan"
+                          onClick={() => {
+                            const baseUrl = window.location.origin
+                            const guestLink = `${baseUrl}/invite/${guest.invitation_code}`
+                            navigator.clipboard.writeText(guestLink)
+                            toast.success('Link undangan berhasil disalin!')
+                          }}
+                        >
+                          <Link className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-slate-400 hover:bg-red-50 hover:text-red-500"
+                        onClick={() => setGuestToDelete(guest)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

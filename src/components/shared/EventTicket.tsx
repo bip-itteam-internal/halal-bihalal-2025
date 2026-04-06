@@ -1,17 +1,9 @@
 import React, { useRef, useState } from 'react'
-import { Download, RefreshCw, Info } from 'lucide-react'
-import QRCode from 'react-qr-code'
-import { toPng } from 'html-to-image'
+import { RefreshCw, Info, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { toast } from 'sonner'
+import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 
 export interface EventTicketProps {
   eventName: string
@@ -19,307 +11,216 @@ export interface EventTicketProps {
   eventTime?: string
   location: string
   guestName: string
-  entryCode: string
   statusLabel?: string
   primaryColor?: string
   accentColor?: string
   logoUrl?: string
   className?: string
-  showDownloadButton?: boolean
-  downloadFileName?: string
   openGate?: string
   guestType?: string
+  guestAddress?: string | null
+  registrationNumber?: number | null
+  isAttendanceCheckedIn?: boolean
+  checkinTime?: string
+  shirtSize?: string | null
+  onSelfCheckin?: () => Promise<void>
+  isCheckinEnabled?: boolean
 }
 
 export function EventTicket({
   eventName,
   eventDate,
-  eventTime,
   location,
   guestName,
-  entryCode,
   statusLabel = 'Confirmed',
-  primaryColor = 'emerald',
   className,
-  showDownloadButton = true,
-  downloadFileName,
   openGate,
   guestType,
+  guestAddress,
+  registrationNumber,
+  isAttendanceCheckedIn,
+  shirtSize,
+  onSelfCheckin,
+  isCheckinEnabled = true,
+  logoUrl,
 }: EventTicketProps) {
   const ticketRef = useRef<HTMLDivElement>(null)
-  const [isDownloading, setIsDownloading] = useState(false)
-  const [showInfoModal, setShowInfoModal] = useState(true)
-
-  // Color mapping for dynamic themes
-  const colorMap: Record<
-    string,
-    { bg: string; text: string; ring: string; light: string }
-  > = {
-    emerald: {
-      bg: 'bg-emerald-900',
-      text: 'text-emerald-900',
-      ring: 'ring-emerald-500/20',
-      light: 'bg-emerald-50',
-    },
-    slate: {
-      bg: 'bg-slate-900',
-      text: 'text-slate-900',
-      ring: 'ring-slate-500/20',
-      light: 'bg-slate-50',
-    },
-    blue: {
-      bg: 'bg-blue-900',
-      text: 'text-blue-900',
-      ring: 'ring-blue-500/20',
-      light: 'bg-blue-50',
-    },
-    indigo: {
-      bg: 'bg-indigo-900',
-      text: 'text-indigo-900',
-      ring: 'ring-indigo-500/20',
-      light: 'bg-indigo-50',
-    },
-  }
-
-  const colors = colorMap[primaryColor] || colorMap.emerald
-
-  const handleDownload = async () => {
-    if (!ticketRef.current) return
-
-    try {
-      setIsDownloading(true)
-      const dataUrl = await toPng(ticketRef.current, {
-        cacheBust: true,
-        backgroundColor: 'transparent',
-        pixelRatio: 3,
-      })
-
-      const link = document.createElement('a')
-      link.download = downloadFileName || `Ticket-${guestName}-${eventName}.png`
-      link.href = dataUrl
-      link.click()
-      toast.success('Tiket berhasil diunduh!')
-    } catch (err) {
-      console.error(err)
-      toast.error('Gagal mengunduh tiket.')
-    } finally {
-      setIsDownloading(false)
-    }
-  }
+  const [isCheckingIn, setIsCheckingIn] = useState(false)
 
   return (
-    <div className={cn('relative space-y-6', className)}>
-      {/* The Physical Ticket */}
-      <div
-        ref={ticketRef}
-        className="relative flex flex-col"
-        style={{
-          filter:
-            'drop-shadow(0 20px 25px rgba(0,0,0,0.1)) drop-shadow(0 0 1px rgba(226,232,240,1))',
-        }}
-      >
-        {/* Top Part */}
-        <div className="rounded-t-[2.5rem] bg-white p-6 pb-2">
-          <div className="flex items-start justify-between">
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                Event
-              </p>
-              <p className="max-w-[300px] text-lg leading-tight font-bold">
-                {eventName}
-              </p>
-            </div>
-            <div className="space-y-1 text-right">
-              <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
-                Status
-              </p>
-              <div
-                className={cn(
-                  'inline-flex items-center rounded-full px-3 py-1',
-                  colors.light,
-                )}
-              >
-                <div
-                  className={cn(
-                    'mr-2 h-1.5 w-1.5 animate-pulse rounded-full',
-                    colors.bg.replace('bg-', 'bg-'),
-                  )}
-                  style={{
-                    backgroundColor: colors.bg.includes('emerald')
-                      ? '#10b981'
-                      : undefined,
-                  }}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className={cn('mx-auto w-full max-w-md px-4', className)}
+    >
+      <div ref={ticketRef} className="relative overflow-hidden">
+        {/* Main Ticket Surface */}
+        <div className="relative rounded-[2rem] border border-slate-200 bg-white p-6 ring-1 ring-slate-200">
+          <p className="text-sm leading-none font-semibold text-slate-900 uppercase">
+            {eventName}
+          </p>
+          {/* Row 1: Logo & Basic Info */}
+          <div className="flex items-start gap-6">
+            {logoUrl && (
+              <div className="relative h-24 w-24 flex-none overflow-hidden rounded-2xl bg-slate-50 ring-1 ring-slate-100">
+                <Image
+                  src={logoUrl}
+                  alt="Event logo"
+                  fill
+                  className="object-contain"
                 />
-                <p
-                  className={cn(
-                    'text-[10px] font-bold uppercase',
-                    colors.text.replace('text-', 'text-'),
-                  )}
-                  style={{
-                    color: colors.text.includes('emerald')
-                      ? '#047857'
-                      : undefined,
-                  }}
-                >
-                  {statusLabel}
-                </p>
               </div>
-            </div>
-          </div>
-
-          {/* Middle Section: Event Details */}
-          <div className="mt-4 space-y-3 border-t border-dashed border-slate-100 pt-4">
-            {/* Full Date - Large & Prominent */}
-            <div className="space-y-0.5">
-              <p className="text-[10px] font-bold tracking-[0.2em] text-slate-400 uppercase">
-                Hari & Tanggal
-              </p>
-              <p className="text-[16px] leading-tight font-bold text-slate-900">
-                {eventDate}
-              </p>
-            </div>
-
-            {/* Time Grid (Open Gate & Start Time) */}
-            <div className="grid grid-cols-2 gap-4">
+            )}
+            <div className="flex-1 space-y-5 pt-1">
               <div className="space-y-0.5">
-                <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
-                  Open Gate
-                </p>
-                <p className="text-[11px] leading-tight font-bold text-slate-900">
-                  {openGate
-                    ? openGate.substring(0, 5).replace(':', '.') + ' WIB'
-                    : '-'}
+                <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                  Tanggal Acara
+                </span>
+                <p className="text-sm leading-none font-semibold text-slate-900">
+                  {eventDate}
                 </p>
               </div>
-
-              <div className="space-y-0.5 text-right">
-                <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
-                  Waktu Mulai
-                </p>
-                <p className="text-[11px] leading-tight font-bold text-slate-900">
-                  {eventTime} - Selesai
-                </p>
-              </div>
-            </div>
-
-            {/* Info Grid (Location & Category) */}
-            <div className="grid grid-cols-2 gap-x-4">
               <div className="space-y-0.5">
-                <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                  Pukul
+                </span>
+                <p className="text-sm leading-none font-semibold text-slate-900">
+                  {openGate ? `${openGate.substring(0, 5)}` : '12:00'} WIB -
+                  Selesai
+                </p>
+              </div>
+              <div className="col-span-2 mt-1 space-y-1.5">
+                <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
                   Lokasi
-                </p>
-                <p className="text-[11px] leading-tight font-bold text-slate-900">
+                </span>
+                <p className="text-[13px] font-medium text-slate-900">
                   {location}
                 </p>
               </div>
-              <div className="space-y-0.5 text-right">
-                <p className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
-                  Kategori
-                </p>
-                <p className="text-[11px] font-black tracking-wider uppercase">
-                  {guestType || '-'}
+              {/* continer untuk open gate umum nya */}
+              <div className="space-y-0.5">
+                <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                  Open Gate Umum
+                </span>
+                <p className="text-sm leading-none font-semibold text-slate-900">
+                  {openGate ? `${openGate.substring(0, 5)}` : '12:00'} WIB
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Bottom Section: Guest Info */}
-          <div className="mt-4 grid grid-cols-2 gap-x-4 border-t border-dashed border-slate-100 pt-4">
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">
-                Nama Tamu
-              </p>
-              <p className="text-xl leading-tight font-black tracking-tight text-slate-900">
-                {guestName}
-              </p>
+          {/* Perforation Line */}
+          <div className="relative -mx-6 my-10 flex items-center justify-center">
+            <div className="absolute left-[-13px] h-6 w-6 rounded-full bg-[#fffcf5] ring-1 ring-slate-200" />
+            <div className="absolute right-[-13px] h-6 w-6 rounded-full bg-[#fffcf5] ring-1 ring-slate-200" />
+            <div className="w-full border-t border-dashed border-slate-300" />
+          </div>
+
+          {/* Details Section */}
+          <div className="space-y-5">
+            <div className="space-y-3 px-1">
+              <div className="flex items-start gap-8">
+                <div className="flex-1 space-y-1.5">
+                  <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                    No. Regis
+                  </span>
+                  <p className="text-[13px] font-bold text-slate-900">
+                    {registrationNumber
+                      ? `#${registrationNumber.toString().padStart(3, '0')}`
+                      : '-'}
+                  </p>
+                </div>
+                <div className="flex-1 space-y-1.5">
+                  <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                    Tipe Tamu
+                  </span>
+                  <p className="text-[13px] font-bold text-slate-900 uppercase">
+                    {guestType || 'INTERNAL'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-end justify-between">
+                <span className="text-[11px] font-medium tracking-tight text-slate-500 uppercase">
+                  Nama Lengkap
+                </span>
+                <span className="max-w-[160px] truncate text-right text-[11px] font-semibold text-slate-900 uppercase">
+                  {guestName}
+                </span>
+              </div>
+              <div className="flex items-end justify-between">
+                <span className="text-[11px] font-medium tracking-tight text-slate-500 uppercase">
+                  Ukuran Kaos
+                </span>
+                <span className="text-[11px] font-semibold text-slate-900 uppercase">
+                  {shirtSize || 'N/A'}
+                </span>
+              </div>
+              <div className="flex items-end justify-between">
+                <span className="text-[11px] font-medium tracking-tight text-slate-500 uppercase">
+                  Instansi
+                </span>
+                <span className="text-[11px] font-semibold text-slate-900 uppercase">
+                  {guestAddress || 'N/A'}
+                </span>
+              </div>
+
+              <div className="flex items-end justify-between">
+                <span className="text-[11px] font-medium tracking-tight text-slate-500 uppercase">
+                  Status Kehadiran
+                </span>
+                <span className="text-[11px] font-bold text-slate-900 uppercase">
+                  {statusLabel}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Perforation (Real Cutout) */}
-        <div
-          className="relative flex h-6 w-full items-center"
-          style={{
-            backgroundImage: `radial-gradient(circle at 0px 50%, transparent 10px, white 10.5px), radial-gradient(circle at 100% 50%, transparent 10px, white 10.5px)`,
-            backgroundSize: '51% 100%',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'left center, right center',
-          }}
-        >
-          <div className="mx-8 flex-1 border-t-2 border-dashed border-slate-200" />
-        </div>
-
-        {/* Bottom Part (QR Section) */}
-        <div className="flex flex-col items-center rounded-b-[2.5rem] bg-white p-6 pt-4">
-          <div className="rounded-[1rem] bg-white p-6 shadow-xl ring-1 ring-slate-100">
-            <QRCode
-              value={entryCode}
-              size={250}
-              fgColor="#0f172a"
-              bgColor="#ffffff"
-              level="H"
-            />
-          </div>
-          <div className="mt-4 flex flex-col items-center gap-1">
-            <p className="font-mono text-2xl font-black tracking-[0.4em] text-slate-900">
-              {entryCode}
-            </p>
-          </div>
-          <div className="mt-4 flex flex-col items-center gap-1">
-            <p className="text-xs text-slate-900">
-              Tunjukkan QR ini kepada panitia
-            </p>
-          </div>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      {showDownloadButton && (
-        <div className="px-2">
-          <Button
-            onClick={handleDownload}
-            disabled={isDownloading}
-            className={cn(
-              'h-14 w-full rounded-2xl bg-[#0c2526] text-xs font-bold tracking-widest text-white uppercase shadow-xl transition-all active:scale-95',
+      <div className="mt-8 px-2">
+        {!isAttendanceCheckedIn && onSelfCheckin && (
+          <div className="space-y-4">
+            <Button
+              onClick={async () => {
+                if (!isCheckinEnabled) return
+                try {
+                  setIsCheckingIn(true)
+                  await onSelfCheckin()
+                } catch (err) {
+                  console.error(err)
+                } finally {
+                  setIsCheckingIn(false)
+                }
+              }}
+              disabled={isCheckingIn || !isCheckinEnabled}
+              className={cn(
+                'h-16 w-full rounded-2xl text-[11px] font-bold tracking-[0.2em] text-white uppercase transition-all active:scale-[0.98]',
+                isCheckinEnabled
+                  ? 'bg-halal-primary shadow-[0_20px_40px_-12px_rgba(245,158,11,0.4)] hover:opacity-90'
+                  : 'bg-slate-200 cursor-not-allowed text-slate-400 shadow-none'
+              )}
+            >
+              {isCheckingIn ? (
+                <RefreshCw className="h-5 w-5 animate-spin" />
+              ) : (
+                <User className="mr-3 h-4 w-4" />
+              )}
+              {isCheckingIn ? 'MEMPROSES...' : 'CHECK-IN SEKARANG'}
+            </Button>
+            
+            {!isCheckinEnabled && (
+              <div className="flex items-center justify-center gap-2 rounded-xl bg-slate-50 py-3 ring-1 ring-slate-100">
+                <Info className="h-3.5 w-3.5 text-slate-400" />
+                <p className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">
+                  Tombol aktif 1 jam sebelum pintu dibuka
+                </p>
+              </div>
             )}
-          >
-            {isDownloading ? (
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="mr-2 h-4 w-4" />
-            )}
-            Unduh Tiket Masuk
-          </Button>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
 
-      {/* Info Reminder Modal */}
-      <Dialog open={showInfoModal} onOpenChange={setShowInfoModal}>
-        <DialogContent
-          className="w-11/12 max-w-sm rounded-[2rem] p-6 text-center shadow-2xl"
-          showCloseButton={false}
-        >
-          <DialogHeader className="flex flex-col items-center space-y-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full">
-              <Info className="h-8 w-8" />
-            </div>
-            <DialogTitle className={cn('text-xl font-bold')}>
-              Informasi E-Ticket
-            </DialogTitle>
-            <DialogDescription className="text-sm leading-relaxed text-slate-600">
-              Ini adalah e-ticket resmi untuk kehadiran di lokasi acara.
-              <br />
-              <br />
-              <span className="font-semibold text-slate-800">
-                Penting:
-              </span>{' '}
-              Simpan tiket ini baik-baik. Anda bisa mengunduhnya sebagai gambar.
-              Tunjukkan kode bar pada tiket ini kepada panitia di lokasi acara.
-            </DialogDescription>
-          </DialogHeader>
-          <Button onClick={() => setShowInfoModal(false)}>Saya Mengerti</Button>
-        </DialogContent>
-      </Dialog>
-    </div>
+    </motion.div>
   )
 }

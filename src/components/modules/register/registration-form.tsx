@@ -79,6 +79,7 @@ export function RegistrationForm({
       full_name: '',
       phone: '',
       address: '',
+      shirt_size: '',
     },
   })
 
@@ -136,6 +137,7 @@ export function RegistrationForm({
         phone: values.phone,
         guest_type: 'external',
         address: cleanedAddress,
+        shirt_size: values.shirt_size,
         payment_proof_url: paymentProofUrl,
         metadata: {},
       })

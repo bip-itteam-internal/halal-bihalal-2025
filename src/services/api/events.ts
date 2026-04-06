@@ -63,9 +63,8 @@ export async function getEventById(id: string) {
 export async function updateEvent(id: string, payload: Partial<Event>) {
   const supabase = createClient()
   
-  // Remove complex objects before update if any
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { event_guest_rules, ...updateData } = payload as any;
+  const { event_guest_rules, ...updateData } = payload;
 
   const { data, error } = await supabase
     .from('events')

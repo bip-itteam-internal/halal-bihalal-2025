@@ -1,6 +1,5 @@
 'use client'
 
-import React from 'react'
 import { Guest, Event as AppEvent } from '@/types'
 import { ModernCorporate } from './templates/corporate/ModernCorporate'
 import { TraditionalHalal } from './templates/festive/TraditionalHalal'
@@ -13,13 +12,12 @@ interface TemplateRendererProps {
   setIsOpen: (open: boolean) => void
   onRSVP: (status: 'confirmed' | 'declined' | 'pending') => void
   isUpdating: boolean
-  paymentStatus?: 'pending' | 'verified' | 'rejected'
-  paymentProofUrl?: string | null
-  isUpdatingPaymentProof?: boolean
-  onUpdatePaymentProof?: (file: File) => Promise<void>
   openGate?: string | null
   startTime?: string | null
   onTicketView?: (visible: boolean) => void
+  checkin?: unknown | null
+  onSelfCheckin?: () => Promise<void>
+  isCheckinEnabled?: boolean
 }
 
 export function TemplateRenderer({
@@ -30,13 +28,12 @@ export function TemplateRenderer({
   setIsOpen,
   onRSVP,
   isUpdating,
-  paymentStatus,
-  paymentProofUrl,
-  isUpdatingPaymentProof,
-  onUpdatePaymentProof,
   openGate,
   startTime,
   onTicketView,
+  checkin,
+  onSelfCheckin,
+  isCheckinEnabled,
 }: TemplateRendererProps) {
   // If templateId is not set, or it's a legacy ID that doesn't match our new ones,
   // we can either show a default new template or the legacy one (if we want to keep it).
@@ -52,13 +49,12 @@ export function TemplateRenderer({
           setIsOpen={setIsOpen}
           onRSVP={onRSVP}
           isUpdating={isUpdating}
-          paymentStatus={paymentStatus}
-          paymentProofUrl={paymentProofUrl}
-          isUpdatingPaymentProof={isUpdatingPaymentProof}
-          onUpdatePaymentProof={onUpdatePaymentProof}
           openGate={openGate}
           startTime={startTime}
           onTicketView={onTicketView}
+          checkin={checkin}
+          onSelfCheckin={onSelfCheckin}
+          isCheckinEnabled={isCheckinEnabled}
         />
       )
     case 'festive-halal':
@@ -70,13 +66,12 @@ export function TemplateRenderer({
           setIsOpen={setIsOpen}
           onRSVP={onRSVP}
           isUpdating={isUpdating}
-          paymentStatus={paymentStatus}
-          paymentProofUrl={paymentProofUrl}
-          isUpdatingPaymentProof={isUpdatingPaymentProof}
-          onUpdatePaymentProof={onUpdatePaymentProof}
           openGate={openGate}
           startTime={startTime}
           onTicketView={onTicketView}
+          checkin={checkin}
+          onSelfCheckin={onSelfCheckin}
+          isCheckinEnabled={isCheckinEnabled}
         />
       )
     default:
@@ -89,13 +84,11 @@ export function TemplateRenderer({
           setIsOpen={setIsOpen}
           onRSVP={onRSVP}
           isUpdating={isUpdating}
-          paymentStatus={paymentStatus}
-          paymentProofUrl={paymentProofUrl}
-          isUpdatingPaymentProof={isUpdatingPaymentProof}
-          onUpdatePaymentProof={onUpdatePaymentProof}
           openGate={openGate}
           startTime={startTime}
           onTicketView={onTicketView}
+          checkin={checkin}
+          isCheckinEnabled={isCheckinEnabled}
         />
       )
   }

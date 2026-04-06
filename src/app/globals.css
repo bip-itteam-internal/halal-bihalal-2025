@@ -40,25 +40,28 @@
   --sidebar-ring: #0b74de;
 
   /* Halal Bihalal Event Theme - Tokens only */
-  --halal-primary: #dfae46;
-  --halal-secondary: #102726;
-  --halal-secondary-dark: #0a1b1a;
-  --halal-accent: #163533;
+  --halal-primary: #d97706;
+  --halal-primary-rgb: 217, 119, 6;
+  --halal-secondary: #F6E8CD;
+  --halal-secondary-rgb: 246, 232, 205;
+  --halal-secondary-dark: #EDD9B4;
+  --halal-accent: #f59e0b;
+  --halal-accent-rgb: 245, 158, 11;
 }
 
-/* Specific class for the dark landing page theme */
+/* Specific class for the light landing page theme */
 .theme-halal {
-  --background: #102726;
-  --foreground: #ffffff;
-  --primary: #dfae46;
-  --primary-foreground: #102726;
-  --secondary: #163533;
-  --secondary-foreground: #ffffff;
-  --accent: #dfae46;
-  --accent-foreground: #102726;
-  --border: rgba(223, 174, 70, 0.2);
-  --input: rgba(223, 174, 70, 0.1);
-  --ring: #dfae46;
+  --background: #fffcf5;
+  --foreground: #1c1917;
+  --primary: #d97706;
+  --primary-foreground: #ffffff;
+  --secondary: #fff9e6;
+  --secondary-foreground: #44403c;
+  --accent: #d97706;
+  --accent-foreground: #ffffff;
+  --border: #fce7bc;
+  --input: #fce7bc;
+  --ring: #d97706;
 }
 
 /* Dark mode inherits from light mode by default unless .theme-halal is explicitly applied */
@@ -118,10 +121,10 @@ body {
   --font-outfit: var(--ff-outfit), var(--font-heading);
   --font-heading: var(--ff-outfit), var(--font-heading);
 
-  --color-halal-primary: #dfae46;
-  --color-halal-secondary: #102726;
-  --color-halal-secondary-dark: #0a1b1a;
-  --color-halal-accent: #163533;
+  --color-halal-primary: #f59e0b;
+  --color-halal-secondary: #F6E8CD;
+  --color-halal-secondary-dark: #EDD9B4;
+  --color-halal-accent: #d97706;
 
   --color-sidebar: var(--sidebar-background);
   --color-sidebar-foreground: var(--sidebar-foreground);

@@ -48,6 +48,12 @@ export function MappingStep({
       required: false,
       desc: 'Informasi tambahan asal tamu',
     },
+    {
+      id: 'shirt_size',
+      label: 'Ukuran Kaos',
+      required: false,
+      desc: 'Ukuran kaos tamu (S, M, L, XL, XXL, XXXL)',
+    },
   ] as const
 
   return (

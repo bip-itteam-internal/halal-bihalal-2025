@@ -35,7 +35,7 @@ export default async function GuestInvitePage({
     const { data, error } = await adminClient
       .from('guests')
       .select(
-        '*, guest_events(event_id, payment_status, payment_proof_url, events(*, event_guest_rules(*)))',
+        '*, guest_events(event_id, registration_number, payment_status, payment_proof_url, events(*, event_guest_rules(*)))',
       )
       .eq('invitation_code', invitationCode)
       .single()
@@ -77,6 +77,14 @@ export default async function GuestInvitePage({
         (rule) => rule.guest_type === guest.guest_type,
       ) || null
 
+    const { data: checkinData } = await adminClient
+      .from('checkins')
+      .select('*')
+      .eq('guest_id', guest.id)
+      .eq('event_id', selectedEvent.id)
+      .eq('step', 'entrance')
+      .maybeSingle()
+
     return (
       <InvitePageClient
         invitationCode={invitationCode}
@@ -86,6 +94,7 @@ export default async function GuestInvitePage({
         paymentProofUrl={selectedGuestEvent.payment_proof_url}
         openGate={matchingRule?.open_gate || null}
         startTime={matchingRule?.start_time || null}
+        checkin={checkinData}
       />
     )
   } catch (error: unknown) {

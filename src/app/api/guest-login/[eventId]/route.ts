@@ -107,6 +107,30 @@ export async function POST(
       )
     }
 
+    // --- AUTO CHECK-IN LOGIC ---
+    // Record check-in automatically upon login (Self-Checkin)
+    const { data: existingCheckin } = await supabase
+      .from('checkins')
+      .select('id')
+      .eq('guest_id', matchedGuestObject.id)
+      .eq('event_id', eventId)
+      .eq('step', 'entrance')
+      .single()
+
+    if (!existingCheckin) {
+      const { error: checkinError } = await supabase.from('checkins').insert({
+        guest_id: matchedGuestObject.id,
+        event_id: eventId,
+        step: 'entrance',
+        checkin_time: new Date().toISOString(),
+      })
+
+      if (checkinError) {
+        console.error('Auto Check-in Error:', checkinError)
+        // We don't block the login if check-in fails, just log it.
+      }
+    }
+
     return NextResponse.json({
       status: 'success',
       invitation_code: matchedGuestObject.invitation_code,

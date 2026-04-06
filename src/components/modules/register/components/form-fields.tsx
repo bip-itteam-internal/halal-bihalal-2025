@@ -1,5 +1,12 @@
 import React from 'react'
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
   FormControl,
   FormField,
   FormItem,
@@ -92,6 +99,34 @@ export function FormFields({
                 {...field}
               />
             </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="shirt_size"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="text-zinc-300">
+              Ukuran Baju
+            </FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger className="border-white/10 bg-black/20 text-white placeholder:text-zinc-600 focus:border-amber-500/50 uppercase">
+                  <SelectValue placeholder="Pilih ukuran baju" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent className="border-zinc-800 bg-zinc-950 text-white">
+                <SelectItem value="S">S</SelectItem>
+                <SelectItem value="M">M</SelectItem>
+                <SelectItem value="L">L</SelectItem>
+                <SelectItem value="XL">XL</SelectItem>
+                <SelectItem value="XXL">XXL</SelectItem>
+                <SelectItem value="XXXL">XXXL</SelectItem>
+              </SelectContent>
+            </Select>
             <FormMessage />
           </FormItem>
         )}

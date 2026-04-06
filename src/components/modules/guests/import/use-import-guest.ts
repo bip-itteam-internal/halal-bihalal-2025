@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import * as XLSX from 'xlsx'
@@ -26,6 +26,8 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
     phone: '',
     email: '',
     address: '',
+    registration_number: '',
+    shirt_size: '',
   })
   const [previewData, setPreviewData] = useState<RawGuest[]>([])
 
@@ -42,6 +44,8 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
       phone: '',
       email: '',
       address: '',
+      registration_number: '',
+      shirt_size: '',
     })
     setError(null)
     setDefaultGuestType('internal')
@@ -103,6 +107,19 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
               c.includes('instansi'))
           )
             newMapping.address = col
+          if (
+            !newMapping.registration_number &&
+            (c.includes('nomor') ||
+              c.includes('no.') ||
+              c.includes('reg') ||
+              c.includes('urut'))
+          )
+            newMapping.registration_number = col
+          if (
+            !newMapping.shirt_size &&
+            (c.includes('baju') || c.includes('kaos') || c.includes('size'))
+          )
+            newMapping.shirt_size = col
         })
         setColumnMapping(newMapping)
         toast.success(
@@ -133,6 +150,10 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
         phone: String(row[columnMapping.phone] || '').trim(),
         email: String(row[columnMapping.email] || '').trim(),
         address: String(row[columnMapping.address] || '').trim(),
+        registration_number: row[columnMapping.registration_number]
+          ? Number(row[columnMapping.registration_number])
+          : undefined,
+        shirt_size: String(row[columnMapping.shirt_size] || '').trim(),
       }))
       .filter((g) => g.full_name !== '')
 
@@ -179,126 +200,138 @@ export function useImportGuest(eventId: string, onSuccess?: () => void) {
     try {
       setIsProcessing(true)
 
-      let finalPreviewData = [...previewData]
+      const finalPreviewData = [...previewData]
 
-      // Filter duplicates within the file if skipping
-      if (skipDuplicates) {
-        const seen = new Set()
-        finalPreviewData = finalPreviewData.filter((g) => {
-          if (!g.phone) return true
-          const p = g.phone.replace(/\D/g, '')
-          if (seen.has(p)) return false
-          seen.add(p)
-          return true
-        })
-      }
+      // 1. DEDUPE WITHIN FILE (based on phone, if exists)
+      const dedupeMap = new Map<string, RawGuest>()
+      const noPhoneGuests: RawGuest[] = []
 
-      // Check against database if skipping
-      if (skipDuplicates) {
-        // Fetch ALL existing phone numbers in batches to avoid Supabase 1000-row limit
-        let allExistingPhonesNormalized = new Set<string>()
-        let page = 0
-        const pageSize = 1000
-        let hasMore = true
+      finalPreviewData.forEach((g) => {
+        if (!g.phone) {
+          noPhoneGuests.push(g)
+          return
+        }
+        const p = g.phone.replace(/\D/g, '')
+        if (!dedupeMap.has(p)) {
+          dedupeMap.set(p, g)
+        }
+      })
 
-        while (hasMore) {
+      // Unique incoming data (prioritizing phones)
+      const uniqueIncomingData = [
+        ...Array.from(dedupeMap.values()),
+        ...noPhoneGuests,
+      ]
+
+      // 2. CHECK AGAINST DATABASE
+      const phonesToCheck = Array.from(dedupeMap.keys())
+      const existingGuestsMap = new Map<string, string>() // phone -> guestId
+
+      if (phonesToCheck.length > 0) {
+        // Fetch in batches of 100 to check for existing phones
+        const batchSize = 100
+        for (let i = 0; i < phonesToCheck.length; i += batchSize) {
+          const batch = phonesToCheck.slice(i, i + batchSize)
           const { data, error: fetchError } = await supabase
             .from('guests')
-            .select('phone')
-            .not('phone', 'is', null)
-            .range(page * pageSize, (page + 1) * pageSize - 1)
+            .select('id, phone')
+            .in('phone', batch)
 
           if (fetchError) throw fetchError
-
-          if (data && data.length > 0) {
-            data.forEach((e) => {
-              const normalized = e.phone?.replace(/\D/g, '')
-              if (normalized) allExistingPhonesNormalized.add(normalized)
-            })
-
-            if (data.length < pageSize) {
-              hasMore = false
-            } else {
-              page++
+          data?.forEach((eg) => {
+            if (eg.phone) {
+              const normalized = eg.phone.replace(/\D/g, '')
+              existingGuestsMap.set(normalized, eg.id)
             }
-          } else {
-            hasMore = false
-          }
-        }
-
-        if (allExistingPhonesNormalized.size > 0) {
-          finalPreviewData = finalPreviewData.filter((g) => {
-            if (!g.phone) return true
-            const p = g.phone.replace(/\D/g, '')
-            return !allExistingPhonesNormalized.has(p)
           })
         }
       }
 
-      if (finalPreviewData.length === 0) {
-        toast.info(
-          'Semua data tamu sudah terdaftar, tidak ada data baru yang ditambahkan.',
-        )
-        setIsOpen(false)
-        resetState()
-        return
-      }
+      // 3. SEPARATE INTO "TO CREATE" AND "TO UPDATE"
+      const guestsToInsert: Record<string, unknown>[] = []
+      const guestsToUpdate: Record<string, unknown>[] = []
 
-      const guestsToInsert = finalPreviewData.map((g) => {
-        // Normalize phone for storage to prevent future 409s
+      uniqueIncomingData.forEach((g) => {
         const normalizedPhone = g.phone ? g.phone.replace(/\D/g, '') : null
+        const existingId = normalizedPhone
+          ? existingGuestsMap.get(normalizedPhone)
+          : null
 
-        return {
+        const guestData = {
           full_name: g.full_name,
-          guest_type: ['internal', 'external'].includes(g.guest_type)
+          guest_type: ['internal', 'external', 'tenant'].includes(g.guest_type)
             ? g.guest_type
             : 'internal',
           phone: normalizedPhone,
           email: g.email || null,
           address: g.address || null,
-          registration_source: 'admin_invite',
-          rsvp_status: 'pending',
-          invitation_code: `INV-${generateRandomCode(6)}`,
+          shirt_size: g.shirt_size || null,
+        }
+
+        if (existingId) {
+          guestsToUpdate.push({
+            ...guestData,
+            // id: existingId, // Upsert will match by phone if we don't provide ID
+          })
+        } else {
+          guestsToInsert.push({
+            ...guestData,
+            registration_source: 'admin_invite',
+            rsvp_status: 'pending',
+            invitation_code: `INV-${generateRandomCode(6)}`,
+          })
         }
       })
 
-      const { data: insertedGuests, error: insertError } = await supabase
-        .from('guests')
-        .insert(guestsToInsert)
-        .select('id')
+      // 4. PROCESS GUESTS (Update existing, Insert new)
+      const allGuestIds: string[] = []
 
-      if (insertError) {
-        // Specifically handle 409 Conflict or 23505 Unique Violation
-        if (insertError.code === '23505' || insertError.message?.includes('409')) {
-          throw new Error(
-            'Beberapa data yang Anda masukkan masih terdeteksi duplikat oleh sistem database. Silakan periksa kembali file Anda.',
-          )
-        }
-        throw insertError
+      // 4a. Upsert existing by Phone to update profiles (like shirt_size)
+      if (guestsToUpdate.length > 0) {
+        const { data: updatedData, error: updateError } = await supabase
+          .from('guests')
+          .upsert(guestsToUpdate, {
+            onConflict: 'phone',
+            ignoreDuplicates: false, // We WANT to update
+          })
+          .select('id')
+
+        if (updateError) throw updateError
+        updatedData?.forEach((g) => allGuestIds.push(g.id))
       }
 
-      const targetEventId = eventId
-      if (
-        targetEventId &&
-        insertedGuests &&
-        insertedGuests.length > 0
-      ) {
-        const mappings: { guest_id: string; event_id: string }[] = insertedGuests.map(
-          (ig: { id: string }) => ({
-            guest_id: ig.id,
-            event_id: targetEventId,
-          }),
-        )
+      // 4b. Insert new guests
+      if (guestsToInsert.length > 0) {
+        const { data: insertedData, error: insertError } = await supabase
+          .from('guests')
+          .insert(guestsToInsert)
+          .select('id')
 
-        if (mappings.length > 0) {
-          const { error: mapError } = await supabase
-            .from('guest_events')
-            .insert(mappings)
-          if (mapError) throw mapError
-        }
+        if (insertError) throw insertError
+        insertedData?.forEach((g) => allGuestIds.push(g.id))
       }
 
-      toast.success('Daftar tamu berhasil diimpor!')
+      // 5. LINK ALL TO EVENT
+      if (allGuestIds.length > 0 && eventId) {
+        const eventMappings = allGuestIds.map((id) => ({
+          guest_id: id,
+          event_id: eventId,
+        }))
+
+        // Use upsert on guest_events with (guest_id, event_id) as conflict columns
+        const { error: mapError } = await supabase
+          .from('guest_events')
+          .upsert(eventMappings, {
+            onConflict: 'guest_id,event_id',
+            ignoreDuplicates: true,
+          })
+
+        if (mapError) throw mapError
+      }
+
+      toast.success(
+        `Berhasil memproses ${allGuestIds.length} tamu. Profil diperbarui jika sudah ada.`,
+      )
       setIsOpen(false)
       resetState()
       if (onSuccess) onSuccess()

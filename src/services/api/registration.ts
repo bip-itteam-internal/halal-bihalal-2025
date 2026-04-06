@@ -3,6 +3,8 @@ export interface RegisterGuestPayload {
   phone: string
   guest_type: 'external'
   address: string
+  registration_number?: number
+  shirt_size?: string
   metadata?: Record<string, unknown>
   payment_proof_url?: string
 }

@@ -24,13 +24,12 @@ interface TemplateProps {
   setIsOpen: (open: boolean) => void
   onRSVP: (status: 'confirmed' | 'declined' | 'pending') => void
   isUpdating: boolean
-  paymentStatus?: 'pending' | 'verified' | 'rejected'
-  paymentProofUrl?: string | null
-  isUpdatingPaymentProof?: boolean
-  onUpdatePaymentProof?: (file: File) => Promise<void>
   openGate?: string | null
   startTime?: string | null
   onTicketView?: (visible: boolean) => void
+  checkin?: unknown | null
+  onSelfCheckin?: () => Promise<void>
+  isCheckinEnabled?: boolean
 }
 
 function InfoItem({
@@ -129,13 +128,12 @@ export function TraditionalHalal({
   setIsOpen,
   onRSVP,
   isUpdating,
-  paymentStatus,
-  paymentProofUrl,
-  isUpdatingPaymentProof,
-  onUpdatePaymentProof,
   openGate,
   startTime,
   onTicketView,
+  checkin,
+  onSelfCheckin,
+  isCheckinEnabled,
 }: TemplateProps) {
   const shouldSkipCover = guest.guest_type === 'external'
   const showingTicket = guest.rsvp_status === 'confirmed' && isOpen
@@ -158,8 +156,12 @@ export function TraditionalHalal({
             eventDate={formatJakartaDate(event.event_date, 'PPPP')}
             location={event.location || ''}
             guestName={guest.full_name || ''}
-            entryCode={guest.invitation_code || ''}
-            primaryColor="emerald"
+            guestAddress={guest.address || null}
+            registrationNumber={
+              guest.guest_events?.find((ge) => ge.event_id === event.id)
+                ?.registration_number
+            }
+            primaryColor="amber"
             logoUrl={event.logo_url || undefined}
             openGate={openGate || undefined}
             guestType={guest.guest_type === 'external' ? 'Umum' : 'Internal'}
@@ -168,7 +170,11 @@ export function TraditionalHalal({
                 ? startTime.substring(0, 5).replace(':', '.') + ' WIB'
                 : formatJakartaDate(event.event_date, 'p')
             }
-            downloadFileName={`Ticket-${guest.full_name}-${event.name}.png`}
+            isAttendanceCheckedIn={!!checkin}
+            checkinTime={(checkin as { checkin_time: string })?.checkin_time}
+            shirtSize={guest.shirt_size}
+            onSelfCheckin={onSelfCheckin}
+            isCheckinEnabled={isCheckinEnabled}
           />
 
           {!shouldSkipCover && (
@@ -196,40 +202,42 @@ export function TraditionalHalal({
         className="w-full max-w-[400px] p-4"
       >
         <Card
-          className="relative aspect-[3/4] overflow-hidden border-none bg-gradient-to-b from-[#083336] via-[#0a2c2f] to-[#062023] text-white shadow-2xl transition-all"
+          className="relative aspect-[3/4] overflow-hidden border-none shadow-2xl transition-all"
           style={{ borderRadius: '3rem' }}
         >
-          <CardContent className="flex h-full flex-col items-center justify-between px-6 py-8 text-center">
-            <div className="space-y-8">
-              <div className="flex justify-center">
-                <Image
-                  src="/logo/LOGO%20A.png"
-                  alt="Logo"
-                  width={160}
-                  height={96}
-                  className="object-contain"
-                />
-              </div>
-              <h2 className="font-serif text-lg tracking-widest text-amber-100 uppercase">
+          <CardContent className="relative flex h-full flex-col items-center justify-between px-6 py-10 text-center">
+            {/* Top Logo - Enlarged and at the top */}
+            <div className="absolute top-2 left-0 flex w-full justify-center">
+              <Image
+                src="/gate.png"
+                alt="Logo"
+                width={350}
+                height={192}
+                className="object-contain"
+              />
+            </div>
+
+            <div className="z-10 mt-18 space-y-8">
+              <h2 className="font-serif text-lg tracking-widest uppercase">
                 Undangan
               </h2>
             </div>
 
             <div className="space-y-6">
               <div className="space-y-2">
-                <h1 className="font-serif text-2xl leading-tight font-bold text-amber-50">
+                <h1 className="font-serif text-2xl leading-tight font-bold">
                   {event.name}
                 </h1>
-                <div className="mx-auto h-px w-12 bg-amber-400/30" />
-                <p className="text-sm text-amber-100/90">
+                <div className="mx-auto h-px w-12" />
+                <p className="text-sm">
                   PT Bharata Internasional Pharmaceutical
                 </p>
               </div>
               <div className="space-y-1 py-4">
-                <p className="text-[11px] text-amber-200 italic">
+                <p className="text-[11px] italic">
                   Spesial Untuk:
                 </p>
-                <p className="text-xl font-bold tracking-tight text-white uppercase">
+                <p className="text-xl font-bold tracking-tight uppercase">
                   {guest.full_name}
                 </p>
               </div>
@@ -291,8 +299,8 @@ export function TraditionalHalal({
                 <>
                   <Heart className="mx-auto h-8 w-8 text-amber-300" />
                   <p className="mx-auto max-w-md px-4 text-xs leading-relaxed font-medium text-amber-50">
-                    Jadilah bagian dari momen berharga ini. Kehadiranmu sangat kami
-                    harapkan untuk melengkapi kebersamaan kita.
+                    Jadilah bagian dari momen berharga ini. Kehadiranmu sangat
+                    kami harapkan untuk melengkapi kebersamaan kita.
                   </p>
                   <div className="flex gap-2">
                     <Button

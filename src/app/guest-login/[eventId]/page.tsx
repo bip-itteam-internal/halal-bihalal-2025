@@ -1,20 +1,15 @@
 'use client'
 
-import { useState, use, useEffect } from 'react'
+import { useState, use } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Loader2,
-  CalendarDays,
-  MapPin,
-  Ticket,
   Phone,
   Mail,
   ArrowRight,
   User,
 } from 'lucide-react'
 import Image from 'next/image'
-import { formatJakartaDate } from '@/lib/utils'
-import { Event } from '@/types'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -68,7 +63,6 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [event, setEvent] = useState<Event | null>(null)
 
   const form = useForm<GuestLoginValues>({
     resolver: zodResolver(loginSchema),
@@ -76,21 +70,6 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
       identifier: '',
     },
   })
-
-  useEffect(() => {
-    const fetchEvent = async () => {
-      try {
-        const res = await fetch(`/api/register/${eventId}`)
-        if (res.ok) {
-          const data = await res.json()
-          setEvent(data)
-        }
-      } catch (err) {
-        console.error('Failed to fetch event:', err)
-      }
-    }
-    fetchEvent()
-  }, [eventId])
 
   const handleSubmit = async (values: GuestLoginValues) => {
     setLoading(true)
@@ -121,15 +100,15 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
   }
 
   return (
-    <div className="theme-halal bg-halal-secondary selection:bg-halal-primary relative min-h-screen overflow-hidden selection:text-black">
+    <div className="theme-halal relative min-h-screen overflow-hidden">
       {/* Background Layer */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[#0a1b1a]" />
-        <Particles count={30} />
+        <div className="bg-halal-secondary-dark absolute inset-0" />
+        <Particles count={25} colors={['#dfae46', '#d97706']} />
 
         {/* Cinematic Overlays */}
         <div
-          className="absolute inset-0 opacity-[0.05] mix-blend-overlay"
+          className="absolute inset-0 opacity-[0.03] mix-blend-overlay"
           style={{
             backgroundImage: `url("https://www.transparenttextures.com/patterns/islamic-exercise.png")`,
             backgroundSize: '400px',
@@ -137,74 +116,40 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
         />
 
         {/* Glow Effects */}
-        <div className="bg-halal-primary/10 absolute top-[-10%] left-[-10%] h-[60%] w-[60%] animate-pulse rounded-full blur-[120px]" />
-        <div className="bg-halal-accent/20 absolute right-[-10%] bottom-[-10%] h-[60%] w-[60%] rounded-full blur-[120px]" />
+        <div className="absolute top-[-10%] left-[-10%] h-[60%] w-[60%] animate-pulse rounded-full bg-[#F6E8CD]/40 blur-[120px]" />
+        <div className="absolute right-[-10%] bottom-[-10%] h-[60%] w-[60%] rounded-full bg-[#F6E8CD]/20 blur-[120px]" />
       </div>
 
       <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-8 md:px-6">
-        <div className="mx-auto w-full max-w-4xl space-y-8">
-
-
+        <div className="mx-auto w-full max-w-5xl space-y-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <Card className="glass-dark overflow-hidden border-white/5 py-0 shadow-2xl">
+            <Card className="overflow-hidden border-white/20 bg-white/5 py-0 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] backdrop-blur-3xl">
               <CardContent className="p-0">
-                <div className="grid gap-0 lg:grid-cols-[1.1fr_1fr]">
-                  {/* Left Section: Event Preview */}
-                  <div className="bg-halal-accent/30 flex flex-col justify-center border-b border-white/5 p-8 lg:border-r lg:border-b-0">
-                    <div className="space-y-2">
-                      <div className="relative mx-auto h-40 w-full max-w-[280px] overflow-hidden md:h-56 md:max-w-[380px]">
-                        {event?.logo_url ? (
-                          <Image
-                            src={event.logo_url}
-                            alt={event?.name || 'Event Logo'}
-                            fill
-                            sizes="(max-width: 768px) 240px, 320px"
-                            className="object-contain"
-                            priority
-                          />
-                        ) : (
-                          <div className="bg-halal-secondary flex h-full w-full items-center justify-center">
-                            <Ticket className="text-halal-primary/40 h-20 w-20" />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-4 text-center">
-                        <h1 className="font-outfit text-2xl font-bold tracking-tight text-white md:text-3xl lg:text-4xl">
-                          {event?.name || 'Login Tamu'}
-                        </h1>
-
-                        <div className="space-y-3">
-                          {event?.event_date && (
-                            <div className="flex items-center justify-center gap-3 text-sm text-slate-300">
-                              <CalendarDays className="text-halal-primary h-4 w-4" />
-                              <span>
-                                {formatJakartaDate(event.event_date, 'PPPP')}
-                              </span>
-                            </div>
-                          )}
-                          {event?.location && (
-                            <div className="flex items-center justify-center gap-3 text-sm text-slate-300">
-                              <MapPin className="text-halal-primary h-4 w-4" />
-                              <span>{event.location}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                <div className="flex flex-col lg:flex-row">
+                  {/* Left Section: Event Poster */}
+                  <div className="flex-none bg-[#0a0a0a] lg:w-[420px]">
+                    <Image
+                      src="/poster.jpeg"
+                      alt="Event Poster"
+                      width={600}
+                      height={800}
+                      className="h-auto w-full object-contain lg:h-full"
+                      priority
+                    />
                   </div>
 
                   {/* Right Section: Login Form */}
-                  <div className="flex flex-col justify-center bg-black/20 p-8 lg:p-10">
-                    <div className="mb-8">
-                      <CardTitle className="font-outfit mb-2 text-xl font-bold text-white">
+                  <div className="relative flex flex-1 flex-col justify-center overflow-hidden border-l border-white/10 bg-gradient-to-br from-[#F6E8CD]/80 via-[#F6E8CD]/60 to-[#F6E8CD]/40 p-8 shadow-[inset_0_2px_10px_rgba(255,255,255,0.05)] backdrop-blur-2xl lg:p-14">
+                    <div className="pointer-events-none absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/glass-shattering.png')] opacity-[0.05]" />
+                    <div className="relative">
+                      <CardTitle className="font-outfit mb-2 text-2xl font-black text-slate-900">
                         Konfirmasi Kehadiran
                       </CardTitle>
-                      <CardDescription className="text-slate-400">
+                      <CardDescription className="font-medium text-slate-700">
                         {forcedGuestType === 'internal'
                           ? 'Silakan masukkan kontak tamu internal yang telah didaftarkan.'
                           : forcedGuestType === 'tenant'
@@ -249,22 +194,22 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
                             const isEmailInput = field.value?.includes('@')
                             return (
                               <FormItem className="space-y-3">
-                                <FormLabel className="text-sm font-medium text-slate-300">
+                                <FormLabel className="text-sm font-bold text-slate-900">
                                   WhatsApp, Email, atau Nama Lengkap
                                 </FormLabel>
                                 <FormControl>
                                   <div className="group relative">
                                     {isEmailInput ? (
-                                      <Mail className="text-halal-primary/50 group-focus-within:text-halal-primary absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 transition-colors" />
+                                      <Mail className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-amber-500/70 transition-colors group-focus-within:text-amber-500" />
                                     ) : field.value?.match(/^[0-9]+$/) ? (
-                                      <Phone className="text-halal-primary/50 group-focus-within:text-halal-primary absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 transition-colors" />
+                                      <Phone className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-amber-500/70 transition-colors group-focus-within:text-amber-500" />
                                     ) : (
-                                      <User className="text-halal-primary/50 group-focus-within:text-halal-primary absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 transition-colors" />
+                                      <User className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-amber-500/70 transition-colors group-focus-within:text-amber-500" />
                                     )}
                                     <Input
                                       placeholder="No. WA, Email, atau Nama Lengkap"
                                       required
-                                      className="border-halal-primary/20 focus:border-halal-primary/50 h-12 rounded-xl bg-black/40 pl-12 text-white transition-all placeholder:text-slate-600"
+                                      className="h-14 rounded-xl border-white/10 bg-white/10 pl-12 transition-all placeholder:text-white/30 focus:border-amber-400/50"
                                       {...field}
                                     />
                                   </div>
@@ -304,7 +249,7 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8 }}
-            className="text-center text-xs text-slate-500"
+            className="text-center text-xs text-white/40"
           >
             © {new Date().getFullYear()} Bharata Event. All rights reserved.
           </motion.p>

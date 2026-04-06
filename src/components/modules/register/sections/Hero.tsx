@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Particles, ShootingStars } from '@/components/ui/particles'
 
-export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
+export function Hero({ title }: { title?: string }) {
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -14,7 +14,7 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
   }, [])
 
   return (
-    <section className="bg-halal-secondary relative flex min-h-screen w-full items-center overflow-hidden">
+    <section className="relative flex min-h-screen w-full items-center overflow-hidden">
       {/* Background Layer */}
       <div className="absolute inset-0 z-0">
         <Particles count={isMobile ? 15 : 40} />
@@ -34,7 +34,7 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
                   }
             }
             transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute -top-20 left-1/4 -z-10 h-[500px] w-[250px] origin-top bg-cyan-500/10 blur-[60px] will-change-[opacity,transform] md:h-[1000px] md:w-[500px] md:bg-cyan-500/20 md:blur-[80px]"
+            className="bg-halal-primary/10 md:bg-halal-primary/20 absolute -top-20 left-1/4 -z-10 h-[500px] w-[250px] origin-top blur-[60px] will-change-[opacity,transform] md:h-[1000px] md:w-[500px] md:blur-[80px]"
             style={{
               borderRadius: '50% 50% 0 0',
               transform: isMobile
@@ -53,7 +53,7 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
                   }
             }
             transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute -top-20 right-1/4 -z-10 h-[500px] w-[250px] origin-top bg-purple-500/10 blur-[60px] will-change-[opacity,transform] md:h-[1000px] md:w-[500px] md:bg-purple-500/20 md:blur-[80px]"
+            className="bg-halal-accent/10 md:bg-halal-accent/20 absolute -top-20 right-1/4 -z-10 h-[500px] w-[250px] origin-top blur-[60px] will-change-[opacity,transform] md:h-[1000px] md:w-[500px] md:blur-[80px]"
             style={{
               borderRadius: '50% 50% 0 0',
               transform: isMobile
@@ -62,14 +62,14 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
             }}
           />
 
-          {/* Golden Floor Uplights */}
+          {/* Golden Floor Uplights - Seamless transition */}
           <motion.div
             animate={{
-              opacity: [0.4, 0.7, 0.4],
-              scale: isMobile ? 1 : [1, 1.2, 1],
+              opacity: [0.3, 0.5, 0.3],
+              scale: isMobile ? 1 : [1, 1.1, 1],
             }}
             transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-            className="from-halal-primary/30 absolute right-0 bottom-0 left-0 h-64 bg-gradient-to-t to-transparent blur-[40px] will-change-[opacity] md:from-halal-primary/40 md:blur-[60px]"
+            className="from-transparent via-halal-primary/20 absolute right-0 bottom-0 left-0 h-64 bg-gradient-to-t to-transparent blur-[40px] will-change-[opacity] md:blur-[60px]"
             style={{ transform: 'translateZ(0)' }}
           />
 
@@ -82,7 +82,7 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
                   opacity: [0, 0.5, 0],
                 }}
                 transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
-                className="absolute top-1/3 left-0 h-[2px] w-full -rotate-12 bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent"
+                className="absolute top-1/3 left-0 h-[2px] w-full -rotate-12 bg-gradient-to-r from-transparent via-amber-400/40 to-transparent"
               />
               <motion.div
                 animate={{
@@ -95,7 +95,7 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
                   ease: 'linear',
                   delay: 1,
                 }}
-                className="absolute top-1/2 left-0 h-[1px] w-full rotate-6 bg-gradient-to-r from-transparent via-purple-400/40 to-transparent"
+                className="absolute top-1/2 left-0 h-[1px] w-full rotate-6 bg-gradient-to-r from-transparent via-orange-400/40 to-transparent"
               />
             </>
           )}
@@ -107,7 +107,7 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
               scaleX: isMobile ? 1 : [1, 1.5, 1],
             }}
             transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute -bottom-20 left-1/3 -z-10 h-[400px] w-1 rotate-[15deg] bg-cyan-400/20 blur-[30px] md:h-[800px] md:blur-[40px]"
+            className="absolute -bottom-20 left-1/3 -z-10 h-[400px] w-1 rotate-[15deg] bg-amber-400/20 blur-[30px] md:h-[800px] md:blur-[40px]"
             style={{ transform: 'translateZ(0)' }}
           />
           <motion.div
@@ -121,7 +121,7 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
               ease: 'easeInOut',
               delay: 2,
             }}
-            className="absolute right-1/3 -bottom-20 -z-10 h-[400px] w-1 rotate-[-15deg] bg-purple-400/20 blur-[30px] md:h-[800px] md:blur-[40px]"
+            className="absolute right-1/3 -bottom-20 -z-10 h-[400px] w-1 rotate-[-15deg] bg-orange-400/20 blur-[30px] md:h-[800px] md:blur-[40px]"
             style={{ transform: 'translateZ(0)' }}
           />
         </div>
@@ -133,11 +133,11 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
           transition={{ duration: 1.5 }}
           className="absolute inset-0"
         >
-          {/* Main Cinematic Gradient Overlay */}
-          <div className="from-halal-secondary via-halal-secondary/60 absolute inset-0 z-10 bg-gradient-to-b to-transparent" />
+          {/* Main Cinematic Gradient Overlay - Anchored to Ivory Theme */}
+          <div className="absolute inset-0 z-10 bg-gradient-to-b from-[#F6E8CD]/80 via-transparent to-transparent" />
 
           {/* Golden Aura Glow Central */}
-          <div className="bg-halal-primary/10 absolute top-1/2 left-1/2 -z-10 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-20 blur-[80px] md:h-[800px] md:w-[800px] md:opacity-30 md:blur-[180px]" />
+          <div className="bg-halal-primary/20 absolute top-1/2 left-1/2 -z-10 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-20 blur-[100px] md:h-[800px] md:w-[800px] md:blur-[220px]" />
         </motion.div>
       </div>
 
@@ -151,29 +151,16 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
             transition={{ duration: 0.8 }}
             className="flex w-full flex-col items-center gap-4"
           >
-            {logoUrl ? (
-              <div className="relative drop-shadow-[0_0_20px_rgba(245,158,11,0.2)]">
-                <Image
-                  src={logoUrl}
-                  alt="Logo"
-                  width={180}
-                  height={70}
-                  className="h-32 w-auto object-contain md:h-40"
-                  priority
-                />
-              </div>
-            ) : (
-              <div className="relative drop-shadow-[0_0_20px_rgba(245,158,11,0.2)]">
-                <Image
-                  src="/logo/LOGO A.png"
-                  alt="Logo"
-                  width={180}
-                  height={70}
-                  className="h-16 w-auto object-contain md:h-40"
-                  priority
-                />
-              </div>
-            )}
+            <div className="relative drop-shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+              <Image
+                src="/Logo/LOGO A.png"
+                alt="Logo"
+                width={180}
+                height={70}
+                className="h-16 w-auto object-contain md:h-40"
+                priority
+              />
+            </div>
           </motion.div>
 
           {/* Headline */}
@@ -184,7 +171,7 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
             className="flex w-full flex-col items-center space-y-8"
           >
             <div className="space-y-6">
-              <h4 className="font-outfit mx-auto max-w-6xl text-4xl font-bold tracking-tight text-white drop-shadow-2xl sm:text-5xl md:text-6xl lg:text-7xl">
+              <h4 className="font-outfit mx-auto max-w-6xl text-4xl font-black tracking-tight text-slate-900 drop-shadow-sm sm:text-5xl md:text-6xl lg:text-7xl">
                 {title || 'HALAL BIHALAL'}
               </h4>
             </div>
@@ -197,7 +184,7 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
               className="pointer-events-none relative mx-auto mt-12 h-[320px] w-full max-w-5xl drop-shadow-2xl md:h-[400px]"
             >
               <Image
-                src="/CHARLY PNG.png"
+                src="/CHARLY.png"
                 alt="Setia Band"
                 fill
                 className="scale-125 object-contain object-bottom transition-transform duration-1000 hover:scale-135 md:scale-150 md:hover:scale-165"
@@ -231,7 +218,7 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
               repeat: Infinity,
               ease: 'easeInOut',
             }}
-            className="flex h-10 w-6 justify-center rounded-full border-2 border-white/30 p-1"
+            className="flex h-10 w-6 justify-center rounded-full border-2 border-slate-900/30 p-1"
           >
             <motion.div
               animate={{
@@ -246,7 +233,7 @@ export function Hero({ logoUrl, title }: { logoUrl?: string; title?: string }) {
               className="bg-halal-primary h-2 w-1 rounded-full shadow-[0_0_8px_#f59e0b]"
             />
           </motion.div>
-          <span className="text-[10px] font-medium tracking-[0.2em] text-white/50 uppercase">
+          <span className="text-[10px] font-medium tracking-[0.2em] text-slate-900/50 uppercase">
             Scroll
           </span>
         </div>

@@ -59,7 +59,12 @@ export async function POST(
     }
 
     const body = await request.json()
-    const { full_name: fullName, guest_type: guestType, address } = body
+    const {
+      full_name: fullName,
+      guest_type: guestType,
+      address,
+      shirt_size: shirtSize,
+    } = body
 
     // Normalize phone number (digits only)
     const phone = body.phone ? String(body.phone).replace(/\D/g, '') : null
@@ -157,6 +162,7 @@ export async function POST(
           full_name: fullName,
           phone,
           address: address || '',
+          shirt_size: shirtSize || null,
           guest_type: guestType,
           metadata: {},
           registration_source: 'public_registration',
@@ -175,6 +181,7 @@ export async function POST(
         .update({
           full_name: fullName,
           address: address || '',
+          shirt_size: shirtSize || null,
           rsvp_status: isPaymentRequired ? 'pending' : 'confirmed',
           guest_type: guestType,
           invitation_code: invitationCode,
@@ -189,6 +196,7 @@ export async function POST(
       event_id: eventId,
       payment_proof_url: paymentProofUrl,
       payment_status: isPaymentRequired ? 'pending' : 'verified',
+      // Note: registration_number will be set by a database trigger if NULL
     })
 
     if (eventErr2) throw eventErr2

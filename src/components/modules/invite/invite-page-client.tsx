@@ -4,44 +4,55 @@ import { useEffect, useState } from 'react'
 import confetti from 'canvas-confetti'
 import { toast } from 'sonner'
 import { AnimatePresence } from 'framer-motion'
-import { Event as AppEvent, Guest, PaymentStatus } from '@/types'
-import { createClient } from '@/lib/supabase/client'
+import { Event as AppEvent, Guest } from '@/types'
 import { InvitationStatus } from '@/components/modules/invite/invitation-status'
 import { MosaicBackground } from '@/components/modules/invite/mosaic-background'
 import { TemplateRenderer } from '@/components/modules/invite/TemplateRenderer'
 import { INVITATION_TEMPLATES as templates } from '@/lib/constants/templates'
 import { FloatingWhatsApp } from '@/components/ui/floating-whatsapp'
+import { toJakartaISOString } from '@/lib/utils'
 
 type InvitePageClientProps = {
   invitationCode: string
   guest: Guest
   event: AppEvent
-  paymentStatus?: PaymentStatus
-  paymentProofUrl?: string | null
   openGate?: string | null
   startTime?: string | null
+  checkin?: unknown | null
 }
 
 export function InvitePageClient({
   invitationCode,
   guest: initialGuest,
   event,
-  paymentStatus,
-  paymentProofUrl,
   openGate,
   startTime,
+  checkin: initialCheckin,
 }: InvitePageClientProps) {
-  const supabase = createClient()
   const [guest, setGuest] = useState(initialGuest)
+  const [currentCheckin, setCurrentCheckin] = useState(initialCheckin)
   const [isUpdating, setIsUpdating] = useState(false)
-  const [currentPaymentStatus] = useState(paymentStatus)
-  const [currentPaymentProofUrl, setCurrentPaymentProofUrl] = useState(
-    paymentProofUrl,
-  )
-  const [isUpdatingPaymentProof, setIsUpdatingPaymentProof] = useState(false)
-  const [isOpen, setIsOpen] = useState(
-    initialGuest.guest_type === 'external',
-  )
+  const [isOpen, setIsOpen] = useState(initialGuest.guest_type === 'external')
+  const [isCheckinEnabled, setIsCheckinEnabled] = useState(false)
+
+  useEffect(() => {
+    if (!openGate) {
+      setIsCheckinEnabled(true)
+      return
+    }
+
+    const check = () => {
+      const gateISO = toJakartaISOString(event.event_date, openGate)
+      const gateTime = new Date(gateISO).getTime()
+      const now = Date.now()
+      // Enabled 1 hour before openGate
+      setIsCheckinEnabled(now >= gateTime - 3600000)
+    }
+
+    check()
+    const interval = setInterval(check, 10000)
+    return () => clearInterval(interval)
+  }, [event.event_date, openGate])
   useEffect(() => {
     document.title = `Undangan ${guest.full_name} - ${event.name}`
   }, [event.name, guest.full_name])
@@ -50,11 +61,14 @@ export function InvitePageClient({
     try {
       setIsUpdating(true)
 
-      const res = await fetch(`/api/invite/${encodeURIComponent(invitationCode)}/rsvp`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rsvp_status: status }),
-      })
+      const res = await fetch(
+        `/api/invite/${encodeURIComponent(invitationCode)}/rsvp`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rsvp_status: status }),
+        },
+      )
 
       const data = await res.json()
       if (!res.ok) {
@@ -75,57 +89,47 @@ export function InvitePageClient({
         toast.info('Konfirmasi ketidakhadiran berhasil disimpan.')
       }
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : 'Gagal menyimpan konfirmasi.')
+      toast.error(
+        error instanceof Error ? error.message : 'Gagal menyimpan konfirmasi.',
+      )
     } finally {
       setIsUpdating(false)
     }
   }
 
-  const handleUpdatePaymentProof = async (file: File) => {
+  const handleSelfCheckin = async () => {
     try {
-      setIsUpdatingPaymentProof(true)
-
-      const fileExt = file.name.split('.').pop() || 'jpg'
-      const fileName = `${invitationCode}-${Date.now()}.${fileExt}`
-      const filePath = `payment-proofs/${fileName}`
-
-      const { error: uploadError } = await supabase.storage
-        .from('event-assets')
-        .upload(filePath, file, { upsert: true })
-
-      if (uploadError) throw uploadError
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from('event-assets').getPublicUrl(filePath)
-
+      setIsUpdating(true)
       const res = await fetch(
-        `/api/invite/${encodeURIComponent(invitationCode)}/payment-proof`,
+        `/api/invite/${encodeURIComponent(invitationCode)}/checkin`,
         {
-          method: 'PATCH',
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            event_id: event.id,
-            payment_proof_url: publicUrl,
-          }),
+          body: JSON.stringify({ event_id: event.id }),
         },
       )
 
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.message || 'Gagal memperbarui bukti pembayaran.')
+        throw new Error(data.message || 'Gagal melakukan check-in.')
       }
 
-      setCurrentPaymentProofUrl(publicUrl)
-      toast.success('Bukti pembayaran berhasil diperbarui.')
+      setCurrentCheckin(data.checkin)
+
+      confetti({
+        particleCount: 200,
+        spread: 100,
+        origin: { y: 0.5 },
+        colors: ['#6366f1', '#a5b4fc', '#ffffff'],
+      })
+
+      toast.success('Check-in berhasil! Selamat datang di acara.')
     } catch (error: unknown) {
       toast.error(
-        error instanceof Error
-          ? error.message
-          : 'Gagal memperbarui bukti pembayaran.',
+        error instanceof Error ? error.message : 'Gagal melakukan check-in.',
       )
     } finally {
-      setIsUpdatingPaymentProof(false)
+      setIsUpdating(false)
     }
   }
 
@@ -139,8 +143,8 @@ export function InvitePageClient({
         logoUrl={event.logo_url}
         isFullScreen={true}
         opacity={
-          templates.find((template) => template.id === event.template_id)?.config
-            .mosaicOpacity ?? 0.1
+          templates.find((template) => template.id === event.template_id)
+            ?.config.mosaicOpacity ?? 0.1
         }
       />
 
@@ -154,12 +158,11 @@ export function InvitePageClient({
             setIsOpen={setIsOpen}
             onRSVP={handleRSVP}
             isUpdating={isUpdating}
-            paymentStatus={currentPaymentStatus}
-            paymentProofUrl={currentPaymentProofUrl}
-            isUpdatingPaymentProof={isUpdatingPaymentProof}
-            onUpdatePaymentProof={handleUpdatePaymentProof}
             openGate={openGate}
             startTime={startTime}
+            checkin={currentCheckin}
+            onSelfCheckin={handleSelfCheckin}
+            isCheckinEnabled={isCheckinEnabled}
           />
         </AnimatePresence>
       </div>

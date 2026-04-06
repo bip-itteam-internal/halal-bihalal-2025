@@ -80,6 +80,7 @@ CREATE TABLE public.guests (
   phone text UNIQUE,
   email text,
   address text,
+  shirt_size text,
   metadata jsonb DEFAULT '{}'::jsonb,
   rsvp_status text DEFAULT 'pending'
       CHECK (rsvp_status IN ('pending','confirmed','declined')),
@@ -98,15 +99,32 @@ CREATE TABLE public.guest_events (
   id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   guest_id uuid NOT NULL REFERENCES public.guests(id) ON DELETE CASCADE,
   event_id uuid NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
+  registration_number integer,
   created_at timestamptz DEFAULT now(),
   UNIQUE (guest_id,event_id)
 );
 
-CREATE INDEX idx_guest_events_guest
-ON public.guest_events(guest_id);
+-- Trigger for auto-incrementing registration_number per event
+CREATE OR REPLACE FUNCTION set_next_registration_number()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.registration_number IS NULL THEN
+    SELECT COALESCE(MAX(registration_number), 0) + 1
+    INTO NEW.registration_number
+    FROM public.guest_events
+    WHERE event_id = NEW.event_id;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
 
-CREATE INDEX idx_guest_events_event
-ON public.guest_events(event_id);
+CREATE TRIGGER trg_set_reg_num
+BEFORE INSERT ON public.guest_events
+FOR EACH ROW
+EXECUTE FUNCTION set_next_registration_number();
+
+CREATE INDEX idx_guest_events_registration_number
+ON public.guest_events(registration_number);
 
 --------------------------------------------------
 -- 7. Event Guest Rules (Jam masuk tiap tipe tamu)

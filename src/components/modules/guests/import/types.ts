@@ -4,6 +4,8 @@ export interface RawGuest {
   phone: string
   email?: string
   address?: string
+  registration_number?: number
+  shirt_size?: string
 }
 
 export type ImportStep = 'upload' | 'mapping' | 'preview'
@@ -14,4 +16,6 @@ export interface ColumnMapping {
   phone: string
   email: string
   address: string
+  registration_number: string
+  shirt_size: string
 }

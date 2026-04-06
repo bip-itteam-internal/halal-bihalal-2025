@@ -1,6 +1,6 @@
 'use client'
 
-import { FileUp, Loader2, UserCog } from 'lucide-react'
+import { FileUp, UserCog } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'

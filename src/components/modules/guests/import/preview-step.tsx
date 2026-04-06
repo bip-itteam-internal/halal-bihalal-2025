@@ -127,6 +127,9 @@ export function PreviewStep({
                 <TableHead className="sticky top-0 z-30 h-7 bg-slate-50/95 py-0 text-[9px] font-bold tracking-wider text-slate-400 backdrop-blur-sm">
                   Kontak
                 </TableHead>
+                <TableHead className="sticky top-0 z-30 h-7 bg-slate-50/95 py-0 text-center text-[9px] font-bold tracking-wider text-slate-400 backdrop-blur-sm">
+                  Baju
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -182,6 +185,14 @@ export function PreviewStep({
                         </div>
                       )}
                     </div>
+                  </TableCell>
+                  <TableCell className="py-1 text-center">
+                    <Badge
+                      variant="outline"
+                      className="h-3.5 scale-90 border-slate-100 bg-slate-50 px-1 text-[7px] font-bold tracking-widest text-slate-600"
+                    >
+                      {row.shirt_size || '-'}
+                    </Badge>
                   </TableCell>
                 </TableRow>
               ))}

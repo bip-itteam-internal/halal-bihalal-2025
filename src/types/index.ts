@@ -44,6 +44,7 @@ export interface Guest {
   phone?: string | null
   email?: string | null
   address?: string | null
+  shirt_size?: string | null
   metadata: GuestMetadata
   invitation_code?: string | null
   rsvp_status: RSVPStatus
@@ -51,12 +52,14 @@ export interface Guest {
   guest_events?: {
     event_id: string
     payment_status: PaymentStatus
+    registration_number?: number | null
     events: {
       name: string
     } | null
   }[]
   payment_proof_url?: string
   payment_status?: PaymentStatus
+  registration_number?: number | null
   created_at: string
 }
 

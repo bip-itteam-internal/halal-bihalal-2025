@@ -32,6 +32,86 @@ import {
 } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { clearEventGuestsAction } from '@/app/actions/guest-actions'
+import { Trash2 } from 'lucide-react'
+
+function ClearGuestsAction({
+  eventId,
+  onClear,
+}: {
+  eventId: string
+  onClear: () => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [isClearing, setIsClearing] = useState(false)
+
+  const handleClear = async () => {
+    try {
+      setIsClearing(true)
+      const res = await clearEventGuestsAction(eventId)
+      if (res.success) {
+        toast.success(res.message)
+        setOpen(false)
+        onClear()
+      } else {
+        toast.error(res.message)
+      }
+    } catch {
+      toast.error('Gagal mengosongkan data tamu')
+    } finally {
+      setIsClearing(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-9 w-9 text-red-500 hover:bg-red-50 hover:text-red-600"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Kosongkan Daftar Tamu?</DialogTitle>
+          <DialogDescription>
+            Tindakan ini akan menghapus semua kaitan tamu dari acara ini. Data
+            profil tamu tetap ada di sistem, namun tidak lagi terdaftar di acara
+            ini. Tindakan ini tidak dapat dibatalkan.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={isClearing}
+          >
+            Batal
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleClear}
+            disabled={isClearing}
+          >
+            {isClearing ? 'Membersihkan...' : 'Ya, Kosongkan'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
 
 type GuestTypeTab = 'all' | 'internal' | 'external'
 
@@ -96,9 +176,12 @@ export default function GuestManagementPage({
       // Fetch Guests via Junction Table with Pagination and Search
       let query = supabase
         .from('guest_events')
-        .select('id, payment_proof_url, payment_status, guests!inner(*)', {
-          count: 'exact',
-        })
+        .select(
+          'id, registration_number, payment_proof_url, payment_status, guests!inner(*)',
+          {
+            count: 'exact',
+          },
+        )
         .eq('event_id', eventId)
 
       if (searchQuery) {
@@ -123,16 +206,14 @@ export default function GuestManagementPage({
       const {
         data: mappingData,
         count,
-        error: guestError,
-      } = await query.order('created_at', { ascending: false }).range(from, to)
-
-      if (guestError) throw guestError
+      } = await query.order('registration_number', { ascending: true }).range(from, to)
 
       // Extract guest data and merge with payment info from junction table
       const guestsData: Guest[] = (mappingData || []).map((m) => {
         const guestObj = m.guests as unknown as Guest
         return {
           ...guestObj,
+          registration_number: m.registration_number,
           payment_proof_url: m.payment_proof_url || undefined,
           payment_status: m.payment_status as PaymentStatus,
         }
@@ -317,6 +398,7 @@ export default function GuestManagementPage({
     >
       <div className="flex-1 space-y-4 p-5 pt-4">
         <div className="flex flex-col gap-4">
+
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="relative max-w-sm flex-1">
               <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
@@ -339,6 +421,7 @@ export default function GuestManagementPage({
               )}
               <ImportGuestSheet eventId={eventId} onSuccess={fetchEventAndGuests} />
               <AddGuestSheet eventId={eventId} onSuccess={fetchEventAndGuests} />
+              <ClearGuestsAction eventId={eventId} onClear={fetchEventAndGuests} />
               <Button
                 variant="outline"
                 size="icon"
@@ -467,7 +550,6 @@ export default function GuestManagementPage({
               guests={guests}
               onRefresh={fetchEventAndGuests}
               onUpdateGuest={handleUpdateGuest}
-              startNumber={(page - 1) * pageSize + 1}
               eventId={eventId}
               showPaymentColumns={showPaymentColumns}
             />

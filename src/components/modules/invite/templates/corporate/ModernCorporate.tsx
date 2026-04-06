@@ -17,13 +17,12 @@ interface TemplateProps {
   setIsOpen: (open: boolean) => void
   onRSVP: (status: 'confirmed' | 'declined' | 'pending') => void
   isUpdating: boolean
-  paymentStatus?: 'pending' | 'verified' | 'rejected'
-  paymentProofUrl?: string | null
-  isUpdatingPaymentProof?: boolean
-  onUpdatePaymentProof?: (file: File) => Promise<void>
   openGate?: string | null
   startTime?: string | null
   onTicketView?: (visible: boolean) => void
+  checkin?: unknown | null
+  onSelfCheckin?: () => Promise<void>
+  isCheckinEnabled?: boolean
 }
 
 export function ModernCorporate({
@@ -33,13 +32,12 @@ export function ModernCorporate({
   setIsOpen,
   onRSVP,
   isUpdating,
-  paymentStatus,
-  paymentProofUrl,
-  isUpdatingPaymentProof,
-  onUpdatePaymentProof,
   openGate,
   startTime,
   onTicketView,
+  checkin,
+  onSelfCheckin,
+  isCheckinEnabled,
 }: TemplateProps) {
   const shouldSkipCover = guest.guest_type === 'external'
   const showingTicket = guest.rsvp_status === 'confirmed' && isOpen
@@ -62,7 +60,11 @@ export function ModernCorporate({
             eventDate={formatJakartaDate(event.event_date, 'PPP')}
             location={event.location || ''}
             guestName={guest.full_name || ''}
-            entryCode={guest.invitation_code || ''}
+            guestAddress={guest.address || null}
+            registrationNumber={
+              guest.guest_events?.find((ge) => ge.event_id === event.id)
+                ?.registration_number
+            }
             primaryColor="slate"
             logoUrl={event.logo_url || undefined}
             openGate={openGate || undefined}
@@ -72,7 +74,11 @@ export function ModernCorporate({
                 ? startTime.substring(0, 5).replace(':', '.') + ' WIB'
                 : formatJakartaDate(event.event_date, 'p')
             }
-            downloadFileName={`Ticket-${guest.full_name}-${event.name}.png`}
+            isAttendanceCheckedIn={!!checkin}
+            checkinTime={(checkin as { checkin_time: string })?.checkin_time}
+            shirtSize={guest.shirt_size}
+            onSelfCheckin={onSelfCheckin}
+            isCheckinEnabled={isCheckinEnabled}
           />
 
           {!shouldSkipCover && (
