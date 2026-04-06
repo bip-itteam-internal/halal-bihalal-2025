@@ -62,7 +62,12 @@ export async function bulkSendWhatsappAction(
   const results = []
   let successCount = 0
 
-  for (const guest of guests) {
+  // Helper for random delay
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+  for (let i = 0; i < guests.length; i++) {
+    const guest = guests[i]
+
     if (!guest.phone) {
       results.push({
         id: guest.id,
@@ -96,6 +101,13 @@ export async function bulkSendWhatsappAction(
       success: res.status,
       message: res.message,
     })
+
+    // Add delay after each message (except the last one)
+    if (i < guests.length - 1) {
+      // Random delay between 15 to 30 seconds
+      const delay = Math.floor(Math.random() * (30000 - 15000 + 1)) + 15000
+      await sleep(delay)
+    }
   }
 
   return {
