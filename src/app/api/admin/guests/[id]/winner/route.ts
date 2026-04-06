@@ -3,16 +3,17 @@ import { createClient } from '@/lib/supabase/server'
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const supabase = await createClient()
+  const { id } = await params
   try {
     const { is_winner } = await request.json()
 
     const { data, error } = await supabase
       .from('guests')
       .update({ is_doorprize_winner: is_winner })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
 
     if (error) throw error
