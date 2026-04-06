@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { LandingClient } from '@/components/modules/register/landing-client'
+import { LandingClientV2 as LandingClient } from '@/components/modules/register/landing-client-v2'
 import { Event } from '@/types'
 
 export default async function EksternalPage() {
