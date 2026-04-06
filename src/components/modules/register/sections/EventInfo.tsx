@@ -45,15 +45,14 @@ export function EventInfo({ date, location, guestRules }: EventInfoProps) {
                       })
                       .map((rule) => {
                         const isInternal = rule.guest_type === 'internal'
-                        const Icon =
-                          rule.guest_type === 'internal' ? Users : Music
+                        const Icon = isInternal ? Users : Music
 
                         return (
                           <div
                             key={rule.guest_type}
                             className={`flex items-center justify-between rounded-xl border px-4 py-3 backdrop-blur-sm transition-colors ${
                               isInternal
-                                ? 'border-sky-200 bg-sky-50'
+                                ? 'border-halal-primary/20 bg-halal-primary/5'
                                 : 'border-slate-200 bg-white/40'
                             }`}
                           >
@@ -61,7 +60,7 @@ export function EventInfo({ date, location, guestRules }: EventInfoProps) {
                               <div
                                 className={`flex h-8 w-8 items-center justify-center rounded-lg ${
                                   isInternal
-                                    ? 'bg-sky-100 text-sky-600'
+                                    ? 'bg-halal-primary/10 text-halal-primary'
                                     : 'bg-slate-100 text-slate-600'
                                 }`}
                               >
@@ -69,13 +68,13 @@ export function EventInfo({ date, location, guestRules }: EventInfoProps) {
                               </div>
                               <span className="text-[10px] font-bold tracking-[0.1em] text-slate-500 uppercase">
                                 {isInternal
-                                  ? 'Open Gate Internal'
-                                  : 'Open Gate Umum'}
+                                  ? 'Open Gate Halal Bihalal'
+                                  : 'Open Gate Spesial Konser'}
                               </span>
                             </div>
                             <span
                               className={`font-black md:text-lg ${
-                                isInternal ? 'text-sky-600' : 'text-slate-900'
+                                isInternal ? 'text-halal-primary' : 'text-slate-900'
                               }`}
                             >
                               {rule.open_gate
