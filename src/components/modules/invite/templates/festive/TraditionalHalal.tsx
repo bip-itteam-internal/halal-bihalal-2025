@@ -228,50 +228,60 @@ export function TraditionalHalal({
         className="w-full max-w-[400px] p-4"
       >
         <Card
-          className="relative aspect-[3/4] overflow-hidden border-none shadow-2xl transition-all"
+          className="relative min-h-[580px] w-full overflow-hidden border-none shadow-2xl transition-all"
           style={{ borderRadius: '3rem' }}
         >
-          <CardContent className="relative flex h-full flex-col items-center justify-between px-6 py-10 text-center">
-            {/* Top Logo - Enlarged and at the top */}
-            <div className="absolute top-2 left-0 flex w-full justify-center">
+          <CardContent className="relative flex min-h-[580px] flex-col items-center justify-between px-6 pt-24 pb-10 text-center">
+            {/* Top Logo */}
+            <div className="absolute top-4 left-0 flex w-full justify-center">
               <Image
                 src="/gate.png"
                 alt="Logo"
-                width={350}
-                height={192}
-                className="object-contain"
+                width={320}
+                height={160}
+                className="h-auto w-auto max-w-[85%] object-contain"
+                priority
               />
             </div>
 
-            <div className="z-10 mt-18 space-y-8">
-              <h2 className="font-serif text-lg tracking-widest uppercase">
-                Undangan
-              </h2>
+            <div className="flex flex-1 flex-col items-center justify-center space-y-6">
+              <div className="space-y-1">
+                <h2 className="font-serif text-sm tracking-[0.3em] text-slate-400 uppercase">
+                  Undangan
+                </h2>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <h1 className="font-serif text-2xl leading-tight font-bold text-slate-900">
+                    {event.name}
+                  </h1>
+                  <div className="mx-auto h-px w-10 bg-amber-200" />
+                  <p className="text-xs tracking-wider text-slate-500 uppercase">
+                    Bharata Group
+                  </p>
+                </div>
+
+                <div className="space-y-1 py-4">
+                  <p className="text-[10px] tracking-widest text-slate-400 uppercase">
+                    Spesial Untuk:
+                  </p>
+                  <p className="text-xl font-bold tracking-tight text-slate-900 uppercase">
+                    {guest.full_name}
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <h1 className="font-serif text-2xl leading-tight font-bold">
-                  {event.name}
-                </h1>
-                <div className="mx-auto h-px w-12" />
-                <p className="text-sm">Bharata Group</p>
-              </div>
-              <div className="space-y-1 py-4">
-                <p className="text-[11px] italic">Spesial Untuk:</p>
-                <p className="text-xl font-bold tracking-tight uppercase">
-                  {guest.full_name}
-                </p>
-              </div>
+            <div className="w-full pt-4">
+              <Button
+                onClick={() => setShowLinkInfo(true)}
+                className="h-16 w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 font-black tracking-widest text-[#0a2c2f] uppercase shadow-[0_10px_30px_rgba(251,191,36,0.3)] transition-all hover:scale-[1.03] hover:from-amber-200 hover:to-amber-400"
+              >
+                Buka Undangan
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
             </div>
-
-            <Button
-              onClick={() => setShowLinkInfo(true)}
-              className="h-16 w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 font-black tracking-widest text-[#0a2c2f] uppercase shadow-[0_10px_30px_rgba(251,191,36,0.3)] transition-all hover:scale-[1.03] hover:from-amber-200 hover:to-amber-400"
-            >
-              Buka Undangan
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
 
             <AlertDialog open={showLinkInfo} onOpenChange={setShowLinkInfo}>
               <AlertDialogContent className="rounded-3xl border-amber-100 bg-white shadow-2xl">
