@@ -15,7 +15,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
-import { Clock, ShieldAlert, RefreshCcw } from 'lucide-react'
+import { Clock, RefreshCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
@@ -34,19 +34,18 @@ function CheckinLogContent({ eventId }: { eventId?: string }) {
                 <TableHead className="font-bold text-slate-800">Nama Tamu</TableHead>
                 {!eventId && <TableHead className="font-bold text-slate-800">Event</TableHead>}
                 <TableHead className="font-bold text-slate-800">Tahap (Step)</TableHead>
-                <TableHead className="font-bold text-slate-800">Panitia (Scanner)</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell colSpan={eventId ? 4 : 5} className="h-16 animate-pulse bg-slate-50/50" />
+                    <TableCell colSpan={eventId ? 3 : 4} className="h-16 animate-pulse bg-slate-50/50" />
                   </TableRow>
                 ))
               ) : checkins.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={eventId ? 4 : 5} className="h-32 text-center text-slate-500 italic">
+                  <TableCell colSpan={eventId ? 3 : 4} className="h-32 text-center text-slate-500 italic">
                     Belum ada riwayat check-in untuk kriteria ini.
                   </TableCell>
                 </TableRow>
@@ -91,24 +90,6 @@ function CheckinLogContent({ eventId }: { eventId?: string }) {
                             : 'Masuk Konser'
                         }
                       </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {log.staff ? (
-                        <div className="flex items-center gap-2 text-slate-600">
-                          <div className="h-6 w-6 rounded-full bg-slate-800 flex items-center justify-center text-[10px] text-white font-bold">
-                            {log.staff.full_name.charAt(0)}
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-xs font-bold text-slate-700">{log.staff.full_name}</span>
-                            <span className="text-[9px] text-slate-400">{log.staff.email}</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-[10px] text-slate-400 italic flex items-center gap-1">
-                        <ShieldAlert className="h-3 w-3" />
-                          System/Legacy
-                        </span>
-                      )}
                     </TableCell>
                   </TableRow>
                 ))
