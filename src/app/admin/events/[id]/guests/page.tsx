@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, use, useMemo } from 'react'
+import { useState, useEffect, useCallback, use, useMemo, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { AppLayout } from '@/components/layout/app-layout'
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,7 @@ import {
   Globe,
   MessageCircle,
 } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Guest, PaymentStatus } from '@/types'
 import { GuestListTable } from '@/components/modules/guests/guest-list-table'
@@ -132,6 +133,8 @@ export default function GuestManagementPage({
 }) {
   const resolvedParams = use(params)
   const eventId = resolvedParams.id
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
@@ -141,7 +144,10 @@ export default function GuestManagementPage({
   const [guestType, setGuestType] = useState<GuestTypeTab>('internal')
   const [status, setStatus] = useState<string>('all')
   const [payStatus, setPayStatus] = useState<string>('all')
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useState(() => {
+    const p = searchParams.get('page')
+    return p ? parseInt(p) : 1
+  })
   const [pageSize] = useState(10)
   const [totalCount, setTotalCount] = useState(0)
   const [broadcastOpen, setBroadcastOpen] = useState(false)
@@ -157,133 +163,137 @@ export default function GuestManagementPage({
 
   const showPaymentColumns = guestType !== 'internal'
 
-  const fetchEventAndGuests = useCallback(async () => {
-    try {
-      setLoading(true)
+  const fetchEventAndGuests = useCallback(
+    async (resetPage = false) => {
+      try {
+        if (resetPage) setPage(1)
+        setLoading(true)
 
-      // Fetch Event (only once)
-      if (!event) {
-        const { data: eventData, error: eventError } = await supabase
-          .from('events')
-          .select('name')
-          .eq('id', eventId)
-          .single()
+        // Fetch Event (only once)
+        if (!event) {
+          const { data: eventData, error: eventError } = await supabase
+            .from('events')
+            .select('name')
+            .eq('id', eventId)
+            .single()
 
-        if (eventError) throw eventError
-        setEvent(eventData)
-      }
+          if (eventError) throw eventError
+          setEvent(eventData)
+        }
 
-      // Fetch Guests via Junction Table with Pagination and Search
-      let query = supabase
-        .from('guest_events')
-        .select(
-          'id, registration_number, payment_proof_url, payment_status, guests!inner(*)',
+        // Fetch Guests via Junction Table with Pagination and Search
+        let query = supabase
+          .from('guest_events')
+          .select(
+            'id, registration_number, payment_proof_url, payment_status, guests!inner(*)',
+            {
+              count: 'exact',
+            },
+          )
+          .eq('event_id', eventId)
+
+        if (searchQuery) {
+          query = query.ilike('guests.full_name', `%${searchQuery}%`)
+        }
+
+        if (guestType !== 'all') {
+          query = query.eq('guests.guest_type', guestType)
+        }
+
+        if (status !== 'all') {
+          query = query.eq('guests.rsvp_status', status)
+        }
+
+        if (payStatus !== 'all') {
+          query = query.eq('payment_status', payStatus)
+        }
+
+        const from = (page - 1) * pageSize
+        const to = from + pageSize - 1
+
+        const { data: mappingData, count } = await query
+          .order('registration_number', { ascending: true })
+          .range(from, to)
+
+        // Extract guest data and merge with payment info from junction table
+        const guestsData: Guest[] = (mappingData || []).map((m) => {
+          const guestObj = m.guests as unknown as Guest
+          return {
+            ...guestObj,
+            registration_number: m.registration_number,
+            payment_proof_url: m.payment_proof_url || undefined,
+            payment_status: m.payment_status as PaymentStatus,
+          }
+        })
+
+        setGuests(guestsData)
+        setTotalCount(count || 0)
+
+        let summaryQuery = supabase
+          .from('guest_events')
+          .select('payment_status, guests!inner(guest_type, rsvp_status)')
+          .eq('event_id', eventId)
+
+        if (guestType !== 'all') {
+          summaryQuery = summaryQuery.eq('guests.guest_type', guestType)
+        }
+
+        const { data: summaryData, error: summaryError } = await summaryQuery
+
+        if (summaryError) throw summaryError
+
+        const nextSummary = (summaryData || []).reduce<GuestSummary>(
+          (acc, item) => {
+            const guestRow = item.guests as unknown as {
+              guest_type: string
+              rsvp_status: string
+            }
+
+            acc.total += 1
+
+            if (guestRow.rsvp_status === 'confirmed') acc.confirmed += 1
+            else if (guestRow.rsvp_status === 'declined') acc.declined += 1
+            else acc.pending += 1
+
+            if (item.payment_status === 'verified') acc.paymentVerified += 1
+            else if (item.payment_status === 'rejected')
+              acc.paymentRejected += 1
+            else if (item.payment_status === 'pending') acc.paymentPending += 1
+
+            return acc
+          },
           {
-            count: 'exact',
+            total: 0,
+            confirmed: 0,
+            pending: 0,
+            declined: 0,
+            paymentPending: 0,
+            paymentVerified: 0,
+            paymentRejected: 0,
           },
         )
-        .eq('event_id', eventId)
 
-      if (searchQuery) {
-        query = query.ilike('guests.full_name', `%${searchQuery}%`)
+        setSummary(nextSummary)
+      } catch (err: unknown) {
+        const error = err as Error
+        console.error(error)
+        toast.error(error.message || 'Gagal memuat data tamu.')
+      } finally {
+        setLoading(false)
       }
-
-      if (guestType !== 'all') {
-        query = query.eq('guests.guest_type', guestType)
-      }
-
-      if (status !== 'all') {
-        query = query.eq('guests.rsvp_status', status)
-      }
-
-      if (payStatus !== 'all') {
-        query = query.eq('payment_status', payStatus)
-      }
-
-      const from = (page - 1) * pageSize
-      const to = from + pageSize - 1
-
-      const {
-        data: mappingData,
-        count,
-      } = await query.order('registration_number', { ascending: true }).range(from, to)
-
-      // Extract guest data and merge with payment info from junction table
-      const guestsData: Guest[] = (mappingData || []).map((m) => {
-        const guestObj = m.guests as unknown as Guest
-        return {
-          ...guestObj,
-          registration_number: m.registration_number,
-          payment_proof_url: m.payment_proof_url || undefined,
-          payment_status: m.payment_status as PaymentStatus,
-        }
-      })
-
-      setGuests(guestsData)
-      setTotalCount(count || 0)
-
-      let summaryQuery = supabase
-        .from('guest_events')
-        .select('payment_status, guests!inner(guest_type, rsvp_status)')
-        .eq('event_id', eventId)
-
-      if (guestType !== 'all') {
-        summaryQuery = summaryQuery.eq('guests.guest_type', guestType)
-      }
-
-      const { data: summaryData, error: summaryError } = await summaryQuery
-
-      if (summaryError) throw summaryError
-
-      const nextSummary = (summaryData || []).reduce<GuestSummary>(
-        (acc, item) => {
-          const guestRow = item.guests as unknown as {
-            guest_type: string
-            rsvp_status: string
-          }
-
-          acc.total += 1
-
-          if (guestRow.rsvp_status === 'confirmed') acc.confirmed += 1
-          else if (guestRow.rsvp_status === 'declined') acc.declined += 1
-          else acc.pending += 1
-
-          if (item.payment_status === 'verified') acc.paymentVerified += 1
-          else if (item.payment_status === 'rejected') acc.paymentRejected += 1
-          else if (item.payment_status === 'pending') acc.paymentPending += 1
-
-          return acc
-        },
-        {
-          total: 0,
-          confirmed: 0,
-          pending: 0,
-          declined: 0,
-          paymentPending: 0,
-          paymentVerified: 0,
-          paymentRejected: 0,
-        },
-      )
-
-      setSummary(nextSummary)
-    } catch (err: unknown) {
-      const error = err as Error
-      console.error(error)
-      toast.error(error.message || 'Gagal memuat data tamu.')
-    } finally {
-      setLoading(false)
-    }
-  }, [
-    eventId,
-    supabase,
-    page,
-    pageSize,
-    searchQuery,
-    guestType,
-    status,
-    payStatus,
-    event,
-  ])
+    },
+    [
+      eventId,
+      supabase,
+      page,
+      pageSize,
+      searchQuery,
+      guestType,
+      status,
+      payStatus,
+      event,
+    ],
+  )
 
   const handleUpdateGuest = (guestId: string, updates: Partial<Guest>) => {
     setGuests((prev) =>
@@ -295,8 +305,13 @@ export default function GuestManagementPage({
     fetchEventAndGuests()
   }, [page, searchQuery, guestType, status, payStatus, fetchEventAndGuests])
 
-  // Reset page to 1 when filters change
+  // Only reset page to 1 when filters actually change
+  const firstRender = useRef(true)
   useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false
+      return
+    }
     setPage(1)
   }, [searchQuery, guestType, status, payStatus])
 
@@ -305,6 +320,17 @@ export default function GuestManagementPage({
       setPayStatus('all')
     }
   }, [guestType, payStatus])
+
+  // Sync page state to URL
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (page === 1) {
+      params.delete('page')
+    } else {
+      params.set('page', page.toString())
+    }
+    router.replace(`?${params.toString()}`, { scroll: false })
+  }, [page, router, searchParams])
 
   const totalPages = Math.ceil(totalCount / pageSize)
 
@@ -398,7 +424,6 @@ export default function GuestManagementPage({
     >
       <div className="flex-1 space-y-4 p-5 pt-4">
         <div className="flex flex-col gap-4">
-
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="relative max-w-sm flex-1">
               <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
@@ -419,13 +444,22 @@ export default function GuestManagementPage({
                   Broadcast WA
                 </Button>
               )}
-              <ImportGuestSheet eventId={eventId} onSuccess={fetchEventAndGuests} />
-              <AddGuestSheet eventId={eventId} onSuccess={fetchEventAndGuests} />
-              <ClearGuestsAction eventId={eventId} onClear={fetchEventAndGuests} />
+              <ImportGuestSheet
+                eventId={eventId}
+                onSuccess={fetchEventAndGuests}
+              />
+              <AddGuestSheet
+                eventId={eventId}
+                onSuccess={fetchEventAndGuests}
+              />
+              <ClearGuestsAction
+                eventId={eventId}
+                onClear={fetchEventAndGuests}
+              />
               <Button
                 variant="outline"
                 size="icon"
-                onClick={fetchEventAndGuests}
+                onClick={() => fetchEventAndGuests()}
                 disabled={loading}
               >
                 <RefreshCw
@@ -583,6 +617,7 @@ export default function GuestManagementPage({
                 </p>
                 <div className="flex items-center gap-2">
                   <Button
+                    type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -608,6 +643,7 @@ export default function GuestManagementPage({
                       return (
                         <Button
                           key={pageNum}
+                          type="button"
                           variant={page === pageNum ? 'default' : 'outline'}
                           size="sm"
                           onClick={() => setPage(pageNum)}
@@ -620,6 +656,7 @@ export default function GuestManagementPage({
                     })}
                   </div>
                   <Button
+                    type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
