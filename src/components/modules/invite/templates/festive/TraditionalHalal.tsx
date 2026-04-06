@@ -283,7 +283,7 @@ export function TraditionalHalal({
                     Simpan Link Undangan
                   </AlertDialogTitle>
                   <AlertDialogDescription className="text-sm text-slate-600 leading-relaxed">
-                    Mohon simpan link undangan ini baik-baik (bisa dengan cara <b>bintangi pesan</b> di WhatsApp) untuk memudahkan Anda saat memasuki lokasi acara dan proses check-in tiket nantinya.
+                    Mohon simpan link undangan ini baik-baik untuk memudahkan Anda saat memasuki lokasi acara dan proses check-in tiket nantinya.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
