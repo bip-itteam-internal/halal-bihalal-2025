@@ -34,8 +34,8 @@ export interface DashboardPaymentStats {
 }
 
 export interface DashboardCheckinStats {
-  exchange: number
-  entrance: number
+  halalBihalal: number
+  konser: number
 }
 
 export interface DashboardRecentCheckin {
@@ -147,14 +147,14 @@ export async function getDashboardData() {
     { verified: 0, pending: 0, rejected: 0 },
   )
 
-  const checkinStats = (checkinStepsRes.data || []).reduce<DashboardCheckinStats>(
+  const checkinStats = (checkinStepsRes.data || []).reduce(
     (acc, item) => {
       const step = item.step as CheckinStep | null
-      if (step === 'exchange') acc.exchange += 1
-      if (step === 'entrance') acc.entrance += 1
+      if (step === 'exchange') acc.halalBihalal += 1
+      if (step === 'entrance') acc.konser += 1
       return acc
     },
-    { exchange: 0, entrance: 0 },
+    { halalBihalal: 0, konser: 0 },
   )
 
   return {

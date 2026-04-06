@@ -3,17 +3,14 @@
 import { useEffect, useState, useCallback } from 'react'
 import {
   CalendarDays,
-  Users,
-  CheckCircle2,
-  Globe,
   Gift,
   ArrowRight,
+  RotateCw,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 import { AppLayout } from '@/components/layout/app-layout'
-import { StatsCard } from '@/components/shared/stats-card'
 import { PageHeader } from '@/components/shared/page-header'
 import { useProfile } from '@/hooks/use-profile'
 import { Button } from '@/components/ui/button'
@@ -36,13 +33,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatJakartaDate } from '@/lib/utils'
 import {
-  DashboardBreakdown,
-  DashboardCheckinStats,
-  DashboardEvent,
-  DashboardPaymentStats,
   DashboardRecentCheckin,
-  DashboardRSVPStats,
-  DashboardStats,
   getDashboardData,
 } from '@/services/api/dashboard'
 
@@ -53,80 +44,9 @@ type QuickAction = {
   icon: React.ReactNode
 }
 
-function MetricPanel({
-  title,
-  description,
-  items,
-}: {
-  title: string
-  description: string
-  items: Array<{
-    label: string
-    value: number
-    tone?: 'default' | 'good' | 'warn'
-  }>
-}) {
-  return (
-    <Card className="h-full">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base">{title}</CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        {items.map((item) => (
-          <div
-            key={item.label}
-            className="flex items-center justify-between rounded-xl border bg-slate-50/70 px-3 py-2"
-          >
-            <span className="text-sm font-medium text-slate-600">
-              {item.label}
-            </span>
-            <span
-              className={`text-lg font-black ${
-                item.tone === 'good'
-                  ? 'text-emerald-600'
-                  : item.tone === 'warn'
-                    ? 'text-amber-600'
-                    : 'text-slate-900'
-              }`}
-            >
-              {item.value}
-            </span>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  )
-}
 
 export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState<DashboardStats>({
-    totalEvents: 0,
-    totalGuests: 0,
-    checkedIn: 0,
-    openPublicEvents: 0,
-  })
-  const [recentEvents, setRecentEvents] = useState<DashboardEvent[]>([])
-  const [upcomingEvents, setUpcomingEvents] = useState<DashboardEvent[]>([])
-  const [guestTypeStats, setGuestTypeStats] = useState<DashboardBreakdown>({
-    internal: 0,
-    external: 0,
-  })
-  const [rsvpStats, setRsvpStats] = useState<DashboardRSVPStats>({
-    confirmed: 0,
-    pending: 0,
-    declined: 0,
-  })
-  const [paymentStats, setPaymentStats] = useState<DashboardPaymentStats>({
-    verified: 0,
-    pending: 0,
-    rejected: 0,
-  })
-  const [checkinStats, setCheckinStats] = useState<DashboardCheckinStats>({
-    exchange: 0,
-    entrance: 0,
-  })
   const [recentCheckins, setRecentCheckins] = useState<
     DashboardRecentCheckin[]
   >([])
@@ -143,13 +63,6 @@ export default function AdminDashboardPage() {
     try {
       setLoading(true)
       const data = await getDashboardData()
-      setRecentEvents(data.recentEvents)
-      setUpcomingEvents(data.upcomingEvents)
-      setStats(data.stats)
-      setGuestTypeStats(data.guestTypeStats)
-      setRsvpStats(data.rsvpStats)
-      setPaymentStats(data.paymentStats)
-      setCheckinStats(data.checkinStats)
       setRecentCheckins(data.recentCheckins)
     } catch (err) {
       console.error(err)
@@ -183,131 +96,35 @@ export default function AdminDashboardPage() {
       header={
         <PageHeader
           title="Dashboard Operasional"
-          subtitle="Pantau event aktif, status tamu, pembayaran, dan check-in."
-          actions={
-            <Link href="/admin/events">
-              <Button size="sm" variant="outline" className="h-8">
-                Lihat Manajemen Event
-              </Button>
-            </Link>
-          }
+          subtitle="Ringkasan pendaftaran dan aktivitas acara."
         />
       }
     >
       <div className="flex-1 space-y-6 p-5 pt-4">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <StatsCard
-            icon={<CalendarDays className="h-4 w-4" />}
-            label="Total Event"
-            value={loading ? '...' : stats.totalEvents}
-            className="border-slate-200"
-          />
-          <StatsCard
-            icon={<Users className="h-4 w-4" />}
-            label="Total Tamu"
-            value={loading ? '...' : stats.totalGuests}
-            className="border-slate-200"
-          />
-          <StatsCard
-            icon={<CheckCircle2 className="h-4 w-4" />}
-            label="Total Check-in"
-            value={loading ? '...' : stats.checkedIn}
-            className="border-slate-200"
-          />
-          <StatsCard
-            icon={<Globe className="h-4 w-4" />}
-            label="Event Publik Aktif"
-            value={loading ? '...' : stats.openPublicEvents}
-            className="border-slate-200"
-          />
-        </div>
-
-        <div className="grid gap-6 xl:grid-cols-[1.4fr_0.9fr]">
+        <div className="grid gap-6">
           <Card>
             <CardHeader className="pb-4">
-              <CardTitle>Event Terdekat</CardTitle>
-              <CardDescription>
-                Fokus utama untuk panitia berdasarkan tanggal event.
-              </CardDescription>
+              <CardTitle>Shortcut Navigasi</CardTitle>
+              <CardDescription>Pilih modul operasional untuk memulai.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {loading ? (
-                Array.from({ length: 3 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between rounded-2xl border px-4 py-4"
-                  >
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-40" />
-                      <Skeleton className="h-3 w-28" />
-                    </div>
-                    <Skeleton className="h-8 w-24 rounded-full" />
-                  </div>
-                ))
-              ) : upcomingEvents.length === 0 ? (
-                <div className="rounded-2xl border border-dashed px-4 py-10 text-center text-sm text-slate-500">
-                  Belum ada event mendatang.
-                </div>
-              ) : (
-                upcomingEvents.map((event, index) => (
-                  <div
-                    key={event.id}
-                    className="flex items-center justify-between rounded-2xl border bg-slate-50/60 px-4 py-4"
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-black tracking-[0.2em] text-slate-400 uppercase">
-                          {index === 0 ? 'Prioritas' : 'Agenda'}
-                        </span>
-                        <Badge variant="outline" className="capitalize">
-                          {event.event_type || '-'}
-                        </Badge>
-                      </div>
-                      <p className="text-base font-bold text-slate-900">
-                        {event.name}
-                      </p>
-                      <p className="text-sm text-slate-500">
-                        {formatJakartaDate(event.event_date, 'PPP')}
-                      </p>
-                    </div>
-                    <Link href={`/admin/events/${event.id}`}>
-                      <Button size="sm" variant="outline">
-                        Detail
-                      </Button>
-                    </Link>
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-4">
-              <CardTitle>Quick Action</CardTitle>
-              <CardDescription>
-                Shortcut untuk alur yang paling sering dipakai tim operasional.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-3">
+            <CardContent className="grid gap-4 sm:grid-cols-2">
               {quickActions.map((action) => (
                 <Link key={action.href} href={action.href}>
-                  <div className="group rounded-2xl border bg-white px-4 py-3 transition-colors hover:bg-slate-50">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-start gap-3">
-                        <div className="mt-0.5 rounded-xl bg-slate-100 p-2 text-slate-700">
-                          {action.icon}
-                        </div>
-                        <div className="space-y-1">
-                          <p className="font-semibold text-slate-900">
-                            {action.label}
-                          </p>
-                          <p className="text-sm text-slate-500">
-                            {action.description}
-                          </p>
-                        </div>
+                  <div className="group flex items-center justify-between rounded-2xl border bg-white p-5 transition-all hover:border-slate-300 hover:bg-slate-50 hover:shadow-sm">
+                    <div className="flex items-center gap-4">
+                      <div className="rounded-xl bg-slate-100 p-3 text-slate-700 group-hover:bg-blue-50 group-hover:text-blue-600">
+                        {action.icon}
                       </div>
-                      <ArrowRight className="h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-1" />
+                      <div>
+                        <p className="text-base font-bold text-slate-900 leading-tight">
+                          {action.label}
+                        </p>
+                        <p className="text-sm text-slate-500 mt-0.5">
+                          Masuk ke modul
+                        </p>
+                      </div>
                     </div>
+                    <ArrowRight className="h-5 w-5 text-slate-400 group-hover:translate-x-1 group-hover:text-blue-600" />
                   </div>
                 </Link>
               ))}
@@ -315,51 +132,27 @@ export default function AdminDashboardPage() {
           </Card>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
-          <MetricPanel
-            title="Komposisi Tamu"
-            description="Sebaran tamu lintas kategori."
-            items={[
-              { label: 'Internal', value: guestTypeStats.internal },
-              { label: 'Eksternal', value: guestTypeStats.external },
-            ]}
-          />
-          <MetricPanel
-            title="RSVP"
-            description="Status konfirmasi kehadiran tamu."
-            items={[
-              { label: 'Confirmed', value: rsvpStats.confirmed, tone: 'good' },
-              { label: 'Pending', value: rsvpStats.pending, tone: 'warn' },
-              { label: 'Declined', value: rsvpStats.declined },
-            ]}
-          />
-          <MetricPanel
-            title="Pembayaran"
-            description="Monitoring verifikasi pembayaran."
-            items={[
-              { label: 'Verified', value: paymentStats.verified, tone: 'good' },
-              { label: 'Pending', value: paymentStats.pending, tone: 'warn' },
-              { label: 'Rejected', value: paymentStats.rejected },
-            ]}
-          />
-          <MetricPanel
-            title="Tahap Check-in"
-            description="Perbandingan exchange dan entrance."
-            items={[
-              { label: 'Exchange', value: checkinStats.exchange },
-              { label: 'Entrance', value: checkinStats.entrance, tone: 'good' },
-            ]}
-          />
-        </div>
 
-        <div className="grid gap-6 xl:grid-cols-[1.25fr_1fr]">
+        <div className="grid gap-6">
           <Card>
-            <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <div className="space-y-1.5">
               <CardTitle>Aktivitas Check-in Terbaru</CardTitle>
               <CardDescription>
                 Tamu yang baru saja melakukan check-in di lokasi.
               </CardDescription>
-            </CardHeader>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchDashboard()}
+              disabled={loading}
+              className="h-8 gap-2 px-3"
+            >
+              <RotateCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
+          </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
@@ -412,82 +205,18 @@ export default function AdminDashboardPage() {
                         </TableCell>
                         <TableCell>{item.events?.name || '-'}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className="uppercase">
+                          <Badge variant="outline" className="uppercase text-[10px]">
                             {item.step}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                          {formatJakartaDate(item.checkin_time, 'PPP p')}
+                        <TableCell className="whitespace-nowrap text-xs">
+                          {formatJakartaDate(item.checkin_time, 'p')} - {formatJakartaDate(item.checkin_time, 'MMM d')}
                         </TableCell>
                       </TableRow>
                     ))
                   )}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Event Terbaru</CardTitle>
-              <CardDescription>
-                Snapshot event yang baru dibuat atau diubah terakhir.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {loading ? (
-                Array.from({ length: 4 }).map((_, index) => (
-                  <div key={index} className="rounded-2xl border px-4 py-4">
-                    <Skeleton className="h-4 w-40" />
-                    <Skeleton className="mt-2 h-3 w-24" />
-                  </div>
-                ))
-              ) : recentEvents.length === 0 ? (
-                <div className="rounded-2xl border border-dashed px-4 py-10 text-center text-sm text-slate-500">
-                  Belum ada event.
-                </div>
-              ) : (
-                recentEvents.map((event) => (
-                  <div
-                    key={event.id}
-                    className="rounded-2xl border bg-slate-50/60 px-4 py-4"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="space-y-1">
-                        <p className="font-semibold text-slate-900">
-                          {event.name}
-                        </p>
-                        <p className="text-sm text-slate-500">
-                          {formatJakartaDate(event.event_date, 'PPP')}
-                        </p>
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className={
-                          event.public_reg_status === 'open'
-                            ? 'border-emerald-200 text-emerald-700'
-                            : ''
-                        }
-                      >
-                        {event.public_reg_status === 'open' ? 'Buka' : 'Tutup'}
-                      </Badge>
-                    </div>
-                    {role !== 'staff' && (
-                      <div className="mt-3">
-                        <Link href={`/admin/events/${event.id}`}>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 px-0"
-                          >
-                            Buka Detail
-                          </Button>
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
             </CardContent>
           </Card>
         </div>
