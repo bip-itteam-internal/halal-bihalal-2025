@@ -14,9 +14,11 @@ export async function GET() {
           id,
           full_name,
           guest_type,
-          address
+          address,
+          is_doorprize_winner
         )
       `)
+      .not('guests.is_doorprize_winner', 'is', true)
 
     if (error) throw error
 

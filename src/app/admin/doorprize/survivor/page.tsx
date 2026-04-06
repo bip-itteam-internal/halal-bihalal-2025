@@ -10,11 +10,14 @@ import { WinnerBanner } from '@/components/modules/doorprize/winner-banner'
 import { FloatingParticles } from '@/components/shared/floating-particles'
 import { CountdownOverlay } from '@/components/modules/doorprize/countdown-overlay'
 import { DoorprizeRulesModal } from '@/components/modules/doorprize/doorprize-rules-modal'
+import { WinnersListModal } from '@/components/modules/doorprize/winners-list-modal'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
+import { Trophy } from 'lucide-react'
 
 export default function SurvivorDoorprizePage() {
   const [isRulesOpen, setIsRulesOpen] = useState(true)
+  const [isWinnersListOpen, setIsWinnersListOpen] = useState(false)
   const {
     candidates,
     aliveIds,
@@ -135,6 +138,15 @@ export default function SurvivorDoorprizePage() {
             </Button>
           </Link>
 
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={() => setIsWinnersListOpen(true)}
+            className="h-9 w-9 p-0 bg-black/40 border-white/5 hover:bg-emerald-500/10 hover:text-emerald-400 group rounded-lg"
+          >
+            <Trophy className="h-4 w-4 transition-transform group-hover:scale-110" />
+          </Button>
+
           {/* Reset Button - Ultra Compact */}
           {aliveIds.size < candidates.length && (
             <Button
@@ -203,6 +215,11 @@ export default function SurvivorDoorprizePage() {
           { key: "R", action: "Reset Peserta" },
           { key: "Stop", action: "Berhenti Darurat" }
         ]}
+      />
+
+      <WinnersListModal 
+        isOpen={isWinnersListOpen}
+        onClose={() => setIsWinnersListOpen(false)}
       />
     </div>
   )

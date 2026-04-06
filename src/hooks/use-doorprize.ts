@@ -77,7 +77,24 @@ export function useDoorprize() {
     }
   }, [])
 
-  const fireConfetti = () => {
+  const setWinnerToDatabase = async (guestId: string) => {
+    try {
+      await fetch(`/api/admin/guests/${guestId}/winner`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ is_winner: true }),
+      })
+    } catch (err) {
+      console.error('Failed to update winner in database:', err)
+    }
+  }
+
+  const fireConfetti = (winnerGuest?: Guest) => {
+    if (winnerGuest) {
+      setWinnerToDatabase(winnerGuest.id)
+    }
     audioManager.playVictory()
     const duration = 7 * 1000
     const animationEnd = Date.now() + duration
@@ -147,7 +164,8 @@ export function useDoorprize() {
         setIsEliminating(false)
 
         if (currentAlive.length - toEliminate.length === 1) {
-          fireConfetti()
+          const finalWinner = aliveParticipants.find(p => !toEliminate.includes(p.id))
+          fireConfetti(finalWinner)
           setIsAutoRunning(false)
         }
       }, 500)
@@ -260,5 +278,6 @@ export function useDoorprize() {
     reset,
     forceRefresh,
     eliminateRandom,
+    setWinnerToDatabase,
   }
 }

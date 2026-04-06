@@ -23,7 +23,6 @@ import {
   Clock,
   XCircle,
   FileImage,
-  Send,
   Loader2,
   MessageCircle,
   Trash2,

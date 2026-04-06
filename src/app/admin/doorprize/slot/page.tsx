@@ -11,15 +11,19 @@ import confetti from 'canvas-confetti'
 import { FloatingParticles } from '@/components/shared/floating-particles'
 import { audioManager } from '@/lib/audio-manager'
 import { DoorprizeRulesModal } from '@/components/modules/doorprize/doorprize-rules-modal'
+import { WinnersListModal } from '@/components/modules/doorprize/winners-list-modal'
 import { cn } from '@/lib/utils'
 import { Guest } from '@/types'
+import { Trophy } from 'lucide-react'
 
 export default function SlotMachinePage() {
   const [isRulesOpen, setIsRulesOpen] = useState(true)
+  const [isWinnersListOpen, setIsWinnersListOpen] = useState(false)
   const {
     candidates,
     aliveParticipants,
     reset,
+    setWinnerToDatabase,
   } = useDoorprize()
 
   const [spinPhase, setSpinPhase] = useState<
@@ -149,6 +153,9 @@ export default function SlotMachinePage() {
       }, 2500)
     } else {
       // THE REAL DEAL
+      if (localWinner) {
+        setWinnerToDatabase(localWinner.id)
+      }
       setSpinPhase('idle')
     }
   }
@@ -269,6 +276,13 @@ export default function SlotMachinePage() {
               <ArrowLeft />
             </Button>
           </Link>
+          <Button 
+            variant="outline"
+            onClick={() => setIsWinnersListOpen(true)}
+            className="h-12 w-12 rounded-xl border-white/10 bg-white/5 p-0 hover:bg-emerald-500/20 hover:text-emerald-400 group"
+          >
+            <Trophy className="h-5 w-5 transition-transform group-hover:scale-110" />
+          </Button>
           <Button
             variant="outline"
             onClick={handleReset}
@@ -441,6 +455,11 @@ export default function SlotMachinePage() {
           { key: "Click", action: "Pull Lever (Tarik Tuas)" },
           { key: "Reset", action: "Muat Ulang Mesin" }
         ]}
+      />
+
+      <WinnersListModal 
+        isOpen={isWinnersListOpen}
+        onClose={() => setIsWinnersListOpen(false)}
       />
     </div>
   )

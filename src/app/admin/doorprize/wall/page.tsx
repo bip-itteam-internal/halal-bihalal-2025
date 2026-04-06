@@ -9,10 +9,13 @@ import { EnvelopeCard } from '@/components/modules/doorprize/envelope-card'
 import { WinnerBanner } from '@/components/modules/doorprize/winner-banner'
 import { FloatingParticles } from '@/components/shared/floating-particles'
 import { DoorprizeRulesModal } from '@/components/modules/doorprize/doorprize-rules-modal'
+import { WinnersListModal } from '@/components/modules/doorprize/winners-list-modal'
 import { useState } from 'react'
+import { Trophy } from 'lucide-react'
 
 export default function WallOfFortunePage() {
   const [isRulesOpen, setIsRulesOpen] = useState(true)
+  const [isWinnersListOpen, setIsWinnersListOpen] = useState(false)
   const {
     mapping,
     openedIds,
@@ -58,6 +61,15 @@ export default function WallOfFortunePage() {
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
+
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setIsWinnersListOpen(true)}
+            className="h-9 w-9 p-0 bg-black/60 backdrop-blur-xl border-white/10 hover:bg-emerald-500/20 hover:text-emerald-400 rounded-xl group"
+          >
+            <Trophy className="h-4 w-4 transition-transform group-hover:scale-110" />
+          </Button>
           
           <Button 
             variant="outline" 
@@ -177,6 +189,11 @@ export default function WallOfFortunePage() {
           { key: "Click", action: "Pilih Amplop" },
           { key: "Reset", action: "Muat Ulang Dinding" }
         ]}
+      />
+
+      <WinnersListModal 
+        isOpen={isWinnersListOpen}
+        onClose={() => setIsWinnersListOpen(false)}
       />
 
       <style jsx global>{`

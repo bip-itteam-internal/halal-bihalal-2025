@@ -12,13 +12,18 @@ import { Card } from '@/components/ui/card'
 import { audioManager } from '@/lib/audio-manager'
 import { Guest } from '@/types'
 import { SpinnerWheel } from '@/components/modules/doorprize/spinner-wheel'
+import { WinnersListModal } from '@/components/modules/doorprize/winners-list-modal'
+import { Trophy as TrophyIcon } from 'lucide-react'
 
 export default function SpinnerWheelPage() {
-  const { candidates, loading } = useDoorprize()
+  const { candidates, loading, setWinnerToDatabase } = useDoorprize()
   const [winners, setWinners] = useState<Guest[]>([])
   const [isSpinning, setIsSpinning] = useState(false)
+  const [isWinnersListOpen, setIsWinnersListOpen] = useState(false)
 
   const handleWinner = useCallback((winner: Guest) => {
+    // Save to database
+    setWinnerToDatabase(winner.id)
     // Delay adding to winner list for dramatic effect
     setTimeout(() => {
       setWinners(prev => [winner, ...prev])
@@ -52,6 +57,18 @@ export default function SpinnerWheelPage() {
             Kembali ke Arena
           </Button>
         </Link>
+
+        {/* Winner List Button - Top Right Floating */}
+        <div className="absolute top-12 right-6">
+          <Button 
+            variant="outline"
+            onClick={() => setIsWinnersListOpen(true)}
+            className="h-12 px-6 rounded-xl border-white/5 bg-white/5 text-emerald-400 hover:bg-emerald-500/20 hover:text-emerald-300 font-bold tracking-widest uppercase transition-all"
+          >
+            <TrophyIcon className="mr-2 h-5 w-5" />
+            Winner List
+          </Button>
+        </div>
 
         <div className="mb-12 text-center space-y-4">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-sky-500/20 text-sky-400">
@@ -201,6 +218,11 @@ export default function SpinnerWheelPage() {
           </div>
         </div>
       </div>
+
+      <WinnersListModal 
+        isOpen={isWinnersListOpen}
+        onClose={() => setIsWinnersListOpen(false)}
+      />
     </div>
   )
 }

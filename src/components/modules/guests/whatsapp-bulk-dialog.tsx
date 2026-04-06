@@ -40,7 +40,7 @@ export function WhatsappBulkDialog({
   const [progress, setProgress] = useState(0)
   const [status, setStatus] = useState<'idle' | 'sending' | 'done'>('idle')
   const [results, setResults] = useState<{ id: string; name: string; success: boolean; message: string }[]>([])
-  const [eventName, setEventName] = useState('Silaturahmi & Halal Bihalal 2026')
+  const eventName = 'Silaturahmi & Halal Bihalal 2026'
 
   const handleSend = async () => {
     try {

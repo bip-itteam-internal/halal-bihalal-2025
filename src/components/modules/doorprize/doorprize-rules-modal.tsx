@@ -56,7 +56,7 @@ export function DoorprizeRulesModal({
               </div>
               <div className="space-y-1">
                 <h2 className="text-[10px] font-black tracking-[0.4em] text-amber-500/60 uppercase">
-                  PANDUAN OPERATOR
+                  ATURAN MAIN & KONTROL
                 </h2>
                 <h1 className="text-4xl font-black tracking-tight text-white uppercase italic sm:text-5xl">
                   {gameTitle}

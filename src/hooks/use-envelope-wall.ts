@@ -42,12 +42,27 @@ export function useEnvelopeWall() {
 
   const [selectedNumber, setSelectedNumber] = useState<number | null>(null)
 
+  const setWinnerToDatabase = async (guestId: string) => {
+    try {
+      await fetch(`/api/admin/guests/${guestId}/winner`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ is_winner: true }),
+      })
+    } catch (err) {
+      console.error('Failed to update winner in database:', err)
+    }
+  }
+
   const openEnvelope = (index: number) => {
     const guest = mapping[index]
     if (!guest || openedIds.has(guest.id)) return
 
     audioManager.playTick()
     
+    setWinnerToDatabase(guest.id)
     setOpenedIds((prev) => new Set(prev).add(guest.id))
     setLastWinner(guest)
     setSelectedNumber(null) // Close preview
