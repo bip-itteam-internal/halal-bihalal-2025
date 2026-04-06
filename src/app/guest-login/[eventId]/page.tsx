@@ -2,13 +2,7 @@
 
 import { useState, use } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import {
-  Loader2,
-  Phone,
-  Mail,
-  ArrowRight,
-  User,
-} from 'lucide-react'
+import { Loader2, Phone, Mail, ArrowRight, User } from 'lucide-react'
 import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -209,7 +203,7 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
                                     <Input
                                       placeholder="No. WA, Email, atau Nama Lengkap"
                                       required
-                                      className="h-14 rounded-xl border-white/10 bg-white/10 pl-12 transition-all placeholder:text-slate-900 focus:border-amber-400/50"
+                                      className="h-14 rounded-xl border border-amber-500/30 bg-white/40 pl-12 shadow-sm transition-all placeholder:text-slate-500 focus:border-amber-500 focus:bg-white focus:ring-4 focus:ring-amber-500/10"
                                       {...field}
                                     />
                                   </div>
