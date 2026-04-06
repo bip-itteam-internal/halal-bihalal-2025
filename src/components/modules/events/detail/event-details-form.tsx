@@ -227,6 +227,8 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
         name: draftEvent.name,
         event_type: draftEvent.event_type,
         location: draftEvent.location,
+        latitude: draftEvent.latitude,
+        longitude: draftEvent.longitude,
       },
       quota: {
         external_quota: draftEvent.external_quota,
@@ -443,6 +445,14 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
               <div className="sm:col-span-2">
                 <DetailItem label="Lokasi" value={event.location || 'Belum diisi'} />
               </div>
+              <DetailItem
+                label="Latitude"
+                value={event.latitude?.toString() || 'Belum diatur'}
+              />
+              <DetailItem
+                label="Longitude"
+                value={event.longitude?.toString() || 'Belum diatur'}
+              />
             </div>
           </SectionCard>
 
@@ -664,6 +674,36 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
                       value={draftEvent.location || ''}
                       onChange={(e) =>
                         setDraftEvent((prev) => ({ ...prev, location: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <FieldLabel>Latitude</FieldLabel>
+                    <Input
+                      type="number"
+                      step="any"
+                      placeholder="-6.123456"
+                      value={draftEvent.latitude ?? ''}
+                      onChange={(e) =>
+                        setDraftEvent((prev) => ({
+                          ...prev,
+                          latitude: e.target.value ? Number(e.target.value) : null,
+                        }))
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <FieldLabel>Longitude</FieldLabel>
+                    <Input
+                      type="number"
+                      step="any"
+                      placeholder="106.123456"
+                      value={draftEvent.longitude ?? ''}
+                      onChange={(e) =>
+                        setDraftEvent((prev) => ({
+                          ...prev,
+                          longitude: e.target.value ? Number(e.target.value) : null,
+                        }))
                       }
                     />
                   </div>

@@ -195,6 +195,8 @@ export function InvitePageClient({
             onSelfCheckinStep={handleSelfCheckin}
             isHalalEnabled={isHalalEnabled}
             isConcertEnabled={isConcertEnabled}
+            latitude={event.latitude}
+            longitude={event.longitude}
           />
         </AnimatePresence>
       </div>

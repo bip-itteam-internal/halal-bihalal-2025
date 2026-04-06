@@ -32,6 +32,8 @@ export interface Event {
   is_paid: boolean
   price_external: number
   payment_info?: string | null
+  latitude?: number | null
+  longitude?: number | null
   created_at: string
   event_guest_rules?: EventGuestRule[]
 }

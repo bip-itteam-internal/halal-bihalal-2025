@@ -19,6 +19,8 @@ interface TemplateRendererProps {
   onSelfCheckinStep?: (step: 'exchange' | 'entrance') => Promise<void>
   isHalalEnabled?: boolean
   isConcertEnabled?: boolean
+  latitude?: number | null
+  longitude?: number | null
 }
 
 export function TemplateRenderer({
@@ -36,6 +38,8 @@ export function TemplateRenderer({
   onSelfCheckinStep,
   isHalalEnabled,
   isConcertEnabled,
+  latitude,
+  longitude,
 }: TemplateRendererProps) {
   // ... (keeping switch logic)
   const commonProps = {
@@ -52,6 +56,8 @@ export function TemplateRenderer({
     onSelfCheckinStep,
     isHalalEnabled,
     isConcertEnabled,
+    latitude,
+    longitude,
   }
 
   switch (templateId) {

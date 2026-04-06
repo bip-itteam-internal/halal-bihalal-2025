@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react'
-import { RefreshCw, Info, User } from 'lucide-react'
+import { RefreshCw, Info, User, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
-import { cn } from '@/lib/utils'
+import { cn, getHaversineDistance } from '@/lib/utils'
+import { toast } from 'sonner'
 
 export interface EventTicketProps {
   eventName: string
@@ -25,6 +26,8 @@ export interface EventTicketProps {
   onSelfCheckinStep?: (step: 'exchange' | 'entrance') => Promise<void>
   isHalalEnabled?: boolean
   isConcertEnabled?: boolean
+  latitude?: number | null
+  longitude?: number | null
 }
 
 export function EventTicket({
@@ -43,6 +46,8 @@ export function EventTicket({
   onSelfCheckinStep,
   isHalalEnabled = false,
   isConcertEnabled = false,
+  latitude,
+  longitude,
 }: EventTicketProps) {
   const ticketRef = useRef<HTMLDivElement>(null)
   const [isCheckingIn, setIsCheckingIn] = useState<
@@ -93,11 +98,46 @@ export function EventTicket({
       <Button
         onClick={async () => {
           if (!isEnabled || isCheckingIn) return
+          
           try {
             setIsCheckingIn(step)
+
+            // Geofencing Check
+            if (latitude && longitude) {
+              const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                  enableHighAccuracy: true,
+                  timeout: 5000,
+                  maximumAge: 0,
+                })
+              }).catch(() => null)
+
+              if (!pos) {
+                toast.error('Gagal mendapatkan lokasi. Pastikan GPS aktif dan izin lokasi diberikan.')
+                setIsCheckingIn(null)
+                return
+              }
+
+              const distance = getHaversineDistance(
+                pos.coords.latitude,
+                pos.coords.longitude,
+                latitude,
+                longitude
+              )
+
+              if (distance > 50) {
+                toast.error(`Anda berada di luar jangkauan lokasi acara (Jarak: ${Math.round(distance)}m). Radius maksimal 50m.`, {
+                  duration: 5000,
+                })
+                setIsCheckingIn(null)
+                return
+              }
+            }
+
             await onSelfCheckinStep?.(step)
           } catch (err) {
             console.error(err)
+            toast.error('Terjadi kesalahan saat proses check-in.')
           } finally {
             setIsCheckingIn(null)
           }
