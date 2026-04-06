@@ -244,9 +244,7 @@ export function TraditionalHalal({
                   {event.name}
                 </h1>
                 <div className="mx-auto h-px w-12" />
-                <p className="text-sm">
-                  PT Bharata Internasional Pharmaceutical
-                </p>
+                <p className="text-sm">Bharata Group</p>
               </div>
               <div className="space-y-1 py-4">
                 <p className="text-[11px] italic">Spesial Untuk:</p>

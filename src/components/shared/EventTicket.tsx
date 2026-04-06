@@ -189,6 +189,15 @@ export function EventTicket({
               </div>
             </div>
 
+            <div className="space-y-1">
+              <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                Lokasi
+              </span>
+              <p className="text-xs leading-tight font-bold text-slate-900">
+                Lap. Parkir PT. Bharata Internasional Pharmaceutical
+              </p>
+            </div>
+
             {(openGateHalal || openGateKonser) && (
               <div className="grid grid-cols-2 gap-8">
                 {openGateHalal && (
