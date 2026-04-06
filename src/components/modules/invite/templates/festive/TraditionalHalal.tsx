@@ -9,10 +9,20 @@ import {
   Heart,
   ArrowRight,
   LucideIcon,
+  ShieldCheck,
 } from 'lucide-react'
 import { EventTicket } from '@/components/shared/EventTicket'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { formatJakartaDate } from '@/lib/utils'
 import { Guest, Event as AppEvent, Checkin } from '@/types'
 import Image from 'next/image'
@@ -137,6 +147,7 @@ export function TraditionalHalal({
   isHalalEnabled,
   isConcertEnabled,
 }: TemplateProps) {
+  const [showLinkInfo, setShowLinkInfo] = React.useState(false)
   const shouldSkipCover = guest.guest_type === 'external'
   const isInternal = guest.guest_type === 'internal'
   const showingTicket =
@@ -255,12 +266,39 @@ export function TraditionalHalal({
             </div>
 
             <Button
-              onClick={() => setIsOpen(true)}
+              onClick={() => setShowLinkInfo(true)}
               className="h-16 w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 font-black tracking-widest text-[#0a2c2f] uppercase shadow-[0_10px_30px_rgba(251,191,36,0.3)] transition-all hover:scale-[1.03] hover:from-amber-200 hover:to-amber-400"
             >
               Buka Undangan
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
+
+            <AlertDialog open={showLinkInfo} onOpenChange={setShowLinkInfo}>
+              <AlertDialogContent className="border-amber-100 bg-white shadow-2xl rounded-3xl">
+                <AlertDialogHeader className="items-center text-center">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-500 mb-2">
+                    <ShieldCheck className="h-10 w-10" />
+                  </div>
+                  <AlertDialogTitle className="font-serif text-xl font-bold text-slate-900">
+                    Simpan Link Undangan
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-sm text-slate-600 leading-relaxed">
+                    Mohon simpan link undangan ini baik-baik (bisa dengan cara <b>bintangi pesan</b> di WhatsApp) untuk memudahkan Anda saat memasuki lokasi acara dan proses check-in tiket nantinya.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogAction
+                    onClick={() => {
+                      setShowLinkInfo(false)
+                      setIsOpen(true)
+                    }}
+                    className="h-12 w-full rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 font-bold text-[#0a2c2f] uppercase shadow-lg shadow-amber-200 hover:opacity-90"
+                  >
+                    Saya Mengerti
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </CardContent>
         </Card>
       </motion.div>
