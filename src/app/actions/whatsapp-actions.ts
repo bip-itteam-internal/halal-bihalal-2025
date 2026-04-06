@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { sendWhatsapp } from '@/services/api/whatsapp'
-import { formatJakartaDate } from '@/lib/utils'
+// import { formatJakartaDate } from '@/lib/utils' // Commented out or removed
 
 export async function bulkSendWhatsappAction(
   guestIds: string[],
