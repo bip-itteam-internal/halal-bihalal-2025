@@ -7,7 +7,7 @@ export async function POST(
 ) {
   try {
     const { invitationCode } = await params
-    const { event_id } = await req.json()
+    const { event_id, step: explicitlyStep } = await req.json()
 
     if (!event_id) {
       return NextResponse.json(
@@ -46,19 +46,24 @@ export async function POST(
       )
     }
 
-    // 3. Identify Step (Following standard logic: check if exchange is done)
+    // 3. Identify Step
     let determinedStep: 'exchange' | 'entrance' = 'exchange'
     
-    const { data: exchangeDone } = await adminClient
-      .from('checkins')
-      .select('id')
-      .eq('guest_id', guest.id)
-      .eq('event_id', event_id)
-      .eq('step', 'exchange')
-      .maybeSingle()
-
-    if (exchangeDone) {
-      determinedStep = 'entrance'
+    if (explicitlyStep === 'exchange' || explicitlyStep === 'entrance') {
+      determinedStep = explicitlyStep
+    } else {
+      // Fallback to automatic logic
+      const { data: exchangeDone } = await adminClient
+        .from('checkins')
+        .select('id')
+        .eq('guest_id', guest.id)
+        .eq('event_id', event_id)
+        .eq('step', 'exchange')
+        .maybeSingle()
+  
+      if (exchangeDone) {
+        determinedStep = 'entrance'
+      }
     }
 
     // 4. Check for existing scan of the same step
@@ -84,12 +89,17 @@ export async function POST(
         guest_id: guest.id,
         event_id: event_id,
         step: determinedStep,
-        checkin_by: null, // Marked as self check-in
       })
       .select()
       .single()
 
     if (regErr) throw regErr
+    
+    // 6. Automatically Update RSVP Status to confirmed (as requested)
+    await adminClient
+      .from('guests')
+      .update({ rsvp_status: 'confirmed' })
+      .eq('id', guest.id)
 
     return NextResponse.json(
       {

@@ -1,6 +1,6 @@
 'use client'
 
-import { CalendarDays, ScanLine, History, DoorOpen } from 'lucide-react'
+import { CalendarDays, History, DoorOpen } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
@@ -173,21 +173,6 @@ export function EventCard({
             </Link>
           </>
         )}
-        <Link
-          href={`/admin/scanner?event=${event.id}`}
-          className={cn(
-            'min-w-[100px] flex-1',
-            !canManageEvent && 'flex-[1.5]',
-          )}
-        >
-          <Button
-            className="w-full bg-emerald-600 text-[11px] font-bold text-white shadow-sm hover:bg-emerald-700"
-            size="sm"
-          >
-            <ScanLine className="mr-1.5 h-3.5 w-3.5" />
-            Scanner
-          </Button>
-        </Link>
         <Link
           href={`/admin/checkins?event_id=${event.id}`}
           className="min-w-[80px] flex-1"

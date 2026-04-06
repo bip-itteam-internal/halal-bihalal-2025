@@ -1,6 +1,6 @@
 'use client'
 
-import { Guest, Event as AppEvent } from '@/types'
+import { Guest, Event as AppEvent, Checkin } from '@/types'
 import { ModernCorporate } from './templates/corporate/ModernCorporate'
 import { TraditionalHalal } from './templates/festive/TraditionalHalal'
 
@@ -15,9 +15,10 @@ interface TemplateRendererProps {
   openGate?: string | null
   startTime?: string | null
   onTicketView?: (visible: boolean) => void
-  checkin?: unknown | null
-  onSelfCheckin?: () => Promise<void>
-  isCheckinEnabled?: boolean
+  checkins?: Checkin[] | null
+  onSelfCheckinStep?: (step: 'exchange' | 'entrance') => Promise<void>
+  isHalalEnabled?: boolean
+  isConcertEnabled?: boolean
 }
 
 export function TemplateRenderer({
@@ -31,65 +32,34 @@ export function TemplateRenderer({
   openGate,
   startTime,
   onTicketView,
-  checkin,
-  onSelfCheckin,
-  isCheckinEnabled,
+  checkins,
+  onSelfCheckinStep,
+  isHalalEnabled,
+  isConcertEnabled,
 }: TemplateRendererProps) {
-  // If templateId is not set, or it's a legacy ID that doesn't match our new ones,
-  // we can either show a default new template or the legacy one (if we want to keep it).
-  // Given the user wants to switch to this "ready-to-use" approach, let's prioritize new ones.
+  // ... (keeping switch logic)
+  const commonProps = {
+    event,
+    guest,
+    isOpen,
+    setIsOpen,
+    onRSVP,
+    isUpdating,
+    openGate,
+    startTime,
+    onTicketView,
+    checkins,
+    onSelfCheckinStep,
+    isHalalEnabled,
+    isConcertEnabled,
+  }
 
   switch (templateId) {
     case 'corporate-modern':
-      return (
-        <ModernCorporate
-          event={event}
-          guest={guest}
-          isOpen={isOpen}
-          setIsOpen={setIsOpen}
-          onRSVP={onRSVP}
-          isUpdating={isUpdating}
-          openGate={openGate}
-          startTime={startTime}
-          onTicketView={onTicketView}
-          checkin={checkin}
-          onSelfCheckin={onSelfCheckin}
-          isCheckinEnabled={isCheckinEnabled}
-        />
-      )
+      return <ModernCorporate {...commonProps} />
     case 'festive-halal':
-      return (
-        <TraditionalHalal
-          event={event}
-          guest={guest}
-          isOpen={isOpen}
-          setIsOpen={setIsOpen}
-          onRSVP={onRSVP}
-          isUpdating={isUpdating}
-          openGate={openGate}
-          startTime={startTime}
-          onTicketView={onTicketView}
-          checkin={checkin}
-          onSelfCheckin={onSelfCheckin}
-          isCheckinEnabled={isCheckinEnabled}
-        />
-      )
+      return <TraditionalHalal {...commonProps} />
     default:
-      // Default fallback if no valid template_id is found
-      return (
-        <ModernCorporate
-          event={event}
-          guest={guest}
-          isOpen={isOpen}
-          setIsOpen={setIsOpen}
-          onRSVP={onRSVP}
-          isUpdating={isUpdating}
-          openGate={openGate}
-          startTime={startTime}
-          onTicketView={onTicketView}
-          checkin={checkin}
-          isCheckinEnabled={isCheckinEnabled}
-        />
-      )
+      return <ModernCorporate {...commonProps} />
   }
 }

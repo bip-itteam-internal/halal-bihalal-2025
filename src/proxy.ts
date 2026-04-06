@@ -8,8 +8,7 @@ export async function proxy(request: NextRequest) {
   const isAuthPath = pathname === '/login'
   const isProtectedPath =
     pathname.startsWith('/admin') ||
-    pathname.startsWith('/dashboard') ||
-    pathname.startsWith('/scanner')
+    pathname.startsWith('/dashboard')
 
   // Not logged in -> Redirect to login if on protected path
   if (!user && isProtectedPath) {

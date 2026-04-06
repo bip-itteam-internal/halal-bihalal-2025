@@ -72,18 +72,19 @@ export default async function GuestInvitePage({
         />
       )
     }
-    const matchingRule =
-      selectedEvent?.event_guest_rules?.find(
-        (rule) => rule.guest_type === guest.guest_type,
-      ) || null
+    const internalRule = selectedEvent?.event_guest_rules?.find(
+      (rule) => rule.guest_type === 'internal',
+    ) || null
+    const externalRule = selectedEvent?.event_guest_rules?.find(
+      (rule) => rule.guest_type === 'external',
+    ) || null
+    const matchingRule = guest.guest_type === 'internal' ? internalRule : externalRule
 
     const { data: checkinData } = await adminClient
       .from('checkins')
       .select('*')
       .eq('guest_id', guest.id)
       .eq('event_id', selectedEvent.id)
-      .eq('step', 'entrance')
-      .maybeSingle()
 
     return (
       <InvitePageClient
@@ -93,6 +94,8 @@ export default async function GuestInvitePage({
         paymentStatus={selectedGuestEvent.payment_status}
         paymentProofUrl={selectedGuestEvent.payment_proof_url}
         openGate={matchingRule?.open_gate || null}
+        openGateHalal={internalRule?.open_gate || null}
+        openGateKonser={externalRule?.open_gate || null}
         startTime={matchingRule?.start_time || null}
         checkin={checkinData}
       />

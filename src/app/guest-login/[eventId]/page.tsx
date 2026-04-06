@@ -133,7 +133,7 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
                   {/* Left Section: Event Poster */}
                   <div className="flex-none bg-[#0a0a0a] lg:w-[420px]">
                     <Image
-                      src="/poster.jpeg"
+                      src="/fix.jpeg"
                       alt="Event Poster"
                       width={600}
                       height={800}

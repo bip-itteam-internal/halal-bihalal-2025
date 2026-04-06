@@ -167,6 +167,7 @@ export default function WallOfFortunePage() {
         isOpen={isRulesOpen}
         onClose={() => setIsRulesOpen(false)}
         rules={[
+          "HANYA PESERTA YANG SUDAH CHECK-IN YANG BERHAK IKUT DIUNDI.",
           "Pilih satu angka amplop yang tampil di layar utama.",
           "Satu amplop berisi satu identitas tamu yang beruntung.",
           "Pastikan peserta yang terpilih hadir di lokasi acara.",

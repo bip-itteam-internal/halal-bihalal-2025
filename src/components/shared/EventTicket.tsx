@@ -3,49 +3,117 @@ import { RefreshCw, Info, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import Image from 'next/image'
 
 export interface EventTicketProps {
   eventName: string
   eventDate: string
   eventTime?: string
-  location: string
   guestName: string
   statusLabel?: string
   primaryColor?: string
   accentColor?: string
-  logoUrl?: string
   className?: string
-  openGate?: string
   guestType?: string
   guestAddress?: string | null
   registrationNumber?: number | null
-  isAttendanceCheckedIn?: boolean
+  isHalalCheckedIn?: boolean
+  isConcertCheckedIn?: boolean
   checkinTime?: string
   shirtSize?: string | null
-  onSelfCheckin?: () => Promise<void>
-  isCheckinEnabled?: boolean
+  openGateHalal?: string | null
+  openGateKonser?: string | null
+  onSelfCheckinStep?: (step: 'exchange' | 'entrance') => Promise<void>
+  isHalalEnabled?: boolean
+  isConcertEnabled?: boolean
 }
 
 export function EventTicket({
   eventName,
   eventDate,
-  location,
   guestName,
   statusLabel = 'Confirmed',
   className,
-  openGate,
-  guestType,
   guestAddress,
   registrationNumber,
-  isAttendanceCheckedIn,
+  isHalalCheckedIn,
+  isConcertCheckedIn,
   shirtSize,
-  onSelfCheckin,
-  isCheckinEnabled = true,
-  logoUrl,
+  guestType,
+  openGateHalal,
+  openGateKonser,
+  onSelfCheckinStep,
+  isHalalEnabled = false,
+  isConcertEnabled = false,
 }: EventTicketProps) {
   const ticketRef = useRef<HTMLDivElement>(null)
-  const [isCheckingIn, setIsCheckingIn] = useState(false)
+  const [isCheckingIn, setIsCheckingIn] = useState<'exchange' | 'entrance' | null>(null)
+
+  let statusBg = 'bg-slate-50 ring-slate-200'
+  let statusText = 'text-slate-600'
+
+  if (statusLabel.toLowerCase() === 'confirmed') {
+    statusBg = 'bg-emerald-50 ring-emerald-100'
+    statusText = 'text-emerald-600'
+  } else if (statusLabel.toLowerCase() === 'pending') {
+    statusBg = 'bg-amber-50 ring-amber-200'
+    statusText = 'text-amber-600'
+  } else if (statusLabel.toLowerCase() === 'declined') {
+    statusBg = 'bg-red-50 ring-red-100'
+    statusText = 'text-red-600'
+  }
+
+  const renderCheckInButton = (
+    step: 'exchange' | 'entrance',
+    label: string,
+    isCheckedIn: boolean,
+    isEnabled: boolean,
+    icon: React.ReactNode
+  ) => {
+    if (isCheckedIn) {
+      return (
+        <div className="flex w-full items-center justify-center gap-3 rounded-2xl bg-emerald-50 py-4 ring-1 ring-emerald-200">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white">
+            <svg viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <p className="text-[11px] font-bold tracking-widest text-emerald-700 uppercase">
+            {label} BERHASIL
+          </p>
+        </div>
+      )
+    }
+
+    return (
+      <Button
+        onClick={async () => {
+          if (!isEnabled || isCheckingIn) return
+          try {
+            setIsCheckingIn(step)
+            await onSelfCheckinStep?.(step)
+          } catch (err) {
+            console.error(err)
+          } finally {
+            setIsCheckingIn(null)
+          }
+        }}
+        disabled={isCheckingIn !== null || !isEnabled}
+        className={cn(
+          'h-16 w-full rounded-2xl text-[11px] font-bold tracking-[0.2em] text-white uppercase transition-all active:scale-[0.98]',
+          isEnabled
+            ? 'bg-slate-900 shadow-xl hover:opacity-90'
+            : 'bg-slate-200 cursor-not-allowed text-slate-400 shadow-none'
+        )}
+      >
+        {isCheckingIn === step ? (
+          <RefreshCw className="h-5 w-5 animate-spin" />
+        ) : (
+          icon
+        )}
+        {isCheckingIn === step ? 'MEMPROSES...' : `CHECK-IN ${label}`}
+      </Button>
+    )
+  }
 
   return (
     <motion.div
@@ -55,172 +123,141 @@ export function EventTicket({
     >
       <div ref={ticketRef} className="relative overflow-hidden">
         {/* Main Ticket Surface */}
-        <div className="relative rounded-[2rem] border border-slate-200 bg-white p-6 ring-1 ring-slate-200">
-          <p className="text-sm leading-none font-semibold text-slate-900 uppercase">
-            {eventName}
+        <div className="relative rounded-[2rem] border border-slate-200 bg-white p-6 shadow-xl ring-1 ring-slate-200">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
+            Tiket Digital
           </p>
-          {/* Row 1: Logo & Basic Info */}
-          <div className="flex items-start gap-6">
-            {logoUrl && (
-              <div className="relative h-24 w-24 flex-none overflow-hidden rounded-2xl bg-slate-50 ring-1 ring-slate-100">
-                <Image
-                  src={logoUrl}
-                  alt="Event logo"
-                  fill
-                  className="object-contain"
-                />
+          <div className="space-y-4">
+            <h3 className="text-xl font-black text-slate-900 leading-tight uppercase">
+              {eventName}
+            </h3>
+          </div>
+
+          <div className="mt-8 space-y-6">
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                No. Registrasi
+              </span>
+              <p className="text-3xl font-black text-slate-900 tracking-tight">
+                {registrationNumber ? `${registrationNumber.toString().padStart(3, '0')}` : '-'}
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                Nama Lengkap
+              </span>
+              <p className="text-lg font-black text-slate-900 uppercase">
+                {guestName}
+              </p>
+            </div>
+
+            {guestAddress && (
+              <div className="space-y-1">
+                <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                  Instansi
+                </span>
+                <p className="text-sm font-bold text-slate-900">
+                  {guestAddress}
+                </p>
               </div>
             )}
-            <div className="flex-1 space-y-5 pt-1">
-              <div className="space-y-0.5">
+
+            <div className="grid grid-cols-2 gap-8">
+              <div className="space-y-1">
                 <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
-                  Tanggal Acara
+                  Tanggal
                 </span>
-                <p className="text-sm leading-none font-semibold text-slate-900">
+                <p className="text-xs font-bold text-slate-900 leading-none">
                   {eventDate}
                 </p>
               </div>
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
-                  Pukul
+                  Ukuran Kaos
                 </span>
-                <p className="text-sm leading-none font-semibold text-slate-900">
-                  {openGate ? `${openGate.substring(0, 5)}` : '12:00'} WIB -
-                  Selesai
-                </p>
-              </div>
-              <div className="col-span-2 mt-1 space-y-1.5">
-                <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
-                  Lokasi
-                </span>
-                <p className="text-[13px] font-medium text-slate-900">
-                  {location}
-                </p>
-              </div>
-              {/* continer untuk open gate umum nya */}
-              <div className="space-y-0.5">
-                <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
-                  {guestType?.toLowerCase() === 'internal'
-                    ? 'Open Gate Halal Bihalal'
-                    : 'Open Gate Spesial Konser'}
-                </span>
-                <p className="text-sm leading-none font-semibold text-slate-900">
-                  {openGate ? `${openGate.substring(0, 5)}` : '12:00'} WIB
+                <p className="text-xs font-bold text-slate-900 leading-none">
+                  {shirtSize || 'N/A'}
                 </p>
               </div>
             </div>
+
+            {(openGateHalal || openGateKonser) && (
+              <div className="grid grid-cols-2 gap-8">
+                {openGateHalal && (
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                      Gate Halal Bihalal
+                    </span>
+                    <p className="text-xs font-bold text-slate-900 leading-none tabular-nums">
+                      {openGateHalal.substring(0, 5).replace(':', '.')} WIB
+                    </p>
+                  </div>
+                )}
+                {openGateKonser && (
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
+                      Gate Konser
+                    </span>
+                    <p className="text-xs font-bold text-slate-900 leading-none tabular-nums">
+                      {openGateKonser.substring(0, 5).replace(':', '.')} WIB
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Perforation Line */}
           <div className="relative -mx-6 my-10 flex items-center justify-center">
-            <div className="absolute left-[-13px] h-6 w-6 rounded-full bg-[#fffcf5] ring-1 ring-slate-200" />
-            <div className="absolute right-[-13px] h-6 w-6 rounded-full bg-[#fffcf5] ring-1 ring-slate-200" />
+            <div className="absolute left-[-13px] h-6 w-6 rounded-full bg-[#fafafa] ring-1 ring-slate-200" />
+            <div className="absolute right-[-13px] h-6 w-6 rounded-full bg-[#fafafa] ring-1 ring-slate-200" />
             <div className="w-full border-t border-dashed border-slate-300" />
           </div>
 
-          {/* Details Section */}
-          <div className="space-y-5">
-            <div className="space-y-3 px-1">
-              <div className="flex items-start gap-8">
-                <div className="flex-1 space-y-1.5">
-                  <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
-                    No. Regis
-                  </span>
-                  <p className="text-[13px] font-bold text-slate-900">
-                    {registrationNumber
-                      ? `#${registrationNumber.toString().padStart(3, '0')}`
-                      : '-'}
-                  </p>
-                </div>
-                <div className="flex-1 space-y-1.5">
-                  <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase">
-                    Tipe Tamu
-                  </span>
-                  <p className="text-[13px] font-bold text-slate-900 uppercase">
-                    {guestType || 'INTERNAL'}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-end justify-between">
-                <span className="text-[11px] font-medium tracking-tight text-slate-500 uppercase">
-                  Nama Lengkap
-                </span>
-                <span className="max-w-[160px] truncate text-right text-[11px] font-semibold text-slate-900 uppercase">
-                  {guestName}
-                </span>
-              </div>
-              <div className="flex items-end justify-between">
-                <span className="text-[11px] font-medium tracking-tight text-slate-500 uppercase">
-                  Ukuran Kaos
-                </span>
-                <span className="text-[11px] font-semibold text-slate-900 uppercase">
-                  {shirtSize || 'N/A'}
-                </span>
-              </div>
-              <div className="flex items-end justify-between">
-                <span className="text-[11px] font-medium tracking-tight text-slate-500 uppercase">
-                  Instansi
-                </span>
-                <span className="text-[11px] font-semibold text-slate-900 uppercase">
-                  {guestAddress || 'N/A'}
-                </span>
-              </div>
-
-              <div className="flex items-end justify-between">
-                <span className="text-[11px] font-medium tracking-tight text-slate-500 uppercase">
-                  Status Kehadiran
-                </span>
-                <span className="text-[11px] font-bold text-slate-900 uppercase">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                Status Kehadiran
+              </span>
+              <div className={`h-5 rounded-full px-3 ring-1 flex items-center ${statusBg}`}>
+                <p className={`text-[9px] font-bold uppercase tabular-nums ${statusText}`}>
                   {statusLabel}
-                </span>
+                </p>
               </div>
             </div>
           </div>
 
-        </div>
-      </div>
+          {/* Check-in Buttons */}
+          <div className="space-y-3 mt-8">
+            {guestType !== 'Umum' && (isHalalCheckedIn || isHalalEnabled) && renderCheckInButton(
+              'exchange',
+              'HALAL BIHALAL',
+              !!isHalalCheckedIn,
+              isHalalEnabled,
+              <User className="mr-3 h-4 w-4" />
+            )}
 
-      <div className="mt-8 px-2">
-        {!isAttendanceCheckedIn && onSelfCheckin && (
-          <div className="space-y-4">
-            <Button
-              onClick={async () => {
-                if (!isCheckinEnabled) return
-                try {
-                  setIsCheckingIn(true)
-                  await onSelfCheckin()
-                } catch (err) {
-                  console.error(err)
-                } finally {
-                  setIsCheckingIn(false)
-                }
-              }}
-              disabled={isCheckingIn || !isCheckinEnabled}
-              className={cn(
-                'h-16 w-full rounded-2xl text-[11px] font-bold tracking-[0.2em] text-white uppercase transition-all active:scale-[0.98]',
-                isCheckinEnabled
-                  ? 'bg-halal-primary shadow-[0_20px_40px_-12px_rgba(245,158,11,0.4)] hover:opacity-90'
-                  : 'bg-slate-200 cursor-not-allowed text-slate-400 shadow-none'
-              )}
-            >
-              {isCheckingIn ? (
-                <RefreshCw className="h-5 w-5 animate-spin" />
-              ) : (
-                <User className="mr-3 h-4 w-4" />
-              )}
-              {isCheckingIn ? 'MEMPROSES...' : 'CHECK-IN SEKARANG'}
-            </Button>
-            
-            {!isCheckinEnabled && (
-              <div className="flex items-center justify-center gap-2 rounded-xl bg-slate-50 py-3 ring-1 ring-slate-100">
+            {(isConcertCheckedIn || isConcertEnabled) && renderCheckInButton(
+              'entrance',
+              'KONSER CHARLY',
+              !!isConcertCheckedIn,
+              isConcertEnabled,
+              <div className="mr-3 flex h-5 w-5 items-center justify-center rounded-full bg-white text-slate-900">
+                 <RefreshCw className="h-3 w-3" />
+              </div>
+            )}
+
+            {!(guestType !== 'Umum' && (isHalalCheckedIn || isHalalEnabled)) && !(isConcertCheckedIn || isConcertEnabled) && (
+              <div className="flex items-center justify-center gap-2 rounded-xl bg-slate-50 py-3 ring-1 ring-slate-100 mt-2">
                 <Info className="h-3.5 w-3.5 text-slate-400" />
                 <p className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">
-                  Tombol aktif 1 jam sebelum pintu dibuka
+                  Check-in tersedia saat jam operasional
                 </p>
               </div>
             )}
           </div>
-        )}
+        </div>
       </div>
 
     </motion.div>

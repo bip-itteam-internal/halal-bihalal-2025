@@ -6,7 +6,6 @@ import {
   Users,
   CheckCircle2,
   Globe,
-  QrCode,
   Gift,
   ArrowRight,
 } from 'lucide-react'
@@ -171,12 +170,6 @@ export default function AdminDashboardPage() {
       icon: <CalendarDays className="h-4 w-4" />,
     },
 
-    {
-      href: '/admin/scanner',
-      label: 'Buka Scanner',
-      description: 'Langsung ke alur check-in QR.',
-      icon: <QrCode className="h-4 w-4" />,
-    },
     {
       href: '/admin/doorprize',
       label: 'Doorprize',
@@ -364,7 +357,7 @@ export default function AdminDashboardPage() {
             <CardHeader>
               <CardTitle>Aktivitas Check-in Terbaru</CardTitle>
               <CardDescription>
-                Tamu yang paling baru melewati scanner.
+                Tamu yang baru saja melakukan check-in di lokasi.
               </CardDescription>
             </CardHeader>
             <CardContent>

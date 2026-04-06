@@ -430,6 +430,7 @@ export default function SlotMachinePage() {
         isOpen={isRulesOpen}
         onClose={() => setIsRulesOpen(false)}
         rules={[
+          "HANYA PESERTA YANG SUDAH CHECK-IN YANG BERHAK IKUT DIUNDI.",
           "Mesin memiliki 3 kolom: Unit/Alamat, Inisial, dan Nama.",
           "Tekan 'PULL LEVER' untuk memutar mesin jackpot.",
           "Hati-hati! Sistem mungkin mengalami 'glitch' sebelum jackpot.",

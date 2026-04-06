@@ -70,7 +70,6 @@ export interface Checkin {
   // Deprecated: keep for backward compatibility on legacy pages.
   session_type?: LegacySessionType
   checkin_time: string
-  checkin_by?: string | null
 }
 
 export type UserRole = 'super_admin' | 'admin' | 'staff'

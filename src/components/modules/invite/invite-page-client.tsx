@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import confetti from 'canvas-confetti'
 import { toast } from 'sonner'
 import { AnimatePresence } from 'framer-motion'
-import { Event as AppEvent, Guest, PaymentStatus } from '@/types'
+import { Event as AppEvent, Guest, PaymentStatus, Checkin } from '@/types'
 import { InvitationStatus } from '@/components/modules/invite/invitation-status'
 import { MosaicBackground } from '@/components/modules/invite/mosaic-background'
 import { TemplateRenderer } from '@/components/modules/invite/TemplateRenderer'
@@ -19,6 +19,8 @@ type InvitePageClientProps = {
   paymentStatus?: PaymentStatus | null
   paymentProofUrl?: string | null
   openGate?: string | null
+  openGateHalal?: string | null
+  openGateKonser?: string | null
   startTime?: string | null
   checkin?: unknown | null
 }
@@ -28,33 +30,52 @@ export function InvitePageClient({
   guest: initialGuest,
   event,
   openGate,
+  openGateHalal,
+  openGateKonser,
   startTime,
   checkin: initialCheckin,
 }: InvitePageClientProps) {
   const [guest, setGuest] = useState(initialGuest)
-  const [currentCheckin, setCurrentCheckin] = useState(initialCheckin)
+  const [currentCheckins, setCurrentCheckins] = useState<Checkin[]>(
+    Array.isArray(initialCheckin) ? initialCheckin : (initialCheckin ? [initialCheckin] : [])
+  )
   const [isUpdating, setIsUpdating] = useState(false)
   const [isOpen, setIsOpen] = useState(initialGuest.guest_type === 'external')
-  const [isCheckinEnabled, setIsCheckinEnabled] = useState(false)
+  const [isHalalEnabled, setIsHalalEnabled] = useState(false)
+  const [isConcertEnabled, setIsConcertEnabled] = useState(false)
 
+  // Enable Halal Bihalal check-in 30 min before internal open gate
   useEffect(() => {
-    if (!openGate) {
-      setIsCheckinEnabled(true)
+    if (!openGateHalal) {
+      setIsHalalEnabled(true)
       return
     }
-
     const check = () => {
-      const gateISO = toJakartaISOString(event.event_date, openGate)
+      const gateISO = toJakartaISOString(event.event_date, openGateHalal)
       const gateTime = new Date(gateISO).getTime()
-      const now = Date.now()
-      // Enabled 1 hour before openGate
-      setIsCheckinEnabled(now >= gateTime - 3600000)
+      setIsHalalEnabled(Date.now() >= gateTime - 1800000) // 30 min
     }
-
     check()
     const interval = setInterval(check, 10000)
     return () => clearInterval(interval)
-  }, [event.event_date, openGate])
+  }, [event.event_date, openGateHalal])
+
+  // Enable Konser check-in 30 min before external open gate
+  useEffect(() => {
+    if (!openGateKonser) {
+      setIsConcertEnabled(true)
+      return
+    }
+    const check = () => {
+      const gateISO = toJakartaISOString(event.event_date, openGateKonser)
+      const gateTime = new Date(gateISO).getTime()
+      setIsConcertEnabled(Date.now() >= gateTime - 1800000) // 30 min
+    }
+    check()
+    const interval = setInterval(check, 10000)
+    return () => clearInterval(interval)
+  }, [event.event_date, openGateKonser])
+
   useEffect(() => {
     document.title = `Undangan ${guest.full_name} - ${event.name}`
   }, [event.name, guest.full_name])
@@ -99,7 +120,7 @@ export function InvitePageClient({
     }
   }
 
-  const handleSelfCheckin = async () => {
+  const handleSelfCheckin = async (step: 'exchange' | 'entrance' = 'exchange') => {
     try {
       setIsUpdating(true)
       const res = await fetch(
@@ -107,7 +128,7 @@ export function InvitePageClient({
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ event_id: event.id }),
+          body: JSON.stringify({ event_id: event.id, step }),
         },
       )
 
@@ -116,7 +137,11 @@ export function InvitePageClient({
         throw new Error(data.message || 'Gagal melakukan check-in.')
       }
 
-      setCurrentCheckin(data.checkin)
+      // Add to checkins list
+      setCurrentCheckins((prev) => [...prev.filter(c => c.step !== step), data.checkin])
+
+      // After check-in, set guest as confirmed (synced with API background update)
+      setGuest((prev) => ({ ...prev, rsvp_status: 'confirmed' }))
 
       confetti({
         particleCount: 200,
@@ -125,7 +150,11 @@ export function InvitePageClient({
         colors: ['#6366f1', '#a5b4fc', '#ffffff'],
       })
 
-      toast.success('Check-in berhasil! Selamat datang di acara.')
+      toast.success(
+        step === 'exchange'
+          ? 'Check-in Halal Bihalal berhasil! Selamat datang.'
+          : 'Check-in Konser berhasil! Silakan memasuki aula.'
+      )
     } catch (error: unknown) {
       toast.error(
         error instanceof Error ? error.message : 'Gagal melakukan check-in.',
@@ -162,9 +191,10 @@ export function InvitePageClient({
             isUpdating={isUpdating}
             openGate={openGate}
             startTime={startTime}
-            checkin={currentCheckin}
-            onSelfCheckin={handleSelfCheckin}
-            isCheckinEnabled={isCheckinEnabled}
+            checkins={currentCheckins}
+            onSelfCheckinStep={handleSelfCheckin}
+            isHalalEnabled={isHalalEnabled}
+            isConcertEnabled={isConcertEnabled}
           />
         </AnimatePresence>
       </div>

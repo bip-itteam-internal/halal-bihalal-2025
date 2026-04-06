@@ -192,6 +192,7 @@ export default function SurvivorDoorprizePage() {
         isOpen={isRulesOpen}
         onClose={() => setIsRulesOpen(false)}
         rules={[
+          "HANYA PESERTA YANG SUDAH CHECK-IN YANG BERHAK IKUT DIUNDI.",
           "Peserta dieliminasi secara bertahap dalam beberapa kloter.",
           "Peserta yang masih 'Alive' (berwarna putih) berhak lanjut.",
           "Pemenang adalah 1 orang terakhir yang tersisa di layar.",

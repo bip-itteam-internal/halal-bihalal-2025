@@ -7,7 +7,7 @@ import { EventTicket } from '@/components/shared/EventTicket'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { formatJakartaDate } from '@/lib/utils'
-import { Guest, Event as AppEvent } from '@/types'
+import { Guest, Event as AppEvent, Checkin } from '@/types'
 import Image from 'next/image'
 
 interface TemplateProps {
@@ -20,9 +20,10 @@ interface TemplateProps {
   openGate?: string | null
   startTime?: string | null
   onTicketView?: (visible: boolean) => void
-  checkin?: unknown | null
-  onSelfCheckin?: () => Promise<void>
-  isCheckinEnabled?: boolean
+  checkins?: Checkin[] | null
+  onSelfCheckinStep?: (step: 'exchange' | 'entrance') => Promise<void>
+  isHalalEnabled?: boolean
+  isConcertEnabled?: boolean
 }
 
 export function ModernCorporate({
@@ -35,18 +36,20 @@ export function ModernCorporate({
   openGate,
   startTime,
   onTicketView,
-  checkin,
-  onSelfCheckin,
-  isCheckinEnabled,
+  checkins,
+  onSelfCheckinStep,
+  isHalalEnabled,
+  isConcertEnabled,
 }: TemplateProps) {
   const shouldSkipCover = guest.guest_type === 'external'
-  const showingTicket = guest.rsvp_status === 'confirmed' && isOpen
+  const isInternal = guest.guest_type === 'internal'
+  const showingTicket = (guest.rsvp_status === 'confirmed' || isInternal) && isOpen
 
   useEffect(() => {
     onTicketView?.(showingTicket)
   }, [showingTicket, onTicketView])
 
-  if (guest.rsvp_status === 'confirmed' && isOpen) {
+  if (showingTicket) {
     return (
       <motion.div
         key="ticket-view-corp"
@@ -58,27 +61,30 @@ export function ModernCorporate({
           <EventTicket
             eventName={event.name}
             eventDate={formatJakartaDate(event.event_date, 'PPP')}
-            location={event.location || ''}
             guestName={guest.full_name || ''}
+            statusLabel={guest.rsvp_status || 'Confirmed'}
             guestAddress={guest.address || null}
             registrationNumber={
               guest.guest_events?.find((ge) => ge.event_id === event.id)
                 ?.registration_number
             }
             primaryColor="slate"
-            logoUrl={event.logo_url || undefined}
-            openGate={openGate || undefined}
             guestType={guest.guest_type === 'external' ? 'Umum' : 'Internal'}
+            shirtSize={guest.shirt_size}
+            openGateHalal={event.event_guest_rules?.find(r => r.guest_type === 'internal')?.open_gate || null}
+            openGateKonser={event.event_guest_rules?.find(r => r.guest_type === 'external')?.open_gate || null}
             eventTime={
               startTime
                 ? startTime.substring(0, 5).replace(':', '.') + ' WIB'
                 : formatJakartaDate(event.event_date, 'p')
             }
-            isAttendanceCheckedIn={!!checkin}
-            checkinTime={(checkin as { checkin_time: string })?.checkin_time}
-            shirtSize={guest.shirt_size}
-            onSelfCheckin={onSelfCheckin}
-            isCheckinEnabled={isCheckinEnabled}
+            isHalalCheckedIn={checkins?.some((c: Checkin) => c.step === 'exchange')}
+            isConcertCheckedIn={checkins?.some(
+              (c: Checkin) => c.step === 'entrance',
+            )}
+            onSelfCheckinStep={onSelfCheckinStep}
+            isHalalEnabled={isHalalEnabled}
+            isConcertEnabled={isConcertEnabled}
           />
 
           {!shouldSkipCover && (
