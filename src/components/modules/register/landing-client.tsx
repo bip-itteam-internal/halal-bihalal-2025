@@ -6,7 +6,6 @@ import { Event, EventGuestRule } from '@/types'
 // Sections
 import { Hero } from './sections/Hero'
 import { EventInfo } from './sections/EventInfo'
-import { Registration } from './sections/Registration'
 import { EventCountdown } from './sections/EventCountdown'
 import { AccessBanner } from './sections/AccessBanner'
 
@@ -86,7 +85,6 @@ export function LandingClient({ events, guestRules }: LandingClientProps) {
           </>
         )}
 
-        {mainEvent && <Registration />}
 
         <EventInfo
           date={mainEvent?.event_date as unknown as string}
