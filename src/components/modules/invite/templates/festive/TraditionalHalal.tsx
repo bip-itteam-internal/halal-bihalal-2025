@@ -228,58 +228,58 @@ export function TraditionalHalal({
         className="w-full max-w-[400px] p-4"
       >
         <Card
-          className="relative min-h-[580px] w-full overflow-hidden border-none shadow-2xl transition-all"
+          className="relative aspect-[3/4] w-full overflow-hidden border-none shadow-2xl transition-all"
           style={{ borderRadius: '3rem' }}
         >
-          <CardContent className="relative flex min-h-[580px] flex-col items-center justify-between px-6 pt-24 pb-10 text-center">
+          <CardContent className="relative flex h-full flex-col items-center justify-between px-5 pt-16 pb-8 text-center sm:px-6 sm:pt-24 sm:pb-10">
             {/* Top Logo */}
-            <div className="absolute top-4 left-0 flex w-full justify-center">
+            <div className="absolute top-2 left-0 flex w-full justify-center sm:top-4">
               <Image
                 src="/gate.png"
                 alt="Logo"
-                width={320}
-                height={160}
-                className="h-auto w-auto max-w-[85%] object-contain"
+                width={300}
+                height={150}
+                className="h-auto w-auto max-w-[75%] object-contain sm:max-w-[85%]"
                 priority
               />
             </div>
 
-            <div className="flex flex-1 flex-col items-center justify-center space-y-6">
-              <div className="space-y-1">
-                <h2 className="font-serif text-sm tracking-[0.3em] text-slate-400 uppercase">
+            <div className="flex flex-1 flex-col items-center justify-center space-y-3 sm:space-y-6">
+              <div className="space-y-0.5">
+                <h2 className="font-serif text-[10px] tracking-[0.3em] text-slate-400 uppercase sm:text-sm">
                   Undangan
                 </h2>
               </div>
 
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <h1 className="font-serif text-2xl leading-tight font-bold text-slate-900">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="space-y-1 sm:space-y-2">
+                  <h1 className="font-serif text-lg leading-tight font-bold text-slate-900 sm:text-2xl">
                     {event.name}
                   </h1>
-                  <div className="mx-auto h-px w-10 bg-amber-200" />
-                  <p className="text-xs tracking-wider text-slate-500 uppercase">
+                  <div className="mx-auto h-px w-8 bg-amber-200 sm:w-10" />
+                  <p className="text-[9px] tracking-wider text-slate-500 uppercase sm:text-xs">
                     Bharata Group
                   </p>
                 </div>
 
-                <div className="space-y-1 py-4">
-                  <p className="text-[10px] tracking-widest text-slate-400 uppercase">
+                <div className="space-y-0.5 py-2 sm:space-y-1 sm:py-4">
+                  <p className="text-[9px] tracking-widest text-slate-400 uppercase sm:text-[10px]">
                     Spesial Untuk:
                   </p>
-                  <p className="text-xl font-bold tracking-tight text-slate-900 uppercase">
+                  <p className="text-base font-bold tracking-tight text-slate-900 uppercase sm:text-xl">
                     {guest.full_name}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="w-full pt-4">
+            <div className="w-full pt-2">
               <Button
                 onClick={() => setShowLinkInfo(true)}
-                className="h-16 w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 font-black tracking-widest text-[#0a2c2f] uppercase shadow-[0_10px_30px_rgba(251,191,36,0.3)] transition-all hover:scale-[1.03] hover:from-amber-200 hover:to-amber-400"
+                className="h-12 w-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500 text-[10px] font-black tracking-widest text-[#0a2c2f] uppercase shadow-[0_10px_30px_rgba(251,191,36,0.3)] transition-all hover:scale-[1.03] hover:from-amber-200 hover:to-amber-400 sm:h-16 sm:text-sm"
               >
                 Buka Undangan
-                <ArrowRight className="ml-2 h-5 w-5" />
+                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </div>
 
