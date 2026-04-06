@@ -274,16 +274,18 @@ export function TraditionalHalal({
             </Button>
 
             <AlertDialog open={showLinkInfo} onOpenChange={setShowLinkInfo}>
-              <AlertDialogContent className="border-amber-100 bg-white shadow-2xl rounded-3xl">
+              <AlertDialogContent className="rounded-3xl border-amber-100 bg-white shadow-2xl">
                 <AlertDialogHeader className="items-center text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-500 mb-2">
+                  <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-500">
                     <ShieldCheck className="h-10 w-10" />
                   </div>
                   <AlertDialogTitle className="font-serif text-xl font-bold text-slate-900">
                     Simpan Link Undangan
                   </AlertDialogTitle>
-                  <AlertDialogDescription className="text-sm text-slate-600 leading-relaxed">
-                    Mohon simpan link undangan ini baik-baik untuk memudahkan Anda saat memasuki lokasi acara dan proses check-in tiket nantinya.
+                  <AlertDialogDescription className="text-sm leading-relaxed text-slate-600">
+                    Mohon simpan link undangan ini baik-baik untuk memudahkan
+                    Anda registarasi (Check-in tiket ) acara halal bihalal dan
+                    spesial konser.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
