@@ -1,7 +1,15 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Timer, Trophy, Star, ArrowRight, Zap, LayoutGrid } from 'lucide-react'
+import {
+  Timer,
+  Trophy,
+  Star,
+  ArrowRight,
+  Zap,
+  LayoutGrid,
+  RefreshCw,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useDoorprize } from '@/hooks/use-doorprize'
 import { Particles, ShootingStars } from '@/components/ui/particles'
@@ -51,9 +59,8 @@ const GAMES = [
   },
 ]
 
-
 export default function DoorprizeSelectorPage() {
-  const { candidates, loading } = useDoorprize()
+  const { candidates, loading, forceRefresh, lastUpdated } = useDoorprize()
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#050c0b] text-white">
@@ -66,11 +73,11 @@ export default function DoorprizeSelectorPage() {
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 py-12 lg:py-24">
         {/* Header */}
-        <div className="mb-16 text-center space-y-4">
+        <div className="mb-16 space-y-4 text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-halal-primary/20 text-halal-primary shadow-inner backdrop-blur-md"
+            className="bg-halal-primary/20 text-halal-primary mx-auto flex h-20 w-20 items-center justify-center rounded-3xl shadow-inner backdrop-blur-md"
           >
             <Trophy className="h-10 w-10" />
           </motion.div>
@@ -100,7 +107,7 @@ export default function DoorprizeSelectorPage() {
               whileHover={{ y: -10 }}
             >
               <Card
-                className={`group relative h-full overflow-hidden border-white/5 bg-black/40 backdrop-blur-xl transition-all hover:border-halal-primary/50`}
+                className={`group hover:border-halal-primary/50 relative h-full overflow-hidden border-white/5 bg-black/40 backdrop-blur-xl transition-all`}
               >
                 {/* Decoration */}
                 <div
@@ -132,7 +139,7 @@ export default function DoorprizeSelectorPage() {
 
                 <CardContent className="relative flex flex-col justify-between">
                   <div className="mb-6 flex items-center gap-2">
-                    <Star className="h-4 w-4 text-halal-primary" />
+                    <Star className="text-halal-primary h-4 w-4" />
                     <span className="text-xs font-bold tracking-widest text-slate-500 uppercase">
                       {game.stats}
                     </span>
@@ -155,14 +162,37 @@ export default function DoorprizeSelectorPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className="mt-24 text-center"
+          className="mt-24 flex justify-center"
         >
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/5 bg-white/5 px-6 py-3 text-sm text-slate-400 backdrop-blur-md">
-            <Trophy className="h-4 w-4 text-halal-primary" />
-            Total kandidat siap diundi:{' '}
-            <span className="font-bold text-white">
-              {loading ? 'Mengecek...' : `${candidates.length} Orang`}
-            </span>
+          <div className="mx-auto inline-flex items-center gap-6 rounded-2xl border border-white/5 bg-white/5 px-6 py-3 text-sm backdrop-blur-md">
+            <div className="flex items-center gap-3">
+              <Trophy className="text-halal-primary h-4 w-4" />
+              <div className="flex items-baseline gap-2">
+                <span className="text-xl font-black text-white">
+                  {loading ? '...' : candidates.length}
+                </span>
+                <span className="text-xs font-bold tracking-widest text-slate-500 uppercase">
+                  Kandidat Siap
+                </span>
+              </div>
+            </div>
+
+            <div className="h-4 w-px bg-white/10" />
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={forceRefresh}
+                disabled={loading}
+                className="group hover:text-halal-primary flex items-center gap-2 text-[10px] font-black tracking-widest text-slate-500 uppercase transition-colors"
+              >
+                <RefreshCw
+                  className={`h-3 w-3 ${loading ? 'animate-spin' : 'transition-transform duration-500 group-hover:rotate-180'}`}
+                />
+                {lastUpdated
+                  ? `Update: ${lastUpdated.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}`
+                  : 'Refresh Data'}
+              </button>
+            </div>
           </div>
         </motion.div>
       </div>

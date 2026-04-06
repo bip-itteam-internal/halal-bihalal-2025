@@ -9,6 +9,7 @@ export function useDoorprize() {
   const [candidates, setCandidates] = useState<Guest[]>([])
   const [aliveIds, setAliveIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [isEliminating, setIsEliminating] = useState(false)
   const [isAutoRunning, setIsAutoRunning] = useState(false)
   const [lastBatch, setLastBatch] = useState<string[]>([])
@@ -28,6 +29,7 @@ export function useDoorprize() {
 
       // Sync candidates with latest database
       setCandidates(guestData)
+      setLastUpdated(new Date())
       localStorage.setItem('doorprize_candidates', JSON.stringify(guestData))
 
       // Decide how to handle aliveIds
@@ -253,6 +255,7 @@ export function useDoorprize() {
     localStorage.removeItem('doorprize_alive_ids')
     setCountdown(null)
     await fetchCandidates()
+    setLastUpdated(new Date())
   }
 
   const aliveParticipants = useMemo(() => {
@@ -267,6 +270,7 @@ export function useDoorprize() {
     candidates,
     aliveIds,
     loading,
+    lastUpdated,
     isEliminating,
     isAutoRunning,
     countdown,
