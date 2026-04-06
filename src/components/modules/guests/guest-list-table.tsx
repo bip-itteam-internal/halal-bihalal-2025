@@ -66,14 +66,29 @@ export function GuestListTable({
   const [guestToDelete, setGuestToDelete] = useState<Guest | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const getWhatsappLink = (phone?: string | null) => {
-    if (!phone) return null
+  const getWhatsappLink = (
+    phone?: string | null,
+    guestName?: string,
+    eventName?: string,
+  ) => {
+    if (!phone || !guestName) return null
 
     const digits = phone.replace(/[^\d]/g, '')
     if (!digits) return null
 
     const normalized = digits.startsWith('0') ? `62${digits.slice(1)}` : digits
-    return `https://wa.me/${normalized}`
+
+    const displayDate = 'Rabu, 8 April 2026'
+    const halalTime = '08.00'
+    const concertTime = '18.30'
+    const displayLocation =
+      'Lap. Parkir PT. Bharata Internasional Pharmaceutical'
+    const loginLink = 'https://bit.ly/HALALBIHALALBHARATAGROUP2026'
+    const nameToUse = eventName || 'Silaturahmi & Halal Bihalal 2026'
+
+    const message = `Yth. *${guestName}*\n\n*UNDANGAN HALAL BIHALAL BHARATA GROUP & SPESIAL KONSER 2026*\n\nKepada seluruh keluarga besar *Bharata Group*,\n\nDengan penuh rasa syukur dan kebersamaan, kami mengundang Bapak/Ibu serta seluruh tim untuk hadir dalam acara *Halal Bihalal Keluarga Besar Bharata Group 2026 dan Spesial Konser Charly Setia Band* sebagai momentum untuk mempererat silaturahmi, saling memaafkan, dan memperkuat sinergi dalam kebersamaan.\n\n*Hari / Tanggal* : ${displayDate}\n*Waktu* : Halal Bihalal (${halalTime} - Selesai) & Spesial Konser (${concertTime} - Selesai)\n*Tempat* : ${displayLocation}\n*Tema* : Grow Together\n*Link Undangan* : ${loginLink}\n\nKami berharap Bapak/Ibu dapat berkenan hadir untuk bersama-sama merajut kebersamaan, memperkuat sinergi, dan melangkah bersama mencapai tujuan perusahaan.\n\nDemikian undangan ini kami sampaikan. Atas perhatian dan kehadirannya kami ucapkan terima kasih.\n\n*Noted* : Jika ada kendala bisa hubungi 089676258026 (FARIZ)\n_(Mohon untuk tidak membalas pesan ini karena dikirim otomatis oleh sistem)_\n\nRegards,\n*Panitia ${nameToUse}*`
+
+    return `https://wa.me/${normalized}?text=${encodeURIComponent(message)}`
   }
 
   const handleUpdatePaymentStatus = async (
@@ -195,7 +210,6 @@ export function GuestListTable({
     }
   }
 
-
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -291,32 +305,22 @@ export function GuestListTable({
                             {guest.phone}
                           </span>
                           <div className="flex items-center gap-1.5">
-                            {/* Original Direct Link */}
                             <a
-                              href={getWhatsappLink(guest.phone) || undefined}
+                              href={
+                                getWhatsappLink(
+                                  guest.phone,
+                                  guest.full_name,
+                                  guest.guest_events?.[0]?.events?.name,
+                                ) || undefined
+                              }
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-50 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-                              title={`Buka Chat WhatsApp`}
+                              className="inline-flex h-7 items-center justify-center gap-1.5 rounded-full bg-emerald-50 px-2 text-[10px] font-bold text-emerald-600 transition-colors hover:bg-emerald-100 hover:text-emerald-700"
+                              title={`Kirim Undangan Manual via WhatsApp`}
                             >
                               <FaWhatsapp className="h-3.5 w-3.5" />
+                              KIRIM MANUAL
                             </a>
-
-                            {/* Woo-Wa Auto Send */}
-                            {guest.guest_type === 'internal' && (
-                              <button
-                                onClick={() => setSelectedGuestForWa(guest)}
-                                className={`inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 transition-colors hover:bg-emerald-100 hover:text-emerald-700 ${loading === guest.id ? 'animate-pulse' : ''}`}
-                                title={`Kirim Undangan Otomatis (Woo-Wa)`}
-                                disabled={loading === guest.id}
-                              >
-                                {loading === guest.id ? (
-                                  <Loader2 className="h-3 w-3 animate-spin" />
-                                ) : (
-                                  <Send className="h-3 w-3" />
-                                )}
-                              </button>
-                            )}
 
                             {guest.wa_sent_at && (
                               <Badge
