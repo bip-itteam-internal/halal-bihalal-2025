@@ -34,22 +34,26 @@ export async function bulkSendWhatsappAction(
       .single(),
     supabase
       .from('event_guest_rules')
-      .select('open_gate')
+      .select('open_gate, guest_type')
       .eq('event_id', eventId)
-      .eq('guest_type', 'internal')
-      .single(),
+      .in('guest_type', ['internal', 'external']),
   ])
 
   const eventData = eventRes.data
-  const internalRule = rulesRes.data
+  const allRules = rulesRes.data || []
 
-  const displayDate = eventData?.event_date
-    ? formatJakartaDate(eventData.event_date, 'PPPP')
-    : 'Rabu, 8 April 2026'
+  const internalRule = allRules.find((r) => r.guest_type === 'internal')
+  const externalRule = allRules.find((r) => r.guest_type === 'external')
 
-  const displayTime = internalRule?.open_gate
-    ? internalRule.open_gate.substring(0, 5) // Handle HH:mm:ss -> HH:mm
-    : '12:15'
+  const displayDate = 'Rabu, 8 April 2026'
+
+  const halalTime = internalRule?.open_gate
+    ? internalRule.open_gate.substring(0, 5).replace(':', '.')
+    : '08:00'
+
+  const concertTime = externalRule?.open_gate
+    ? externalRule.open_gate.substring(0, 5).replace(':', '.')
+    : '18:30'
 
   const displayLocation =
     eventData?.location ||
@@ -73,7 +77,7 @@ export async function bulkSendWhatsappAction(
     const loginLink = 'https://bit.ly/HALALBIHALALBHARATAGROUP2026'
 
     // Formal & Personal Invitation Template
-    const message = `Yth. *${guest.full_name}*\n\n🌙 *UNDANGAN ${eventName.toUpperCase()}* 🌙\n\nKepada seluruh keluarga besar *Bharata Group*,\n\nDengan penuh rasa syukur dan kebersamaan, kami mengundang Bapak/Ibu serta seluruh tim untuk hadir dalam acara *Halal Bihalal Keluarga Besar Bharata Group 2026 dan Spesial Konser Charly Setia Band* sebagai momentum untuk mempererat silaturahmi, saling memaafkan, dan memperkuat sinergi dalam kebersamaan.\n\n*Hari / Tanggal* : ${displayDate}\n*Waktu* : ${displayTime} - Selesai\n*Tempat* : ${displayLocation}\n*Tema* : Grow Together\n*Link Undangan* : ${loginLink}\n\nKami berharap Bapak/Ibu dapat berkenan hadir untuk bersama-sama merajut kebersamaan, memperkuat sinergi, dan melangkah bersama mencapai tujuan perusahaan.\n\nDemikian undangan ini kami sampaikan. Atas perhatian dan kehadirannya kami ucapkan terima kasih.\n\n*Noted* : Jika ada kendala bisa hubungi 089676258026 (FARIZ)\n_(Mohon untuk tidak membalas pesan ini karena dikirim otomatis oleh sistem)_\n\nRegards,\n*Panitia ${eventName}* 🙏`
+    const message = `Yth. *${guest.full_name}*\n\n*UNDANGAN ${eventName.toUpperCase()}*\n\nKepada seluruh keluarga besar *Bharata Group*,\n\nDengan penuh rasa syukur dan kebersamaan, kami mengundang Bapak/Ibu serta seluruh tim untuk hadir dalam acara *Halal Bihalal Keluarga Besar Bharata Group 2026 dan Spesial Konser Charly Setia Band* sebagai momentum untuk mempererat silaturahmi, saling memaafkan, dan memperkuat sinergi dalam kebersamaan.\n\nHari / Tanggal : ${displayDate}\nWaktu : Halal Bihalal (${halalTime} - Selesai) & Spesial Konser (${concertTime} - Selesai)\nTempat : ${displayLocation}\nTema : Grow Together\nLink Undangan : ${loginLink}\n\nKami berharap Bapak/Ibu dapat berkenan hadir untuk bersama-sama merajut kebersamaan, memperkuat sinergi, dan melangkah bersama mencapai tujuan perusahaan.\n\nDemikian undangan ini kami sampaikan. Atas perhatian dan kehadirannya kami ucapkan terima kasih.\n\n*Noted* : Jika ada kendala bisa hubungi 089676258026 (FARIZ)\n_(Mohon untuk tidak membalas pesan ini karena dikirim otomatis oleh sistem)_\n\nRegards,\n*Panitia ${eventName}* 🙏`
 
     const res = await sendWhatsapp({ phone: guest.phone, message })
 
