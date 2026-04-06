@@ -124,17 +124,18 @@ export function EventInfo({ date, location, guestRules }: EventInfoProps) {
                       src={item.image}
                       alt={item.value}
                       fill
-                      className="object-cover object-top opacity-80 contrast-110 grayscale group-hover:grayscale-0"
+                      className="object-cover object-top opacity-80 contrast-110 grayscale group-hover:grayscale-0 transition-all duration-700"
                       style={{
                         maskImage:
-                          'linear-gradient(to bottom, black 0%, black 72%, transparent 100%)',
+                          'linear-gradient(to bottom, black 0%, black 80%, transparent 100%)',
                         WebkitMaskImage:
-                          'linear-gradient(to bottom, black 0%, black 72%, transparent 100%)',
+                          'linear-gradient(to bottom, black 0%, black 80%, transparent 100%)',
                       }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-r from-white via-white/20 to-transparent" />
+                    {/* Softer, transparent overlays to prevent the vertical split line */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-transparent" />
                 </div>
               )}
 
