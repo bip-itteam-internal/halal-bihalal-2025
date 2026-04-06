@@ -52,7 +52,8 @@ export async function bulkSendWhatsappAction(
     : '12:15'
 
   const displayLocation =
-    eventData?.location || 'Lapangan PT. Bharata Internasional Pharmaceutical'
+    eventData?.location ||
+    'Lap. Parkir PT. Bharata Internasional Pharmaceutical'
 
   const results = []
   let successCount = 0
@@ -69,11 +70,10 @@ export async function bulkSendWhatsappAction(
     }
 
     // Invitation link (using the requested Bitly link)
-    const loginLink =
-      'https://bharata-event.vercel.app/halal-bihalal-dan-spesial-konser-charly-setia-band-2026'
+    const loginLink = 'https://bit.ly/HALALBIHALALBHARATAGROUP2026'
 
     // Formal & Personal Invitation Template
-    const message = `Yth. *${guest.full_name}*\n\n🌙 *UNDANGAN ${eventName.toUpperCase()}* 🌙\n\nKepada seluruh keluarga besar *Bharata Group*,\n\nDengan penuh rasa syukur dan kebersamaan, kami mengundang Bapak/Ibu serta seluruh tim untuk hadir dalam acara *Halal Bihalal Keluarga Besar Bharata Group 2026 dan Spesial Konser Charly Setia Band* sebagai momentum untuk mempererat silaturahmi, saling memaafkan, dan memperkuat sinergi dalam kebersamaan.\n\n📅 *Hari / Tanggal* : ${displayDate}\n⏰ *Waktu* : ${displayTime} - Selesai\n📍 *Tempat* : ${displayLocation}\n🎯 *Tema* : *Grow Together*\n🔗 *Link Undangan* : ${loginLink}\n\nKami berharap Bapak/Ibu dapat berkenan hadir untuk bersama-sama merajut kebersamaan, memperkuat sinergi, dan melangkah bersama mencapai tujuan perusahaan.\n\nDemikian undangan ini kami sampaikan. Atas perhatian dan kehadirannya kami ucapkan terima kasih.\n\n*Noted* : Jika ada kendala bisa hubungi 089676258026 (FARIZ)\n_(Mohon untuk tidak membalas pesan ini karena dikirim otomatis oleh sistem)_\n\nRegards,\n*Panitia ${eventName}* 🙏`
+    const message = `Yth. *${guest.full_name}*\n\n🌙 *UNDANGAN ${eventName.toUpperCase()}* 🌙\n\nKepada seluruh keluarga besar *Bharata Group*,\n\nDengan penuh rasa syukur dan kebersamaan, kami mengundang Bapak/Ibu serta seluruh tim untuk hadir dalam acara *Halal Bihalal Keluarga Besar Bharata Group 2026 dan Spesial Konser Charly Setia Band* sebagai momentum untuk mempererat silaturahmi, saling memaafkan, dan memperkuat sinergi dalam kebersamaan.\n\n*Hari / Tanggal* : ${displayDate}\n*Waktu* : ${displayTime} - Selesai\n*Tempat* : ${displayLocation}\n*Tema* : Grow Together\n*Link Undangan* : ${loginLink}\n\nKami berharap Bapak/Ibu dapat berkenan hadir untuk bersama-sama merajut kebersamaan, memperkuat sinergi, dan melangkah bersama mencapai tujuan perusahaan.\n\nDemikian undangan ini kami sampaikan. Atas perhatian dan kehadirannya kami ucapkan terima kasih.\n\n*Noted* : Jika ada kendala bisa hubungi 089676258026 (FARIZ)\n_(Mohon untuk tidak membalas pesan ini karena dikirim otomatis oleh sistem)_\n\nRegards,\n*Panitia ${eventName}* 🙏`
 
     const res = await sendWhatsapp({ phone: guest.phone, message })
 

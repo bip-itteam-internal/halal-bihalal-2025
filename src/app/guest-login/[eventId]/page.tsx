@@ -209,7 +209,7 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
                                     <Input
                                       placeholder="No. WA, Email, atau Nama Lengkap"
                                       required
-                                      className="h-14 rounded-xl border-white/10 bg-white/10 pl-12 transition-all placeholder:text-white/30 focus:border-amber-400/50"
+                                      className="h-14 rounded-xl border-white/10 bg-white/10 pl-12 transition-all placeholder:text-slate-900 focus:border-amber-400/50"
                                       {...field}
                                     />
                                   </div>

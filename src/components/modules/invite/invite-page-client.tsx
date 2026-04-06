@@ -37,7 +37,7 @@ export function InvitePageClient({
 }: InvitePageClientProps) {
   const [guest, setGuest] = useState(initialGuest)
   const [currentCheckins, setCurrentCheckins] = useState<Checkin[]>(
-    Array.isArray(initialCheckin) ? initialCheckin : (initialCheckin ? [initialCheckin] : [])
+    Array.isArray(initialCheckin) ? initialCheckin : []
   )
   const [isUpdating, setIsUpdating] = useState(false)
   const [isOpen, setIsOpen] = useState(initialGuest.guest_type === 'external')
