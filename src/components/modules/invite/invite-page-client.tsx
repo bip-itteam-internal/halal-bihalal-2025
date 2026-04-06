@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import confetti from 'canvas-confetti'
 import { toast } from 'sonner'
 import { AnimatePresence } from 'framer-motion'
-import { Event as AppEvent, Guest } from '@/types'
+import { Event as AppEvent, Guest, PaymentStatus } from '@/types'
 import { InvitationStatus } from '@/components/modules/invite/invitation-status'
 import { MosaicBackground } from '@/components/modules/invite/mosaic-background'
 import { TemplateRenderer } from '@/components/modules/invite/TemplateRenderer'
@@ -16,6 +16,8 @@ type InvitePageClientProps = {
   invitationCode: string
   guest: Guest
   event: AppEvent
+  paymentStatus?: PaymentStatus | null
+  paymentProofUrl?: string | null
   openGate?: string | null
   startTime?: string | null
   checkin?: unknown | null
