@@ -300,8 +300,14 @@ export function TraditionalHalal({
                   </AlertDialogTitle>
                   <AlertDialogDescription className="text-sm leading-relaxed text-slate-600">
                     Mohon simpan link undangan ini baik-baik untuk memudahkan
-                    Anda registarasi (Check-in tiket ) acara halal bihalal dan
+                    Anda registarasi (Check-in tiket) acara halal bihalal dan
                     spesial konser.
+                    <br />
+                    <br />
+                    <span className="font-bold text-amber-600 italic">
+                      *Penting: Pastikan GPS/Layanan Lokasi perangkat Anda aktif
+                      saat melakukan Check-in nanti.
+                    </span>
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
