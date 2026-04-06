@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 
 interface AccessBannerProps {
   eventId: string
-  eventName: string
 }
 
 export function AccessBanner({ eventId }: AccessBannerProps) {

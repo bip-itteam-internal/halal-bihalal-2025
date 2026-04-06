@@ -26,7 +26,7 @@ export function LandingClient({ events, guestRules }: LandingClientProps) {
   const targetDate = useMemo(() => {
     if (!mainEvent) return new Date()
     const internalRule = guestRules?.find(
-      (r) => r.guest_type === 'internal' && r.event_id === mainEvent.id
+      (r) => r.guest_type === 'internal' && r.event_id === mainEvent.id,
     )
     const openGateTime = internalRule?.open_gate || '08:00:00'
     // Safely parse date and time
@@ -61,29 +61,27 @@ export function LandingClient({ events, guestRules }: LandingClientProps) {
 
         {/* Ambient Orchestration - Cinematic Light Flows */}
         <div className="absolute top-0 right-0 left-0 h-[120vh] bg-[radial-gradient(circle_at_50%_0%,_rgba(var(--halal-primary-rgb),0.08)_0%,_transparent_50%)]" />
-        <div className="absolute bottom-0 right-0 left-0 h-[100vh] bg-[radial-gradient(circle_at_50%_100%,_rgba(var(--halal-primary-rgb),0.05)_0%,_transparent_50%)]" />
-        
+        <div className="absolute right-0 bottom-0 left-0 h-[100vh] bg-[radial-gradient(circle_at_50%_100%,_rgba(var(--halal-primary-rgb),0.05)_0%,_transparent_50%)]" />
+
         {/* Subtle center-glow for premium look */}
-        <div className="absolute top-1/2 left-1/2 h-[80vh] w-[80vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/20 blur-[150px] opacity-10" />
+        <div className="absolute top-1/2 left-1/2 h-[80vh] w-[80vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/20 opacity-10 blur-[150px]" />
       </div>
 
       {/* Main Content Sections */}
       <main className="relative z-10">
-        <Hero
-          title={mainEvent?.name || undefined}
-        />
+        <Hero title={mainEvent?.name || undefined} />
 
         {/* Dynamic Internal Access: Countdown or Login */}
         {mainEvent && (
           <>
             {!isGateOpen ? (
-              <EventCountdown 
-                targetDate={targetDate} 
+              <EventCountdown
+                targetDate={targetDate}
                 eventName={mainEvent.name}
-                onComplete={() => setIsGateOpen(true)} 
+                onComplete={() => setIsGateOpen(true)}
               />
             ) : (
-              <AccessBanner eventId={mainEvent.id} eventName={mainEvent.name} />
+              <AccessBanner eventId={mainEvent.id} />
             )}
           </>
         )}
