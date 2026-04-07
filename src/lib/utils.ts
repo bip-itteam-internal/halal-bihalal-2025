@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-type JakartaFormat = 'PPP' | 'p' | 'PPP p' | 'PPPP'
+type JakartaFormat = 'PPP' | 'p' | 'PPP p' | 'PPPP' | 'MMM d'
 
 /**
  * Format date to Jakarta timezone (Asia/Jakarta)
@@ -51,6 +51,15 @@ export function formatJakartaDate(
         hour12: false,
       }).format(d) + ' WIB'
     )
+  }
+
+  // 8 Apr
+  if (formatStr === 'MMM d') {
+    return new Intl.DateTimeFormat('id-ID', {
+      ...baseOptions,
+      day: 'numeric',
+      month: 'short',
+    }).format(d)
   }
 
   // 8 April 2026 16.00 WIB
