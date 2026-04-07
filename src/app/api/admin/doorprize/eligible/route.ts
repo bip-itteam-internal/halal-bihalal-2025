@@ -24,7 +24,15 @@ export async function GET(request: Request) {
 
     const winnerIds = new Set(winnersData?.map((w) => w.guest_id) || [])
 
-    // 2. Fetch ALL guests registered for THIS event (via guest_events)
+    // 2. Get IDs of guests who have CHECKED-IN (Attended)
+    const { data: checkinData } = await supabase
+      .from('checkins')
+      .select('guest_id')
+      .eq('event_id', eventId)
+
+    const checkedInIds = new Set(checkinData?.map((c) => c.guest_id) || [])
+
+    // 3. Fetch ALL guests registered for THIS event (via guest_events)
     const { data: mappingData, error } = await supabase
       .from('guest_events')
       .select(
@@ -42,13 +50,17 @@ export async function GET(request: Request) {
 
     if (error) throw error
 
-    // Extract unique guests EXCEPT those who already won
+    // Extract unique guests ONLY if they Checked-in AND Haven't Won
     const candidatesMap = new Map()
     mappingData?.forEach((m: any) => {
+      const isWinner = winnerIds.has(m.guest_id)
+      const hasCheckedIn = checkedInIds.has(m.guest_id)
+
       if (
         m.guests &&
         !candidatesMap.has(m.guest_id) &&
-        !winnerIds.has(m.guest_id)
+        !isWinner &&
+        hasCheckedIn
       ) {
         candidatesMap.set(m.guest_id, m.guests)
       }
@@ -60,6 +72,11 @@ export async function GET(request: Request) {
       status: 'success',
       count: participants.length,
       candidates: participants,
+      debug: {
+        total_registered: mappingData?.length || 0,
+        total_checked_in: checkedInIds.size,
+        total_winners: winnerIds.size,
+      },
     })
   } catch (error: unknown) {
     console.error('Doorprize API Error:', error)

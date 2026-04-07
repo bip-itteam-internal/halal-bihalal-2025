@@ -53,36 +53,6 @@ export function EventTicket({
   const [isCheckingIn, setIsCheckingIn] = useState<
     'exchange' | 'entrance' | null
   >(null)
-  const [locationPermission, setLocationPermission] = useState<
-    PermissionState | 'unsupported'
-  >('prompt')
-
-  // Check location permission on mount
-  React.useEffect(() => {
-    if (!navigator.geolocation) {
-      setLocationPermission('unsupported')
-      return
-    }
-
-    if (navigator.permissions && navigator.permissions.query) {
-      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-        setLocationPermission(result.state)
-        result.onchange = () => {
-          setLocationPermission(result.state)
-        }
-      })
-    }
-  }, [])
-
-  const requestLocationPermission = async () => {
-    return new Promise<GeolocationPosition>((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0,
-      })
-    })
-  }
 
   let statusBg = 'bg-slate-50 ring-slate-200'
   let statusText = 'text-slate-600'
@@ -131,37 +101,6 @@ export function EventTicket({
 
           try {
             setIsCheckingIn(step)
-
-            // Geofencing Check
-            if (latitude && longitude) {
-              const pos = await requestLocationPermission().catch(() => null)
-
-              if (!pos) {
-                toast.error(
-                  'Gagal mendapatkan lokasi. Pastikan GPS aktif dan izin lokasi diberikan.',
-                )
-                setIsCheckingIn(null)
-                return
-              }
-
-              const distance = getHaversineDistance(
-                pos.coords.latitude,
-                pos.coords.longitude,
-                latitude,
-                longitude,
-              )
-
-              if (distance > 100) {
-                toast.error(
-                  `Anda berada di luar jangkauan lokasi acara (Jarak: ${Math.round(distance)}m). Radius maksimal 100m.`,
-                  {
-                    duration: 5000,
-                  },
-                )
-                setIsCheckingIn(null)
-                return
-              }
-            }
 
             await onSelfCheckinStep?.(step)
           } catch (err) {
@@ -347,24 +286,6 @@ export function EventTicket({
                     Tombol check-in akan muncul saat gate dibuka
                   </p>
                 </div>
-              )}
-
-            {/* Location Permission Prompt */}
-            {latitude &&
-              longitude &&
-              locationPermission !== 'granted' &&
-              locationPermission !== 'unsupported' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => requestLocationPermission().catch(() => {})}
-                  className="mt-2 h-10 w-full rounded-xl border-amber-200 bg-amber-50 text-[10px] font-black tracking-widest text-amber-700 uppercase transition-all hover:bg-amber-100"
-                >
-                  <MapPin className="mr-2 h-3.5 w-3.5" />
-                  {locationPermission === 'denied'
-                    ? 'Izinkan Akses GPS (Klik Disini)'
-                    : 'Aktifkan Izin Lokasi (GPS)'}
-                </Button>
               )}
           </div>
         </div>
