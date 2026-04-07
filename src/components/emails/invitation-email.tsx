@@ -5,6 +5,7 @@ import {
   Heading,
   Hr,
   Html,
+  Img,
   Link,
   Preview,
   Section,
@@ -21,9 +22,7 @@ interface InvitationEmailProps {
   location?: string
 }
 
-export const InvitationEmail = ({
-  guestName,
-}: InvitationEmailProps) => {
+export const InvitationEmail = ({ guestName }: InvitationEmailProps) => {
   const loginLink = `https://bit.ly/HALALBIHALALBHARATAGROUP2026`
   const displayDate = 'Rabu, 8 April 2026'
   const displayLocation = 'Lap. Parkir PT. Bharata Internasional Pharmaceutical'
@@ -37,7 +36,13 @@ export const InvitationEmail = ({
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
-            <Heading style={heading}>BHARATA GROUP</Heading>
+            <Img
+              src="cid:logo"
+              width="200"
+              height="auto"
+              alt="Bharata Group"
+              style={logo}
+            />
           </Section>
 
           <Section style={content}>
@@ -152,9 +157,13 @@ const container = {
 }
 
 const header = {
-  padding: '40px 0',
+  padding: '30px 0',
   textAlign: 'center' as const,
   background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+}
+
+const logo = {
+  margin: '0 auto',
 }
 
 const heading = {

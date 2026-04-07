@@ -5,6 +5,7 @@ import { sendEmail } from '@/services/api/email'
 import { InvitationEmail } from '@/components/emails/invitation-email'
 import * as React from 'react'
 import { render } from '@react-email/render'
+import path from 'path'
 
 export async function bulkSendEmailAction(
   guestIds: string[],
@@ -25,6 +26,15 @@ export async function bulkSendEmailAction(
     return { success: false, message: 'Tidak ada tamu yang ditemukan.' }
   }
 
+
+  const logoPath = path.join(process.cwd(), 'public/logo/LOGO A.png')
+  const attachments = [
+    {
+      filename: 'logo.png',
+      path: logoPath,
+      cid: 'logo',
+    },
+  ]
 
   const results = []
   let successCount = 0
@@ -58,6 +68,7 @@ export async function bulkSendEmailAction(
         to: guest.email,
         subject: `Undangan Silaturahmi & Halal Bihalal 2026 - ${guest.full_name}`,
         html: emailHtml,
+        attachments,
       })
 
       if (success) {
@@ -113,10 +124,18 @@ export async function sendSingleEmailAction(
       }),
     )
 
+    const logoPath = path.join(process.cwd(), 'public/logo/LOGO A.png')
     const { success, message } = await sendEmail({
       to: guest.email,
       subject: `Undangan Silaturahmi & Halal Bihalal 2026 - ${guest.full_name}`,
       html: emailHtml,
+      attachments: [
+        {
+          filename: 'logo.png',
+          path: logoPath,
+          cid: 'logo',
+        },
+      ],
     })
 
     return { success, message: message || 'Success' }
