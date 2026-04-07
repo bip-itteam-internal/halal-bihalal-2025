@@ -23,6 +23,9 @@ interface WhatsappBulkDialogProps {
   totalCount?: number
   searchFilter?: string
   eventId?: string
+  guestType?: string
+  statusFilter?: string
+  payStatus?: string
   onSuccess?: (updatedIds: string[]) => void
 }
 
@@ -34,6 +37,9 @@ export function WhatsappBulkDialog({
   totalCount = 0,
   searchFilter = '',
   eventId = '',
+  guestType = 'all',
+  statusFilter = 'all',
+  payStatus = 'all',
   onSuccess,
 }: WhatsappBulkDialogProps) {
   const [isSending, setIsSending] = useState(false)
@@ -50,21 +56,44 @@ export function WhatsappBulkDialog({
 
       let finalIds = [...selectedIds]
 
-      if (isAllMode) {
+      if (isAllMode && eventId) {
         const { createClient } = await import('@/lib/supabase/client')
         const supabase = createClient()
-        let query = supabase.from('guests').select('id')
+        
+        let query = supabase
+          .from('guest_events')
+          .select('guest_id, guests!inner(full_name, guest_type, rsvp_status, phone)')
+          .eq('event_id', eventId)
+          .not('guests.phone', 'is', null)
+
         if (searchFilter) {
-          query = query.ilike('full_name', `%${searchFilter}%`)
+          query = query.or(
+            `full_name.ilike.%${searchFilter}%,address.ilike.%${searchFilter}%`,
+            { foreignTable: 'guests' },
+          )
         }
+
+        if (guestType !== 'all') {
+          query = query.eq('guests.guest_type', guestType)
+        }
+
+        if (statusFilter !== 'all') {
+          query = query.eq('guests.rsvp_status', statusFilter)
+        }
+
+        if (payStatus !== 'all') {
+          query = query.eq('payment_status', payStatus)
+        }
+
         const { data, error } = await query.limit(5000)
         if (error) throw error
-        finalIds = (data || []).map((g) => g.id)
+        finalIds = (data || []).map((g) => g.guest_id)
       }
 
       if (finalIds.length === 0) {
-        toast.error('Tidak ada tamu yang dipilih.')
+        toast.error('Tidak ada tamu yang memenuhi kriteria pengiriman WhatsApp.')
         setStatus('idle')
+        setIsSending(false)
         return
       }
 

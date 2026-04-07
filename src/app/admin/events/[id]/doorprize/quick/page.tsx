@@ -23,7 +23,7 @@ export default function SpinnerWheelPage() {
 
   const handleWinner = useCallback((winner: Guest) => {
     // Save to database
-    setWinnerToDatabase(winner.id)
+    setWinnerToDatabase(winner)
     // Delay adding to winner list for dramatic effect
     setTimeout(() => {
       setWinners(prev => [winner, ...prev])

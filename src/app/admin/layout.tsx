@@ -12,11 +12,11 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
-  const isDoorprize = pathname.startsWith('/admin/doorprize')
+  const isDoorprize = pathname.includes('/doorprize')
 
   // Doorprize is a full-screen presentation mode, so skip the sidebar
   if (isDoorprize) {
-    return <div className="min-h-screen w-full">{children}</div>
+    return <div className="min-h-screen w-full bg-[#050505]">{children}</div>
   }
 
   return (

@@ -1,5 +1,6 @@
 'use client'
 
+import { use } from 'react'
 import { motion } from 'framer-motion'
 import {
   Timer,
@@ -21,6 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import React from 'react'
 
 const GAMES = [
   {
@@ -30,7 +32,7 @@ const GAMES = [
       'Pilih nomor amplop di dinding keberuntungan untuk membuka identitas pemenang doorprize.',
     icon: LayoutGrid,
     color: 'from-red-500 to-rose-700',
-    url: '/admin/doorprize/wall',
+    url: 'doorprize/wall',
     stats: 'Envelope Pick',
     tag: 'EKSKLUSIF',
   },
@@ -41,7 +43,7 @@ const GAMES = [
       'Gaya kasino klasik! Nama-nama berputar di kolom vertikal dan berhenti satu per satu untuk jackpot.',
     icon: Zap,
     color: 'from-red-600 to-amber-600',
-    url: '/admin/doorprize/slot',
+    url: 'doorprize/slot',
     stats: 'Big Prize Mode',
     tag: 'JACKPOT',
   },
@@ -53,14 +55,19 @@ const GAMES = [
     icon: Timer,
     color: 'from-amber-500 to-amber-700',
     theme: 'halal',
-    url: '/admin/doorprize/survivor',
+    url: 'doorprize/survivor',
     stats: 'Last Man Standing',
     tag: 'FAVORIT',
   },
 ]
 
-export default function DoorprizeSelectorPage() {
-  const { candidates, loading, forceRefresh, lastUpdated } = useDoorprize()
+export default function DoorprizeSelectorPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id: eventId } = use(params)
+  const { candidates, loading, forceRefresh, lastUpdated } = useDoorprize(eventId)
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[#050c0b] text-white">
@@ -145,7 +152,7 @@ export default function DoorprizeSelectorPage() {
                     </span>
                   </div>
 
-                  <Link href={game.url} className="w-full">
+                  <Link href={`/admin/events/${eventId}/${game.url}`} className="w-full">
                     <Button className="bg-halal-primary text-halal-secondary hover:bg-halal-primary/90 group w-full rounded-xl font-bold transition-all">
                       Mulai Game
                       <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />

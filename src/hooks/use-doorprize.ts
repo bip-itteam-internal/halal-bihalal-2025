@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti'
 import { Guest } from '@/types'
 import { audioManager } from '@/lib/audio-manager'
 
-export function useDoorprize() {
+export function useDoorprize(eventId?: string) {
   const [candidates, setCandidates] = useState<Guest[]>([])
   const [aliveIds, setAliveIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
@@ -14,6 +14,7 @@ export function useDoorprize() {
   const [isAutoRunning, setIsAutoRunning] = useState(false)
   const [lastBatch, setLastBatch] = useState<string[]>([])
   const [countdown, setCountdown] = useState<number | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<'Bharata Group' | 'Sponsorship'>('Bharata Group')
   const autoRunTimer = useRef<NodeJS.Timeout | null>(null)
 
   const fetchCandidates = async () => {
@@ -21,7 +22,11 @@ export function useDoorprize() {
       setLoading(true)
 
       const timestamp = new Date().getTime()
-      const res = await fetch(`/api/admin/doorprize/eligible?t=${timestamp}`)
+      const url = eventId 
+        ? `/api/admin/doorprize/eligible?event_id=${eventId}&t=${timestamp}`
+        : `/api/admin/doorprize/eligible?t=${timestamp}`
+        
+      const res = await fetch(url)
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
 
@@ -79,14 +84,20 @@ export function useDoorprize() {
     }
   }, [])
 
-  const setWinnerToDatabase = async (guestId: string) => {
+  const setWinnerToDatabase = async (guest: Guest, categoryOverride?: string) => {
     try {
-      await fetch(`/api/admin/guests/${guestId}/winner`, {
-        method: 'PATCH',
+      await fetch('/api/admin/doorprize/winners', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ is_winner: true }),
+        body: JSON.stringify({
+          guest_id: guest.id,
+          event_id: eventId,
+          winner_name: guest.full_name,
+          institution_name: guest.address || '-',
+          category: categoryOverride || (guest.guest_type === 'internal' ? 'Bharata Group' : 'Sponsorship')
+        }),
       })
     } catch (err) {
       console.error('Failed to update winner in database:', err)
@@ -95,7 +106,7 @@ export function useDoorprize() {
 
   const fireConfetti = (winnerGuest?: Guest) => {
     if (winnerGuest) {
-      setWinnerToDatabase(winnerGuest.id)
+      setWinnerToDatabase(winnerGuest, selectedCategory)
     }
     audioManager.playVictory()
     const duration = 7 * 1000
@@ -278,6 +289,8 @@ export function useDoorprize() {
     lastBatch,
     aliveParticipants,
     winner,
+    selectedCategory,
+    setSelectedCategory,
     fetchCandidates,
     reset,
     forceRefresh,

@@ -10,10 +10,11 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Mail, Loader2, AlertCircle, Clock } from 'lucide-react'
+import { Mail, Loader2, AlertCircle, Clock, ShieldCheck, User } from 'lucide-react'
 import { sendSingleEmailAction } from '@/app/actions/email-actions'
 import { toast } from 'sonner'
 import { Progress } from '@/components/ui/progress'
+import { cn } from '@/lib/utils'
 
 interface EmailBulkDialogProps {
   isOpen: boolean
@@ -22,7 +23,12 @@ interface EmailBulkDialogProps {
   isAllMode?: boolean
   totalCount?: number
   searchFilter?: string
+  eventId?: string
+  guestType?: string
+  statusFilter?: string
+  payStatus?: string
   onSuccess?: (updatedIds: string[]) => void
+  defaultProvider?: 'resend' | 'gmail'
 }
 
 export function EmailBulkDialog({
@@ -32,8 +38,20 @@ export function EmailBulkDialog({
   isAllMode = false,
   totalCount = 0,
   searchFilter = '',
+  eventId = '',
+  guestType = 'all',
+  statusFilter = 'all',
+  payStatus = 'all',
   onSuccess,
+  defaultProvider = 'resend',
 }: EmailBulkDialogProps) {
+  const [provider, setProvider] = useState<'resend' | 'gmail'>(defaultProvider)
+
+  useEffect(() => {
+    if (isOpen) {
+      setProvider(defaultProvider)
+    }
+  }, [isOpen, defaultProvider])
   const [isSending, setIsSending] = useState(false)
   const [progress, setProgress] = useState(0)
   const [status, setStatus] = useState<'idle' | 'sending' | 'done'>('idle')
@@ -64,53 +82,83 @@ export function EmailBulkDialog({
       setProgress(0)
       setResults([])
 
-      let finalIds = [...selectedIds]
+      let targets: { id: string; name: string }[] = []
 
-      if (isAllMode) {
+      if (isAllMode && eventId) {
         const { createClient } = await import('@/lib/supabase/client')
         const supabase = createClient()
+
         let query = supabase
-          .from('guests')
-          .select('id, full_name')
-          .order('full_name')
+          .from('guest_events')
+          .select('guest_id, guests!inner(full_name, email)')
+          .eq('event_id', eventId)
+          .not('guests.email', 'is', null)
+          .neq('guests.email', '')
+
         if (searchFilter) {
-          query = query.ilike('full_name', `%${searchFilter}%`)
+          query = query.or(
+            `full_name.ilike.%${searchFilter}%,address.ilike.%${searchFilter}%`,
+            { foreignTable: 'guests' },
+          )
         }
-        const { data, error } = await query.limit(1000)
+
+        if (guestType !== 'all') {
+          query = query.eq('guests.guest_type', guestType)
+        }
+
+        if (statusFilter !== 'all') {
+          query = query.eq('guests.rsvp_status', statusFilter)
+        }
+
+        if (payStatus !== 'all') {
+          query = query.eq('payment_status', payStatus)
+        }
+
+        const { data, error } = await query.limit(5000)
         if (error) throw error
-        finalIds = (data || []).map((g) => g.id)
+        
+        targets = (data || []).map((g: any) => ({
+          id: g.guest_id,
+          name: g.guests.full_name || 'Tamu Tanpa Nama'
+        }))
+      } else {
+        targets = selectedIds.map(id => ({ id, name: `ID: ${id.slice(0, 8)}` }))
       }
 
-      if (finalIds.length === 0) {
-        toast.error('Tidak ada tamu yang dipilih.')
+      if (targets.length === 0) {
+        toast.error('Tidak ada tamu yang memenuhi kriteria pengiriman email.')
         setStatus('idle')
         setIsSending(false)
         return
       }
 
-      setTotalToSend(finalIds.length)
+      setTotalToSend(targets.length)
       const batchResults: typeof results = []
 
-      for (let i = 0; i < finalIds.length; i++) {
+      for (let i = 0; i < targets.length; i++) {
         setCurrentIndex(i + 1)
+        const target = targets[i]
 
-        // 1. Send call
-        const res = await sendSingleEmailAction(finalIds[i])
+        // 1. Send call passing the chosen provider
+        const res = await sendSingleEmailAction(target.id, provider)
 
         batchResults.push({
-          id: finalIds[i],
-          name: `Tamu #${i + 1}`,
+          id: target.id,
+          name: target.name,
           success: res.success,
           message: res.message || (res.success ? 'Berhasil' : 'Gagal'),
         })
         setResults([...batchResults])
 
-        const newProgress = Math.round(((i + 1) / finalIds.length) * 100)
+        const newProgress = Math.round(((i + 1) / targets.length) * 100)
         setProgress(newProgress)
 
-        // 2. Wait 1-5 minutes if not the last one
-        if (i < finalIds.length - 1) {
-          const waitSeconds = Math.floor(Math.random() * 241) + 60
+        // 2. Wait logic (Resend: 2-5s, Gmail: 5-8s)
+        if (i < targets.length - 1) {
+          const waitSeconds = provider === 'resend' 
+            ? Math.floor(Math.random() * 4) + 2
+            : Math.floor(Math.random() * 4) + 5
+            
           setSecondsRemaining(waitSeconds)
           setNextSendAt(Date.now() + waitSeconds * 1000)
 
@@ -141,7 +189,7 @@ export function EmailBulkDialog({
     >
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100/50 text-amber-600">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100/50 text-indigo-600">
             <Mail className="h-6 w-6" />
           </div>
           <DialogTitle className="text-xl font-black tracking-tight uppercase">
@@ -149,27 +197,104 @@ export function EmailBulkDialog({
           </DialogTitle>
           <DialogDescription className="leading-relaxed font-medium text-slate-500">
             {status === 'sending' ? (
-              <span className="flex animate-pulse items-center gap-2 text-amber-600">
+              <span className="flex animate-pulse items-center gap-2 text-indigo-600">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Sedang memproses pengiriman aman (jeda 1-5 menit)...
+                Menggunakan {provider === 'resend' ? 'Resend Engine' : 'Gmail SMTP'}...
               </span>
             ) : (
               <>
                 Kirim undangan ke{' '}
-                <span className="font-bold text-amber-600">
+                <span className="font-bold text-indigo-600">
                   {effectiveCount} tamu
                 </span>{' '}
-                dengan jeda waktu aman.
+                melalui saluran pilihan Anda.
               </>
             )}
           </DialogDescription>
         </DialogHeader>
 
+        {status === 'idle' && (
+          <div className="space-y-6 py-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black tracking-widest text-slate-400 uppercase">
+                Pilih Engine Pengiriman
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setProvider('resend')}
+                  className={cn(
+                    "relative flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all",
+                    provider === 'resend' 
+                      ? "border-indigo-600 bg-indigo-50/50 shadow-md"
+                      : "border-slate-100 bg-white hover:border-slate-200"
+                  )}
+                >
+                  <div className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-xl",
+                    provider === 'resend' ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-400"
+                  )}>
+                    <ShieldCheck className="h-5 w-5" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs font-black uppercase italic">Resend</p>
+                    <p className="text-[9px] font-medium text-slate-500 italic">Turbo Mode (Fast)</p>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setProvider('gmail')}
+                  className={cn(
+                    "relative flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all",
+                    provider === 'gmail' 
+                      ? "border-orange-600 bg-orange-50/50 shadow-md"
+                      : "border-slate-100 bg-white hover:border-slate-200"
+                  )}
+                >
+                  <div className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-xl",
+                    provider === 'gmail' ? "bg-orange-600 text-white" : "bg-slate-100 text-slate-400"
+                  )}>
+                    <User className="h-5 w-5" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs font-black uppercase italic">Gmail</p>
+                    <p className="text-[9px] font-medium text-slate-500 italic">Personal (Safe)</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-indigo-100 bg-indigo-50/30 p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="h-4 w-4 text-indigo-600" />
+                <span className="text-[10px] font-black tracking-widest text-indigo-700 uppercase italic">
+                  Estimasi Waktu Tunggu
+                </span>
+              </div>
+              <p className="text-[12px] leading-relaxed font-medium text-slate-700">
+                {provider === 'resend' ? (
+                  <>
+                    Jeda pengiriman <strong>2 - 5 detik</strong> per email.
+                    Estimasi total: <span className="font-bold text-indigo-600">{Math.ceil((effectiveCount * 3.5) / 60)} menit.</span>
+                  </>
+                ) : (
+                  <>
+                    Jeda pengiriman <strong>5 - 8 detik</strong> (Saran Keamanan).
+                    Estimasi total: <span className="font-bold text-orange-600">{Math.ceil((effectiveCount * 6.5) / 60)} menit.</span>
+                  </>
+                )}
+              </p>
+            </div>
+          </div>
+        )}
+
         {status === 'sending' && (
           <div className="space-y-6 py-4">
             <div className="rounded-2xl bg-slate-50 p-6 text-center shadow-inner">
               <p className="mb-1 text-[10px] font-black tracking-widest text-slate-400 uppercase">
-                Status Antrean
+                Terkirim Melalui {provider.toUpperCase()}
               </p>
               <p className="text-3xl font-black text-slate-800">
                 {currentIndex} <span className="text-slate-400">/</span>{' '}
@@ -178,16 +303,15 @@ export function EmailBulkDialog({
             </div>
 
             {secondsRemaining > 0 && (
-              <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-amber-200 bg-amber-50/30 p-4">
-                <div className="mb-2 flex items-center gap-2 text-amber-700">
-                  <Clock className="h-5 w-5" />
-                  <span className="text-sm font-bold tracking-tight uppercase">
+              <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-indigo-200 bg-indigo-50/30 p-4">
+                <div className="mb-1 flex items-center gap-2 text-indigo-700">
+                  <Clock className="h-4 w-4" />
+                  <span className="text-[10px] font-black tracking-tight uppercase">
                     Kirim Selanjutnya Dalam:
                   </span>
                 </div>
-                <div className="font-mono text-4xl font-black text-amber-600">
-                  {Math.floor(secondsRemaining / 60)}:
-                  {String(secondsRemaining % 60).padStart(2, '0')}
+                <div className="font-mono text-3xl font-black text-indigo-600">
+                  {secondsRemaining} Detik
                 </div>
               </div>
             )}
@@ -199,15 +323,6 @@ export function EmailBulkDialog({
               </div>
               <Progress value={progress} className="h-3 w-full bg-slate-100" />
             </div>
-
-            <div className="flex items-start gap-3 rounded-lg border border-blue-100 bg-blue-50 p-3">
-              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-blue-500" />
-              <p className="text-[11px] leading-relaxed text-blue-700">
-                <strong>PENTING:</strong> Jangan tutup halaman atau tab browser
-                ini selama proses pengiriman berlangsung agar jeda waktu tetap
-                berjalan.
-              </p>
-            </div>
           </div>
         )}
 
@@ -215,66 +330,33 @@ export function EmailBulkDialog({
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-3 text-center">
-                <p className="text-[10px] font-black text-emerald-600 uppercase">
-                  Berhasil
-                </p>
+                <p className="text-[10px] font-black text-emerald-600 uppercase">Berhasil</p>
                 <p className="text-2xl font-black text-emerald-800">
                   {results.filter((r) => r.success).length}
                 </p>
               </div>
               <div className="rounded-xl border border-red-100 bg-red-50 p-3 text-center">
-                <p className="text-[10px] font-black text-red-600 uppercase">
-                  Gagal
-                </p>
+                <p className="text-[10px] font-black text-red-600 uppercase">Gagal</p>
                 <p className="text-2xl font-black text-red-800">
                   {results.filter((r) => !r.success).length}
                 </p>
               </div>
             </div>
 
-            <div className="max-h-[250px] space-y-2 overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+            <div className="max-h-[200px] space-y-2 overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/50 p-2">
               {results.map((r, i) => (
                 <div
                   key={i}
                   className="flex items-center justify-between rounded-lg border border-slate-100 bg-white p-2 text-[11px] font-medium"
                 >
-                  <span className="max-w-[200px] truncate text-slate-700">
-                    {r.name}
-                  </span>
+                  <span className="max-w-[200px] truncate text-slate-700">{r.name}</span>
                   {r.success ? (
-                    <span className="font-bold text-emerald-600 uppercase">
-                      Success
-                    </span>
+                    <span className="font-bold text-emerald-600 uppercase italic">Success</span>
                   ) : (
-                    <span className="font-bold text-red-500 uppercase">
-                      {r.message.toUpperCase()}
-                    </span>
+                    <span className="font-bold text-red-500 uppercase italic">Gagal</span>
                   )}
                 </div>
               ))}
-            </div>
-          </div>
-        )}
-
-        {status === 'idle' && (
-          <div className="space-y-4 py-4">
-            <div className="space-y-3 rounded-2xl border border-amber-100 bg-amber-50 p-4">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-amber-600" />
-                <span className="text-[10px] font-black tracking-widest text-amber-700 uppercase">
-                  Proteksi Akun Gmail
-                </span>
-              </div>
-              <p className="text-[12px] leading-relaxed font-medium text-amber-800/80">
-                Sesuai permintaan, sistem akan memberikan jeda acak{' '}
-                <strong>1 - 5 menit</strong> per email untuk meminimalkan risiko
-                blokir.
-                <br />
-                <br />
-                <span className="italic">
-                  Estimasi waktu: {effectiveCount * 3} menit.
-                </span>
-              </p>
             </div>
           </div>
         )}
@@ -298,7 +380,7 @@ export function EmailBulkDialog({
               <Button
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="h-12 flex-1 rounded-2xl border-slate-200 font-bold tracking-widest uppercase"
+                className="h-12 flex-1 rounded-2xl border-slate-200 font-bold tracking-widest uppercase italic"
                 disabled={isSending}
               >
                 Batal
@@ -306,7 +388,7 @@ export function EmailBulkDialog({
               <Button
                 onClick={handleSend}
                 disabled={isSending}
-                className="h-12 flex-1 rounded-2xl bg-amber-600 font-bold tracking-widest text-white uppercase shadow-lg shadow-amber-200 hover:bg-amber-700"
+                className="h-12 flex-1 rounded-2xl bg-indigo-600 font-bold tracking-widest text-white uppercase shadow-lg shadow-indigo-200 hover:bg-indigo-700"
               >
                 {isSending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

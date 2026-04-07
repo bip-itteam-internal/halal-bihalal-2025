@@ -49,6 +49,7 @@ interface GuestListTableProps {
   onUpdateGuest?: (guestId: string, updates: Partial<Guest>) => void
   eventId?: string
   showPaymentColumns?: boolean
+  emailProvider?: 'resend' | 'gmail'
 }
 
 export function GuestListTable({
@@ -57,6 +58,7 @@ export function GuestListTable({
   onUpdateGuest,
   eventId: propEventId,
   showPaymentColumns = true,
+  emailProvider = 'resend',
 }: GuestListTableProps) {
   const supabase = createClient()
   const [loading, setLoading] = useState<string | null>(null)
@@ -347,8 +349,14 @@ export function GuestListTable({
                           </span>
                           <button
                             onClick={() => setSelectedGuestForEmail(guest)}
-                            className="inline-flex h-6 items-center justify-center gap-1.5 rounded-full bg-indigo-50 px-2 text-[9px] font-bold text-indigo-600 transition-colors hover:bg-indigo-100 hover:text-indigo-700"
-                            title="Kirim Undangan via Email"
+                            className={`inline-flex h-6 items-center justify-center gap-1.5 rounded-full px-2 text-[9px] font-bold transition-colors ${
+                              emailProvider === 'resend'
+                                ? 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700'
+                                : 'bg-orange-50 text-orange-600 hover:bg-orange-100 hover:text-orange-700'
+                            }`}
+                            title={`Kirim Undangan via Email (${
+                              emailProvider === 'resend' ? 'Resend' : 'Gmail'
+                            })`}
                           >
                             <Mail className="h-3 w-3" />
                             KIRIM EMAIL
@@ -600,10 +608,17 @@ export function GuestListTable({
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+              <div
+                className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                  emailProvider === 'resend'
+                    ? 'bg-indigo-100 text-indigo-600'
+                    : 'bg-orange-100 text-orange-600'
+                }`}
+              >
                 <Mail className="h-4 w-4" />
               </div>
-              Kirim Undangan Email
+              Kirim Undangan Email (
+              {emailProvider === 'resend' ? 'Resend' : 'Gmail'})
             </DialogTitle>
             <DialogDescription className="pt-2">
               Kirim undangan digital premium ke{' '}
@@ -630,7 +645,11 @@ export function GuestListTable({
               Batal
             </Button>
             <Button
-              className="bg-indigo-600 text-white hover:bg-indigo-700"
+              className={`text-white shadow-lg transition-all active:scale-95 ${
+                emailProvider === 'resend'
+                  ? 'bg-indigo-600 hover:bg-indigo-700'
+                  : 'bg-orange-600 hover:bg-orange-700 shadow-orange-100'
+              }`}
               onClick={async () => {
                 if (!selectedGuestForEmail) return
                 const guestId = selectedGuestForEmail.id
@@ -641,6 +660,7 @@ export function GuestListTable({
                   setLoading(guestId)
                   const res = await bulkSendEmailAction(
                     [guestId],
+                    emailProvider
                   )
 
                   if (res.success && res.results?.[0]?.success) {

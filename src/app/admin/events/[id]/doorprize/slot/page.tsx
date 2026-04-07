@@ -1,9 +1,9 @@
 'use client'
-
+import { use } from 'react'
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowLeft, RotateCcw, Zap } from 'lucide-react'
+import { ArrowLeft, RotateCcw, Zap, Trophy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useDoorprize } from '@/hooks/use-doorprize'
 import { SlotReel } from '@/components/modules/doorprize/slot-reel'
@@ -14,17 +14,20 @@ import { DoorprizeRulesModal } from '@/components/modules/doorprize/doorprize-ru
 import { WinnersListModal } from '@/components/modules/doorprize/winners-list-modal'
 import { cn } from '@/lib/utils'
 import { Guest } from '@/types'
-import { Trophy } from 'lucide-react'
 
-export default function SlotMachinePage() {
+export default function SlotMachinePage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id: eventId } = use(params)
   const [isRulesOpen, setIsRulesOpen] = useState(true)
   const [isWinnersListOpen, setIsWinnersListOpen] = useState(false)
-  const {
-    candidates,
-    aliveParticipants,
-    reset,
-    setWinnerToDatabase,
-  } = useDoorprize()
+  const [selectedCategory, setSelectedCategory] = useState<
+    'Bharata Group' | 'Sponsorship'
+  >('Bharata Group')
+  const { candidates, aliveParticipants, reset, setWinnerToDatabase } =
+    useDoorprize(eventId)
 
   const [spinPhase, setSpinPhase] = useState<
     'idle' | 'spinning_1' | 'fake_stop' | 'spinning_2'
@@ -49,7 +52,9 @@ export default function SlotMachinePage() {
   const locationOptions = useMemo(
     () => [
       'Bharata Group',
-      ...Array.from(new Set(candidates.map((c) => c.address || 'Hadirin'))),
+      ...Array.from(
+        new Set(candidates.map((c) => (c.address || 'Hadirin').trim())),
+      ),
     ],
     [candidates],
   )
@@ -57,13 +62,17 @@ export default function SlotMachinePage() {
     () => [
       'Bharata Group',
       ...Array.from(
-        new Set(candidates.map((c) => c.full_name[0].toUpperCase())),
+        new Set(
+          candidates
+            .filter((c) => c.full_name && c.full_name.trim().length > 0)
+            .map((c) => c.full_name.trim()[0].toUpperCase()),
+        ),
       ).sort(),
     ],
     [candidates],
   )
   const nameOptions = useMemo(
-    () => ['Bharata Group', ...candidates.map((c) => c.full_name)],
+    () => ['Bharata Group', ...candidates.map((c) => c.full_name || 'Anonim')],
     [candidates],
   )
 
@@ -72,7 +81,7 @@ export default function SlotMachinePage() {
 
     const trueWinner =
       aliveParticipants[Math.floor(Math.random() * aliveParticipants.length)]
-    const plannedFails = Math.floor(Math.random() * 4) // 0 to 3 fails
+    const plannedFails = 2 // Always 2 glitches as requested
 
     setLocalWinner(trueWinner)
     setTotalPlannedFails(plannedFails)
@@ -91,9 +100,19 @@ export default function SlotMachinePage() {
     let targetNameIdx: number
 
     if (isFinal) {
-      targetLocIdx = locationOptions.indexOf(winner.address || 'Hadirin')
-      targetInitIdx = initialOptions.indexOf(winner.full_name[0].toUpperCase())
+      const safeLoc = (winner.address || 'Hadirin').trim()
+      const safeName = (winner.full_name || 'Anonim').trim()
+      const safeInit = (safeName[0] || '?').toUpperCase()
+
+      targetLocIdx = locationOptions.indexOf(safeLoc)
+      targetInitIdx = initialOptions.indexOf(safeInit)
       targetNameIdx = nameOptions.indexOf(winner.full_name)
+
+      // Fallback if not found
+      if (targetLocIdx === -1) targetLocIdx = 0
+      if (targetInitIdx === -1) targetInitIdx = 0
+      if (targetNameIdx === -1) targetNameIdx = 0
+
       setSpinPhase('spinning_2')
     } else {
       // Pick random fake data
@@ -125,9 +144,9 @@ export default function SlotMachinePage() {
         setTimeout(() => {
           setReelStatus([false, false, false])
           // WE STOP HERE and wait for the actual SlotReel to trigger onStop
-        }, 1500)
-      }, 1500)
-    }, 2000)
+        }, 800)
+      }, 800)
+    }, 1200)
   }
 
   const handleFinalReelStop = () => {
@@ -136,7 +155,7 @@ export default function SlotMachinePage() {
     audioManager.playSlotStop()
 
     if (!isFinal) {
-      // It was a fake stop! Wait for audience reaction, then glitch.
+      // It was a fake stop! Wait a bit, then glitch.
       setSpinPhase('fake_stop')
       audioManager.playError()
 
@@ -149,12 +168,12 @@ export default function SlotMachinePage() {
           if (localWinner) {
             runSpinStep(nextAttempt, totalPlannedFails, localWinner)
           }
-        }, 800)
-      }, 2500)
+        }, 400)
+      }, 1000)
     } else {
       // THE REAL DEAL
       if (localWinner) {
-        setWinnerToDatabase(localWinner.id)
+        setWinnerToDatabase(localWinner, selectedCategory)
       }
       setSpinPhase('idle')
     }
@@ -175,19 +194,18 @@ export default function SlotMachinePage() {
       setTimeout(() => {
         audioManager.playVictory()
 
-        // Bombastic Gold Confetti (10 Second Celebration)
+        // Side Cannons Celebration (10 Second Celebration)
         const duration = 10 * 1000
         const animationEnd = Date.now() + duration
         const defaults = {
-          startVelocity: 45,
-          spread: 360,
-          ticks: 100,
-          zIndex: 0,
-          colors: ['#FFD700', '#F59E0B', '#D97706', '#B45309', '#FFFBEB'],
+          startVelocity: 60,
+          spread: 80,
+          ticks: 200,
+          zIndex: 100,
+          gravity: 0.8,
+          scalar: 1.2,
+          colors: ['#FFD700', '#F59E0B', '#D97706', '#FFFFFF', '#FFFBEB'],
         }
-
-        const randomInRange = (min: number, max: number) =>
-          Math.random() * (max - min) + min
 
         const interval = setInterval(function () {
           const timeLeft = animationEnd - Date.now()
@@ -196,31 +214,38 @@ export default function SlotMachinePage() {
             return clearInterval(interval)
           }
 
-          const particleCount = 50 * (timeLeft / duration)
+          const particleCount = 40
 
+          // Firing from bottom-left corner
           confetti({
             ...defaults,
             particleCount,
-            origin: {
-              x: randomInRange(0.1, 0.3),
-              y: Math.random() - 0.2,
-            },
+            angle: 60,
+            origin: { x: -0.1, y: 0.8 },
           })
+          // Firing from bottom-right corner
           confetti({
             ...defaults,
             particleCount,
-            origin: {
-              x: randomInRange(0.7, 0.9),
-              y: Math.random() - 0.2,
-            },
+            angle: 120,
+            origin: { x: 1.1, y: 0.8 },
           })
         }, 250)
 
+        // Initial big bursts
         confetti({
-          particleCount: 500,
-          spread: 120,
-          origin: { y: 0.6 },
-          colors: ['#FFD700', '#F59E0B', '#D97706', '#FFFFFF'],
+          ...defaults,
+          particleCount: 150,
+          angle: 60,
+          spread: 100,
+          origin: { x: 0, y: 1 },
+        })
+        confetti({
+          ...defaults,
+          particleCount: 150,
+          angle: 120,
+          spread: 100,
+          origin: { x: 1, y: 1 },
         })
       }, 300)
     }
@@ -268,7 +293,7 @@ export default function SlotMachinePage() {
               </motion.div>
             )}
           </AnimatePresence>
-          <Link href="/admin/doorprize">
+          <Link href={`/admin/events/${eventId}/doorprize`}>
             <Button
               variant="outline"
               className="h-12 w-12 rounded-xl border-white/10 bg-white/5 p-0"
@@ -276,10 +301,10 @@ export default function SlotMachinePage() {
               <ArrowLeft />
             </Button>
           </Link>
-          <Button 
+          <Button
             variant="outline"
             onClick={() => setIsWinnersListOpen(true)}
-            className="h-12 w-12 rounded-xl border-white/10 bg-white/5 p-0 hover:bg-emerald-500/20 hover:text-emerald-400 group"
+            className="group h-12 w-12 rounded-xl border-white/10 bg-white/5 p-0 hover:bg-emerald-500/20 hover:text-emerald-400"
           >
             <Trophy className="h-5 w-5 transition-transform group-hover:scale-110" />
           </Button>
@@ -291,6 +316,37 @@ export default function SlotMachinePage() {
             <RotateCcw className="mr-2 h-4 w-4 transition-transform duration-500 group-hover:rotate-180" />
             RESET
           </Button>
+        </div>
+      </div>
+
+      {/* Category Toggle (Bottom Left) */}
+      <div className="fixed bottom-8 left-8 z-50 flex flex-col gap-2">
+        <p className="ml-2 text-[10px] font-black tracking-[0.2em] text-white/40 uppercase">
+          RESULT CATEGORY
+        </p>
+        <div className="flex rounded-2xl border border-white/10 bg-black/60 p-1.5 backdrop-blur-xl">
+          <button
+            onClick={() => setSelectedCategory('Bharata Group')}
+            className={cn(
+              'relative rounded-xl px-6 py-2.5 text-xs font-black tracking-widest uppercase transition-all',
+              selectedCategory === 'Bharata Group'
+                ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]'
+                : 'text-white/40 hover:text-white/60',
+            )}
+          >
+            BHARATA GROUP
+          </button>
+          <button
+            onClick={() => setSelectedCategory('Sponsorship')}
+            className={cn(
+              'relative rounded-xl px-6 py-2.5 text-xs font-black tracking-widest uppercase transition-all',
+              selectedCategory === 'Sponsorship'
+                ? 'bg-emerald-600 text-white shadow-[0_0_20px_rgba(5,150,105,0.4)]'
+                : 'text-white/40 hover:text-white/60',
+            )}
+          >
+            SPONSORSHIP
+          </button>
         </div>
       </div>
 
@@ -414,52 +470,30 @@ export default function SlotMachinePage() {
         </div>
       </motion.div>
 
-      {/* Gen Z Error Message (Below Machine) */}
-      <div className="mt-8 h-24">
-        <AnimatePresence>
-          {spinPhase === 'fake_stop' && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="flex flex-col items-center justify-center"
-            >
-              <div className="rounded-xl border-2 border-white bg-red-600 px-10 py-4 shadow-[0_0_40px_rgba(239,68,68,0.4)]">
-                <h2 className="text-center text-3xl font-black tracking-tighter text-white uppercase italic md:text-5xl">
-                  SISTEMNYA KENA MENTAL 💀
-                </h2>
-                <p className="mt-1 text-center font-bold tracking-widest text-white/80">
-                  NO DEBAT, REBOOTING FR FR...
-                </p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
       {/* Action Area Padding */}
-      <div className="mt-8 h-12" />
+      <div className="mt-8 h-24" />
 
       <DoorprizeRulesModal
         gameTitle="Jackpot Arena"
         isOpen={isRulesOpen}
         onClose={() => setIsRulesOpen(false)}
         rules={[
-          "HANYA PESERTA YANG SUDAH CHECK-IN YANG BERHAK IKUT DIUNDI.",
-          "Mesin memiliki 3 kolom: Unit/Alamat, Inisial, dan Nama.",
+          'HANYA PESERTA YANG SUDAH CHECK-IN YANG BERHAK IKUT DIUNDI.',
+          'Mesin memiliki 3 kolom: Unit/Alamat, Inisial, dan Nama.',
           "Tekan 'PULL LEVER' untuk memutar mesin jackpot.",
           "Hati-hati! Sistem mungkin mengalami 'glitch' sebelum jackpot.",
-          "Menangkan hadiah utama saat ketiga kolom berhenti tepat."
+          'Menangkan hadiah utama saat ketiga kolom berhenti tepat.',
         ]}
         controls={[
-          { key: "Click", action: "Pull Lever (Tarik Tuas)" },
-          { key: "Reset", action: "Muat Ulang Mesin" }
+          { key: 'Click', action: 'Pull Lever (Tarik Tuas)' },
+          { key: 'Reset', action: 'Muat Ulang Mesin' },
         ]}
       />
 
-      <WinnersListModal 
+      <WinnersListModal
         isOpen={isWinnersListOpen}
         onClose={() => setIsWinnersListOpen(false)}
+        eventId={eventId}
       />
     </div>
   )

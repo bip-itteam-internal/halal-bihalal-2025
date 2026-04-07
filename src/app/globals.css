@@ -154,6 +154,11 @@ body {
   animation: meteor 5s linear infinite;
 }
 
+/* Doorprize Arena Custom Cursor */
+.doorprize-arena, .doorprize-arena * {
+  cursor: none !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

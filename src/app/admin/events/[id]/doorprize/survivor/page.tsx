@@ -1,7 +1,7 @@
 'use client'
-
-import { useEffect } from 'react'
-import { ArrowLeft, RefreshCcw } from 'lucide-react'
+import { use } from 'react'
+import { useEffect, useState } from 'react'
+import { ArrowLeft, RefreshCcw, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useDoorprize } from '@/hooks/use-doorprize'
@@ -11,11 +11,14 @@ import { FloatingParticles } from '@/components/shared/floating-particles'
 import { CountdownOverlay } from '@/components/modules/doorprize/countdown-overlay'
 import { DoorprizeRulesModal } from '@/components/modules/doorprize/doorprize-rules-modal'
 import { WinnersListModal } from '@/components/modules/doorprize/winners-list-modal'
-import { useState } from 'react'
 import { cn } from '@/lib/utils'
-import { Trophy } from 'lucide-react'
 
-export default function SurvivorDoorprizePage() {
+export default function SurvivorDoorprizePage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id: eventId } = use(params)
   const [isRulesOpen, setIsRulesOpen] = useState(true)
   const [isWinnersListOpen, setIsWinnersListOpen] = useState(false)
   const {
@@ -28,8 +31,10 @@ export default function SurvivorDoorprizePage() {
     lastBatch,
     aliveParticipants,
     winner,
+    selectedCategory,
+    setSelectedCategory,
     reset,
-  } = useDoorprize()
+  } = useDoorprize(eventId)
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -115,6 +120,37 @@ export default function SurvivorDoorprizePage() {
 
       <FloatingParticles />
 
+      {/* Category Toggle (Bottom Left) */}
+      <div className="fixed bottom-8 left-8 z-50 flex flex-col gap-2">
+        <p className="ml-2 text-[10px] font-black tracking-[0.2em] text-white/40 uppercase">
+          RESULT CATEGORY
+        </p>
+        <div className="flex rounded-2xl border border-white/10 bg-black/60 p-1.5 backdrop-blur-xl">
+          <button
+            onClick={() => setSelectedCategory('Bharata Group')}
+            className={cn(
+              "relative px-6 py-2.5 text-xs font-black tracking-widest uppercase transition-all rounded-xl",
+              selectedCategory === 'Bharata Group' 
+                ? "bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]" 
+                : "text-white/40 hover:text-white/60"
+            )}
+          >
+            BHARATA GROUP
+          </button>
+          <button
+            onClick={() => setSelectedCategory('Sponsorship')}
+            className={cn(
+              "relative px-6 py-2.5 text-xs font-black tracking-widest uppercase transition-all rounded-xl",
+              selectedCategory === 'Sponsorship' 
+                ? "bg-emerald-600 text-white shadow-[0_0_20px_rgba(5,150,105,0.4)]" 
+                : "text-white/40 hover:text-white/60"
+            )}
+          >
+            SPONSORSHIP
+          </button>
+        </div>
+      </div>
+
       {/* Floating Controls in Bottom Right - Ultra Compact */}
       <div className="fixed bottom-6 right-6 z-[60] flex flex-col items-end gap-1.5 translate-y-[-10px]">
         {/* Ultra Compact Stats Indicator */}
@@ -127,7 +163,7 @@ export default function SurvivorDoorprizePage() {
 
         <div className="flex items-center gap-1.5">
           {/* Arena Button - Ultra Compact */}
-          <Link href="/admin/doorprize">
+          <Link href={`/admin/events/${eventId}/doorprize`}>
             <Button
               variant="outline"
               size="sm"
@@ -204,7 +240,7 @@ export default function SurvivorDoorprizePage() {
         isOpen={isRulesOpen}
         onClose={() => setIsRulesOpen(false)}
         rules={[
-          "HANYA PESERTA YANG SUDAH CHECK-IN YANG BERHAK IKUT DIUNDI.",
+          "SELURUH TAMU YANG TERDAFTAR DI EVENT BERHAK IKUT DIUNDI.",
           "Peserta dieliminasi secara bertahap dalam beberapa kloter.",
           "Peserta yang masih 'Alive' (berwarna putih) berhak lanjut.",
           "Pemenang adalah 1 orang terakhir yang tersisa di layar.",
@@ -220,6 +256,7 @@ export default function SurvivorDoorprizePage() {
       <WinnersListModal 
         isOpen={isWinnersListOpen}
         onClose={() => setIsWinnersListOpen(false)}
+        eventId={eventId}
       />
     </div>
   )

@@ -8,6 +8,7 @@ import { render } from '@react-email/render'
 
 export async function bulkSendEmailAction(
   guestIds: string[],
+  provider: 'resend' | 'gmail' = 'resend',
 ) {
   const supabase = await createClient()
 
@@ -58,6 +59,7 @@ export async function bulkSendEmailAction(
         to: guest.email,
         subject: `Undangan Silaturahmi & Halal Bihalal 2026 - ${guest.full_name}`,
         html: emailHtml,
+        provider,
       })
 
       if (success) {
@@ -89,6 +91,7 @@ export async function bulkSendEmailAction(
 
 export async function sendSingleEmailAction(
   guestId: string,
+  provider: 'resend' | 'gmail' = 'resend',
 ) {
   const supabase = await createClient()
 
@@ -117,6 +120,7 @@ export async function sendSingleEmailAction(
       to: guest.email,
       subject: `Undangan Silaturahmi & Halal Bihalal 2026 - ${guest.full_name}`,
       html: emailHtml,
+      provider,
     })
 
     return { success, message: message || 'Success' }

@@ -1,6 +1,6 @@
 'use client'
 
-import { CalendarDays, History, DoorOpen } from 'lucide-react'
+import { CalendarDays, History, DoorOpen, Trophy } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
@@ -20,10 +20,7 @@ interface EventCardProps {
   canManageEvent: boolean
 }
 
-export function EventCard({
-  event,
-  canManageEvent,
-}: EventCardProps) {
+export function EventCard({ event, canManageEvent }: EventCardProps) {
   // Get open gate times
   const internalRule = event.event_guest_rules?.find(
     (r) => r.guest_type === 'internal',
@@ -171,6 +168,22 @@ export function EventCard({
                 Guests
               </Button>
             </Link>
+            <Button
+              variant="default"
+              className="w-full bg-amber-500 text-[11px] font-bold text-white shadow-sm transition-all hover:scale-[1.02] hover:bg-amber-600 active:scale-[0.98]"
+              size="sm"
+              onClick={() => {
+                const url = `/admin/events/${event.id}/doorprize`
+                window.open(
+                  url,
+                  'DoorprizeArena',
+                  'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no',
+                )
+              }}
+            >
+              <Trophy className="mr-1.5 h-3.5 w-3.5" />
+              Doorprize
+            </Button>
           </>
         )}
         <Link

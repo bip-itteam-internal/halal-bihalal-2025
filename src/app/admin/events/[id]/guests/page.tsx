@@ -154,6 +154,7 @@ export default function GuestManagementPage({
   const [totalCount, setTotalCount] = useState(0)
   const [broadcastOpen, setBroadcastOpen] = useState(false)
   const [emailBroadcastOpen, setEmailBroadcastOpen] = useState(false)
+  const [emailProvider, setEmailProvider] = useState<'resend' | 'gmail'>('resend')
   const [summary, setSummary] = useState<GuestSummary>({
     total: 0,
     confirmed: 0,
@@ -196,7 +197,10 @@ export default function GuestManagementPage({
           .eq('event_id', eventId)
 
         if (searchQuery) {
-          query = query.ilike('guests.full_name', `%${searchQuery}%`)
+          query = query.or(
+            `full_name.ilike.%${searchQuery}%,address.ilike.%${searchQuery}%`,
+            { foreignTable: 'guests' },
+          )
         }
 
         if (guestType !== 'all') {
@@ -431,7 +435,7 @@ export default function GuestManagementPage({
             <div className="relative max-w-sm flex-1">
               <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
               <Input
-                placeholder="Cari nama tamu..."
+                placeholder="Cari nama atau instansi..."
                 className="pl-9"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -448,14 +452,42 @@ export default function GuestManagementPage({
                 </Button>
               )}
               {guestType === 'internal' && (
-                <Button
-                  variant="outline"
-                  className="h-9 gap-2 rounded-xl border-indigo-200 bg-indigo-50 font-bold tracking-wide text-indigo-600 uppercase shadow-sm transition-all hover:scale-[1.02] hover:bg-indigo-100 active:scale-[0.98]"
-                  onClick={() => setEmailBroadcastOpen(true)}
-                >
-                  <Mail className="h-4 w-4" />
-                  Broadcast Email
-                </Button>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+                    <button
+                      onClick={() => setEmailProvider('resend')}
+                      className={`h-7 rounded-lg px-3 text-[9px] font-black uppercase transition-all ${
+                        emailProvider === 'resend'
+                          ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
+                          : 'text-slate-400 hover:bg-slate-50'
+                      }`}
+                    >
+                      Resend
+                    </button>
+                    <button
+                      onClick={() => setEmailProvider('gmail')}
+                      className={`h-7 rounded-lg px-3 text-[9px] font-black uppercase transition-all ${
+                        emailProvider === 'gmail'
+                          ? 'bg-orange-600 text-white shadow-lg shadow-orange-200'
+                          : 'text-slate-400 hover:bg-slate-50'
+                      }`}
+                    >
+                      Gmail
+                    </button>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className={`h-9 gap-2 rounded-xl font-bold tracking-wide uppercase shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] ${
+                      emailProvider === 'resend'
+                        ? 'border-indigo-200 bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+                        : 'border-orange-200 bg-orange-50 text-orange-600 hover:bg-orange-100'
+                    }`}
+                    onClick={() => setEmailBroadcastOpen(true)}
+                  >
+                    <Mail className="h-4 w-4" />
+                    Broadcast Email
+                  </Button>
+                </div>
               )}
               <ImportGuestSheet
                 eventId={eventId}
@@ -599,6 +631,7 @@ export default function GuestManagementPage({
               onUpdateGuest={handleUpdateGuest}
               eventId={eventId}
               showPaymentColumns={showPaymentColumns}
+              emailProvider={emailProvider}
             />
 
             <WhatsappBulkDialog
@@ -609,6 +642,9 @@ export default function GuestManagementPage({
               totalCount={totalCount}
               searchFilter={searchQuery}
               eventId={eventId}
+              guestType={guestType}
+              statusFilter={status}
+              payStatus={payStatus}
               onSuccess={() => {
                 fetchEventAndGuests()
               }}
@@ -621,9 +657,14 @@ export default function GuestManagementPage({
               isAllMode={true}
               totalCount={totalCount}
               searchFilter={searchQuery}
+              eventId={eventId}
+              guestType={guestType}
+              statusFilter={status}
+              payStatus={payStatus}
               onSuccess={() => {
                 fetchEventAndGuests()
               }}
+              defaultProvider={emailProvider}
             />
 
             {/* Pagination Controls */}

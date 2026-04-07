@@ -1,8 +1,9 @@
 'use client'
-
+import { use } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowLeft, RotateCcw } from 'lucide-react'
+import { ArrowLeft, RotateCcw, Trophy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useEnvelopeWall } from '@/hooks/use-envelope-wall'
 import { EnvelopeCard } from '@/components/modules/doorprize/envelope-card'
@@ -10,12 +11,17 @@ import { WinnerBanner } from '@/components/modules/doorprize/winner-banner'
 import { FloatingParticles } from '@/components/shared/floating-particles'
 import { DoorprizeRulesModal } from '@/components/modules/doorprize/doorprize-rules-modal'
 import { WinnersListModal } from '@/components/modules/doorprize/winners-list-modal'
-import { useState } from 'react'
-import { Trophy } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
-export default function WallOfFortunePage() {
+export default function WallOfFortunePage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id: eventId } = use(params)
   const [isRulesOpen, setIsRulesOpen] = useState(true)
   const [isWinnersListOpen, setIsWinnersListOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<'Bharata Group' | 'Sponsorship'>('Bharata Group')
   const {
     mapping,
     openedIds,
@@ -27,7 +33,7 @@ export default function WallOfFortunePage() {
     candidates,
     selectedNumber,
     setSelectedNumber,
-  } = useEnvelopeWall()
+  } = useEnvelopeWall(eventId)
 
   return (
     <div className="relative min-h-screen w-full bg-[#050505] text-white overflow-hidden flex flex-col select-none">
@@ -52,7 +58,7 @@ export default function WallOfFortunePage() {
 
         {/* Action Buttons */}
         <div className="flex gap-1.5">
-          <Link href="/admin/doorprize">
+          <Link href={`/admin/events/${eventId}/doorprize`}>
             <Button 
                variant="outline" 
                size="sm"
@@ -142,7 +148,7 @@ export default function WallOfFortunePage() {
               <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
                 <Button 
                   size="lg"
-                  onClick={() => openEnvelope(selectedNumber)}
+                  onClick={() => openEnvelope(selectedNumber, selectedCategory)}
                   className="flex-1 h-16 bg-gradient-to-r from-amber-400 to-amber-600 text-black font-black text-xl rounded-2xl shadow-xl hover:scale-105 transition-transform"
                 >
                   BUKA SEKARANG
@@ -161,11 +167,41 @@ export default function WallOfFortunePage() {
         )}
       </AnimatePresence>
 
-      {/* Bottom Footer Decor */}
       <div className="relative z-10 p-4 text-center">
          <p className="text-[9px] font-bold text-white/10 uppercase tracking-[1em]">
             Select an envelope to reveal the lucky winner
          </p>
+      </div>
+
+      {/* Category Toggle (Bottom Left) */}
+      <div className="fixed bottom-8 left-8 z-50 flex flex-col gap-2">
+        <p className="ml-2 text-[10px] font-black tracking-[0.2em] text-white/40 uppercase">
+          RESULT CATEGORY
+        </p>
+        <div className="flex rounded-2xl border border-white/10 bg-black/60 p-1.5 backdrop-blur-xl">
+          <button
+            onClick={() => setSelectedCategory('Bharata Group')}
+            className={cn(
+              "relative px-6 py-2.5 text-xs font-black tracking-widest uppercase transition-all rounded-xl",
+              selectedCategory === 'Bharata Group' 
+                ? "bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]" 
+                : "text-white/40 hover:text-white/60"
+            )}
+          >
+            BHARATA GROUP
+          </button>
+          <button
+            onClick={() => setSelectedCategory('Sponsorship')}
+            className={cn(
+              "relative px-6 py-2.5 text-xs font-black tracking-widest uppercase transition-all rounded-xl",
+              selectedCategory === 'Sponsorship' 
+                ? "bg-emerald-600 text-white shadow-[0_0_20px_rgba(5,150,105,0.4)]" 
+                : "text-white/40 hover:text-white/60"
+            )}
+          >
+            SPONSORSHIP
+          </button>
+        </div>
       </div>
 
       {/* Winner Display */}
@@ -179,7 +215,7 @@ export default function WallOfFortunePage() {
         isOpen={isRulesOpen}
         onClose={() => setIsRulesOpen(false)}
         rules={[
-          "HANYA PESERTA YANG SUDAH CHECK-IN YANG BERHAK IKUT DIUNDI.",
+          "SELURUH TAMU YANG TERDAFTAR DI EVENT BERHAK IKUT DIUNDI.",
           "Pilih satu angka amplop yang tampil di layar utama.",
           "Satu amplop berisi satu identitas tamu yang beruntung.",
           "Pastikan peserta yang terpilih hadir di lokasi acara.",
@@ -194,6 +230,7 @@ export default function WallOfFortunePage() {
       <WinnersListModal 
         isOpen={isWinnersListOpen}
         onClose={() => setIsWinnersListOpen(false)}
+        eventId={eventId}
       />
 
       <style jsx global>{`
