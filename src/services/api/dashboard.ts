@@ -86,7 +86,9 @@ export async function getDashboardData() {
     supabase.from('checkins').select('step'),
     supabase
       .from('checkins')
-      .select('id, checkin_time, step, guests(full_name, guest_type), events(name)')
+      .select(
+        'id, checkin_time, step, guests(full_name, guest_type), events(name)',
+      )
       .order('checkin_time', { ascending: false })
       .limit(6),
   ])

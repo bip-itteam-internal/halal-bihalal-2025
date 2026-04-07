@@ -13,7 +13,7 @@ export interface LandingClientV2Props {
 
 export function LandingClientV2({ events, guestRules }: LandingClientV2Props) {
   const mainEvent = events?.[0]
-  const mainImagePath = '/fix.jpeg'
+  const mainImagePath = '/flyer.jpeg'
 
   // Calculate Internal Open Gate Logic
   const targetDate = React.useMemo(() => {
