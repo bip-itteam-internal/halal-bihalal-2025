@@ -5,7 +5,6 @@ import {
   Heading,
   Hr,
   Html,
-  Img,
   Link,
   Preview,
   Section,
@@ -36,13 +35,7 @@ export const InvitationEmail = ({ guestName }: InvitationEmailProps) => {
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
-            <Img
-              src="cid:logo"
-              width="200"
-              height="auto"
-              alt="Bharata Group"
-              style={logo}
-            />
+            <Heading style={heading}>BHARATA GROUP</Heading>
           </Section>
 
           <Section style={content}>
@@ -157,13 +150,9 @@ const container = {
 }
 
 const header = {
-  padding: '30px 0',
+  padding: '40px 0',
   textAlign: 'center' as const,
   background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-}
-
-const logo = {
-  margin: '0 auto',
 }
 
 const heading = {
