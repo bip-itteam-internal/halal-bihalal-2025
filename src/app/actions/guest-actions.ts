@@ -72,3 +72,42 @@ export async function clearEventGuestsAction(eventId: string) {
 
   return { success: true, message: 'Daftar tamu dan log cekin berhasil dikosongkan' }
 }
+
+export async function updateGuestAction(
+  id: string,
+  guestUpdates: Record<string, unknown>,
+  eventId?: string,
+  eventUpdates?: Record<string, unknown>,
+) {
+  const supabase = await createClient()
+
+  // 1. Update Guest Table
+  const { error: guestError } = await supabase
+    .from('guests')
+    .update(guestUpdates)
+    .eq('id', id)
+
+  if (guestError) {
+    return { success: false, message: guestError.message }
+  }
+
+  // 2. Update Guest Event Table (if mapping data is provided)
+  if (eventId && eventUpdates) {
+    const { error: mapError } = await supabase
+      .from('guest_events')
+      .update(eventUpdates)
+      .eq('guest_id', id)
+      .eq('event_id', eventId)
+
+    if (mapError) {
+      return { success: false, message: mapError.message }
+    }
+  }
+
+  if (eventId) {
+    revalidatePath(`/admin/events/${eventId}/guests`)
+    revalidatePath(`/admin/events/${eventId}`)
+  }
+
+  return { success: true, message: 'Data tamu berhasil diperbarui' }
+}

@@ -27,7 +27,9 @@ import {
   MessageCircle,
   Trash2,
   Link,
+  Pencil,
 } from 'lucide-react'
+import { EditGuestDialog } from '@/components/modules/guests/edit-guest-dialog'
 import { bulkSendWhatsappAction } from '@/app/actions/whatsapp-actions'
 import { deleteGuestAction } from '@/app/actions/guest-actions'
 import { Badge } from '@/components/ui/badge'
@@ -64,6 +66,8 @@ export function GuestListTable({
   )
   const [guestToDelete, setGuestToDelete] = useState<Guest | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [editingGuest, setEditingGuest] = useState<Guest | null>(null)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
 
   const getWhatsappLink = (
     phone?: string | null,
@@ -384,6 +388,18 @@ export function GuestListTable({
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-8 w-8 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600"
+                        title="Edit Data Tamu"
+                        onClick={() => {
+                          setEditingGuest(guest)
+                          setEditDialogOpen(true)
+                        }}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         className="h-8 w-8 text-slate-400 hover:bg-red-50 hover:text-red-500"
                         onClick={() => setGuestToDelete(guest)}
                       >
@@ -635,6 +651,14 @@ export function GuestListTable({
         onSuccess={() => {
           onRefresh()
         }}
+      />
+
+      <EditGuestDialog
+        guest={editingGuest}
+        eventId={propEventId}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={onRefresh}
       />
     </div>
   )
