@@ -15,12 +15,14 @@ import {
   Users,
   Globe,
   MessageCircle,
+  Mail,
 } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Guest, PaymentStatus } from '@/types'
 import { GuestListTable } from '@/components/modules/guests/guest-list-table'
 import { WhatsappBulkDialog } from '@/components/modules/guests/whatsapp-bulk-dialog'
+import { EmailBulkDialog } from '@/components/modules/guests/email-bulk-dialog'
 import { ImportGuestSheet } from '@/components/modules/guests/import-guest-sheet'
 import { AddGuestSheet } from '@/components/modules/guests/add-guest-sheet'
 import { toast } from 'sonner'
@@ -151,6 +153,7 @@ export default function GuestManagementPage({
   const [pageSize] = useState(10)
   const [totalCount, setTotalCount] = useState(0)
   const [broadcastOpen, setBroadcastOpen] = useState(false)
+  const [emailBroadcastOpen, setEmailBroadcastOpen] = useState(false)
   const [summary, setSummary] = useState<GuestSummary>({
     total: 0,
     confirmed: 0,
@@ -444,6 +447,16 @@ export default function GuestManagementPage({
                   Broadcast WA
                 </Button>
               )}
+              {guestType === 'internal' && (
+                <Button
+                  variant="outline"
+                  className="h-9 gap-2 rounded-xl border-indigo-200 bg-indigo-50 font-bold tracking-wide text-indigo-600 uppercase shadow-sm transition-all hover:scale-[1.02] hover:bg-indigo-100 active:scale-[0.98]"
+                  onClick={() => setEmailBroadcastOpen(true)}
+                >
+                  <Mail className="h-4 w-4" />
+                  Broadcast Email
+                </Button>
+              )}
               <ImportGuestSheet
                 eventId={eventId}
                 onSuccess={fetchEventAndGuests}
@@ -591,6 +604,19 @@ export default function GuestManagementPage({
             <WhatsappBulkDialog
               isOpen={broadcastOpen}
               onOpenChange={setBroadcastOpen}
+              selectedIds={[]}
+              isAllMode={true}
+              totalCount={totalCount}
+              searchFilter={searchQuery}
+              eventId={eventId}
+              onSuccess={() => {
+                fetchEventAndGuests()
+              }}
+            />
+
+            <EmailBulkDialog
+              isOpen={emailBroadcastOpen}
+              onOpenChange={setEmailBroadcastOpen}
               selectedIds={[]}
               isAllMode={true}
               totalCount={totalCount}

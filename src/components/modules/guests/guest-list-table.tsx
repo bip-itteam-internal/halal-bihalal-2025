@@ -25,12 +25,14 @@ import {
   FileImage,
   Loader2,
   MessageCircle,
+  Mail,
   Trash2,
   Link,
   Pencil,
 } from 'lucide-react'
 import { EditGuestDialog } from '@/components/modules/guests/edit-guest-dialog'
 import { bulkSendWhatsappAction } from '@/app/actions/whatsapp-actions'
+import { bulkSendEmailAction } from '@/app/actions/email-actions'
 import { deleteGuestAction } from '@/app/actions/guest-actions'
 import { Badge } from '@/components/ui/badge'
 import { WhatsappBulkDialog } from '@/components/modules/guests/whatsapp-bulk-dialog'
@@ -64,6 +66,8 @@ export function GuestListTable({
   const [selectedGuestForWa, setSelectedGuestForWa] = useState<Guest | null>(
     null,
   )
+  const [selectedGuestForEmail, setSelectedGuestForEmail] =
+    useState<Guest | null>(null)
   const [guestToDelete, setGuestToDelete] = useState<Guest | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null)
@@ -337,9 +341,19 @@ export function GuestListTable({
                         </div>
                       )}
                       {guest.email && (
-                        <span className="text-muted-foreground max-w-[150px] truncate">
-                          {guest.email}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground max-w-[150px] truncate">
+                            {guest.email}
+                          </span>
+                          <button
+                            onClick={() => setSelectedGuestForEmail(guest)}
+                            className="inline-flex h-6 items-center justify-center gap-1.5 rounded-full bg-indigo-50 px-2 text-[9px] font-bold text-indigo-600 transition-colors hover:bg-indigo-100 hover:text-indigo-700"
+                            title="Kirim Undangan via Email"
+                          >
+                            <Mail className="h-3 w-3" />
+                            KIRIM EMAIL
+                          </button>
+                        </div>
                       )}
                     </div>
                   </TableCell>
@@ -567,6 +581,77 @@ export function GuestListTable({
                   }
                 } catch (error) {
                   toast.error('Gagal mengirim pesan')
+                  console.error(error)
+                } finally {
+                  setLoading(null)
+                }
+              }}
+            >
+              Kirim Sekarang
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={!!selectedGuestForEmail}
+        onOpenChange={(open) => !open && setSelectedGuestForEmail(null)}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                <Mail className="h-4 w-4" />
+              </div>
+              Kirim Undangan Email
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Kirim undangan digital premium ke{' '}
+              <span className="font-bold text-slate-900">
+                {selectedGuestForEmail?.full_name}
+              </span>{' '}
+              melalui email?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 p-4 text-[11px] leading-relaxed text-indigo-800">
+            <p className="mb-1 font-semibold tracking-wider uppercase">
+              Template:
+            </p>
+            <p className="italic">
+              Email akan menggunakan template digital invitation Bharata Group
+              yang elegan.
+            </p>
+          </div>
+          <DialogFooter className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setSelectedGuestForEmail(null)}
+            >
+              Batal
+            </Button>
+            <Button
+              className="bg-indigo-600 text-white hover:bg-indigo-700"
+              onClick={async () => {
+                if (!selectedGuestForEmail) return
+                const guestId = selectedGuestForEmail.id
+                const guestName = selectedGuestForEmail.full_name
+                setSelectedGuestForEmail(null)
+
+                try {
+                  setLoading(guestId)
+                  const res = await bulkSendEmailAction(
+                    [guestId],
+                  )
+
+                  if (res.success && res.results?.[0]?.success) {
+                    toast.success(`Email berhasil dikirim ke ${guestName}`)
+                  } else {
+                    toast.error(
+                      res.results?.[0]?.message || 'Gagal mengirim email',
+                    )
+                  }
+                } catch (error) {
+                  toast.error('Gagal mengirim email')
                   console.error(error)
                 } finally {
                   setLoading(null)
