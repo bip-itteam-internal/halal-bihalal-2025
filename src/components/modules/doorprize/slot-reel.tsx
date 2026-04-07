@@ -55,9 +55,10 @@ export function SlotReel({ options, targetIndex, isSpinning, delay, isSlowMo, on
     const finalY = -( (2 * options.length + target) * itemHeight )
     
     // Smooth decelerate to the target with "Heavy Friction" feel
-    const stopDuration = isSlowMo ? 5 : 2 + delay
+    // CRITICAL: Increased to 10 seconds for intense suspense on final reel
+    const stopDuration = isSlowMo ? 10 : 3 + delay
     const easeCurve = isSlowMo 
-      ? [0.08, 0.82, 0.17, 1] // Extreme Slow-Mo / Heavy Friction easing
+      ? [0.05, 0.9, 0.1, 1] // Even heavier tension easing curve
       : [0.45, 0.05, 0.55, 0.95] // Standard smooth stop
       
     await controls.start({

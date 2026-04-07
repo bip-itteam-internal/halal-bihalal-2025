@@ -132,7 +132,8 @@ export default function SlotMachinePage({
     setReelStatus([true, true, true])
     setIsShaking(true)
 
-    // Staggered stop for the reels
+    // SIGNIFICANTLY Increased staggered stop for much more tension
+    // From 0.8s -> 2.0s between each reel
     setTimeout(() => {
       setReelStatus([false, true, true])
       audioManager.playSlotStop()
@@ -144,8 +145,8 @@ export default function SlotMachinePage({
         setTimeout(() => {
           setReelStatus([false, false, false])
           // WE STOP HERE and wait for the actual SlotReel to trigger onStop
-        }, 800)
-      }, 800)
+        }, 2000)
+      }, 2000)
     }, 1200)
   }
 
@@ -425,7 +426,7 @@ export default function SlotMachinePage({
         <div className="grid grid-cols-1 gap-6 rounded-[40px] border-8 border-[#111] bg-black/60 p-6 md:grid-cols-3 md:gap-10 md:p-10">
           <div className="flex flex-col gap-2">
             <span className="text-center text-[10px] font-black tracking-[0.3em] text-amber-500/40 uppercase">
-              Location
+              FROM
             </span>
             <SlotReel
               options={locationOptions}
