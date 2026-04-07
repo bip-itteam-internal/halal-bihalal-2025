@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   ShieldCheck,
   LayoutDashboard,
-  Timer,
   Settings,
   LogOut,
   CalendarDays,
@@ -61,13 +60,7 @@ const items = [
     icon: Users,
     roles: ['super_admin'] as UserRole[],
   },
-  {
-    title: 'Doorprize',
-    url: '/admin/doorprize',
-    icon: Timer,
-    roles: ['super_admin', 'admin'] as UserRole[],
-    newTab: true,
-  },
+
   {
     title: 'Settings',
     url: '#',
@@ -151,21 +144,6 @@ export function Sidebar({
                   const isItemActive =
                     item.url === '/admin/dashboard' ? activeExact : isActive
 
-                  const handleItemClick = (e: React.MouseEvent) => {
-                    if (item.newTab && typeof window !== 'undefined') {
-                      e.preventDefault()
-                      const width = 1280
-                      const height = 720
-                      const left = (window.screen.width - width) / 2
-                      const top = (window.screen.height - height) / 2
-
-                      window.open(
-                        item.url,
-                        'DoorprizeArena',
-                        `width=${width},height=${height},top=${top},left=${left},menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=yes`,
-                      )
-                    }
-                  }
 
                   return (
                     <SidebarMenuItem key={item.title}>
@@ -173,7 +151,6 @@ export function Sidebar({
                         asChild
                         isActive={isItemActive}
                         tooltip={item.title}
-                        onClick={handleItemClick}
                         className="py-5"
                       >
                         <Link href={item.url}>
