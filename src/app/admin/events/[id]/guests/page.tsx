@@ -617,11 +617,10 @@ export default function GuestManagementPage({
             <EmailBulkDialog
               isOpen={emailBroadcastOpen}
               onOpenChange={setEmailBroadcastOpen}
-              selectedIds={[]}
+              selectedIds={[] as string[]}
               isAllMode={true}
               totalCount={totalCount}
               searchFilter={searchQuery}
-              eventId={eventId}
               onSuccess={() => {
                 fetchEventAndGuests()
               }}
