@@ -168,12 +168,12 @@ export default function GuestLoginPage({ params }: GuestLoginPageProps) {
                             >
                               <Alert
                                 variant="destructive"
-                                className="border-red-500/50 bg-red-500/10 text-red-200"
+                                className="border-red-500/20 bg-red-500/10 text-red-800"
                               >
                                 <AlertTitle className="text-sm font-bold">
                                   Login Gagal
                                 </AlertTitle>
-                                <AlertDescription className="text-xs opacity-90">
+                                <AlertDescription className="text-xs font-medium">
                                   {error}
                                 </AlertDescription>
                               </Alert>

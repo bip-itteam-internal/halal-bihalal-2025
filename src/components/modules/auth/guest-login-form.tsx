@@ -90,10 +90,12 @@ export function GuestLoginForm({
           {error && (
             <Alert
               variant="destructive"
-              className="border-red-500/20 bg-red-500/10 text-red-400"
+              className="border-red-500/20 bg-red-500/10 text-red-800"
             >
               <AlertTitle>Login Gagal</AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription className="font-medium">
+                {error}
+              </AlertDescription>
             </Alert>
           )}
 
@@ -119,7 +121,7 @@ export function GuestLoginForm({
 
           <Button
             type="submit"
-            className="bg-halal-primary w-full text-black hover:bg-halal-primary/80"
+            className="bg-halal-primary hover:bg-halal-primary/80 w-full text-black"
             disabled={loading}
           >
             {loading ? (
