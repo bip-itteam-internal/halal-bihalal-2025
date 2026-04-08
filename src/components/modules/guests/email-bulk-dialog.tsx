@@ -10,7 +10,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Mail, Loader2, AlertCircle, Clock, ShieldCheck, User } from 'lucide-react'
+import { Mail, Loader2, Clock, ShieldCheck, User } from 'lucide-react'
 import { sendSingleEmailAction } from '@/app/actions/email-actions'
 import { toast } from 'sonner'
 import { Progress } from '@/components/ui/progress'

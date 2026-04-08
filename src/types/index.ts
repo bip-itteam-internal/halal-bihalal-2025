@@ -35,6 +35,8 @@ export interface Event {
   latitude?: number | null
   longitude?: number | null
   created_at: string
+  is_halal_checkin_open: boolean
+  is_concert_checkin_open: boolean
   event_guest_rules?: EventGuestRule[]
 }
 

@@ -41,8 +41,6 @@ interface TemplateProps {
   onSelfCheckinStep?: (step: 'exchange' | 'entrance') => Promise<void>
   isHalalEnabled?: boolean
   isConcertEnabled?: boolean
-  latitude?: number | null
-  longitude?: number | null
 }
 
 function InfoItem({
@@ -148,8 +146,6 @@ export function TraditionalHalal({
   onSelfCheckinStep,
   isHalalEnabled,
   isConcertEnabled,
-  latitude,
-  longitude,
 }: TemplateProps) {
   const [showLinkInfo, setShowLinkInfo] = React.useState(false)
   const shouldSkipCover = guest.guest_type === 'external'
@@ -205,8 +201,6 @@ export function TraditionalHalal({
             onSelfCheckinStep={onSelfCheckinStep}
             isHalalEnabled={isHalalEnabled}
             isConcertEnabled={isConcertEnabled}
-            latitude={latitude}
-            longitude={longitude}
           />
 
           {!shouldSkipCover && (

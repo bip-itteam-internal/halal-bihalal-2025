@@ -253,6 +253,8 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
         is_paid: draftEvent.is_paid,
         price_external: draftEvent.price_external,
         payment_info: draftEvent.payment_info,
+        is_halal_checkin_open: draftEvent.is_halal_checkin_open,
+        is_concert_checkin_open: draftEvent.is_concert_checkin_open,
       },
       branding: {
         template_id: draftEvent.template_id,
@@ -371,6 +373,26 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
                     }
                   >
                     {event.event_type === 'public' ? 'Event Publik' : 'Event Internal'}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className={
+                      event.is_halal_checkin_open
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                        : 'border-slate-200 bg-slate-50 text-slate-600'
+                    }
+                  >
+                    Check-in Halal {event.is_halal_checkin_open ? 'Buka' : 'Tutup'}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className={
+                      event.is_concert_checkin_open
+                        ? 'border-indigo-200 bg-indigo-50 text-indigo-700'
+                        : 'border-slate-200 bg-slate-50 text-slate-600'
+                    }
+                  >
+                    Check-in Konser {event.is_concert_checkin_open ? 'Buka' : 'Tutup'}
                   </Badge>
                   <Badge
                     variant="outline"
@@ -541,6 +563,14 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
             action={editButton('payment')}
           >
             <div className="grid gap-5">
+              <DetailItem
+                label="Check-in Halal"
+                value={event.is_halal_checkin_open ? 'Dibuka' : 'Ditutup'}
+              />
+              <DetailItem
+                label="Check-in Konser"
+                value={event.is_concert_checkin_open ? 'Dibuka' : 'Ditutup'}
+              />
               <DetailItem
                 label="Status Registrasi Publik"
                 value={event.public_reg_status === 'open' ? 'Dibuka' : 'Ditutup'}
@@ -801,6 +831,40 @@ export function EventDetailsForm(props: EventDetailsFormProps) {
                       <SelectItem value="open">Dibuka</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-900">Buka Check-in Halal</p>
+                        <p className="text-xs leading-relaxed text-slate-500">
+                          Aktifkan agar tamu bisa melakukan check-in mandiri untuk Jalur Halal Bihalal.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={!!draftEvent.is_halal_checkin_open}
+                        onCheckedChange={(checked) =>
+                          setDraftEvent((prev) => ({ ...prev, is_halal_checkin_open: checked }))
+                        }
+                      />
+                    </div>
+                    <div className="h-px bg-slate-200" />
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-900">Buka Check-in Konser</p>
+                        <p className="text-xs leading-relaxed text-slate-500">
+                          Aktifkan agar tamu bisa melakukan check-in mandiri untuk Jalur Konser Charly.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={!!draftEvent.is_concert_checkin_open}
+                        onCheckedChange={(checked) =>
+                          setDraftEvent((prev) => ({ ...prev, is_concert_checkin_open: checked }))
+                        }
+                      />
+                    </div>
+                  </div>
                 </div>
                 <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
                   <div className="flex items-start justify-between gap-3">

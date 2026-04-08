@@ -66,6 +66,24 @@ export async function POST(
       }
     }
 
+    // 0. Check if specific check-in is globally open for this event
+    const { data: eventData, error: eventErr } = await adminClient
+      .from('events')
+      .select('is_halal_checkin_open, is_concert_checkin_open')
+      .eq('id', event_id)
+      .maybeSingle()
+
+    const isCheckinOpen = determinedStep === 'exchange' 
+      ? eventData?.is_halal_checkin_open 
+      : eventData?.is_concert_checkin_open
+
+    if (eventErr || !isCheckinOpen) {
+      return NextResponse.json(
+        { message: `Check-in ${determinedStep === 'exchange' ? 'Halal Bihalal' : 'Konser'} sedang ditutup.` },
+        { status: 403 },
+      )
+    }
+
     // 4. Check for existing scan of the same step
     const { data: alreadyScanned } = await adminClient
       .from('checkins')

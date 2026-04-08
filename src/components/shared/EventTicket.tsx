@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react'
-import { RefreshCw, Info, User, MapPin } from 'lucide-react'
+import { RefreshCw, Info, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
-import { cn, getHaversineDistance } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
 export interface EventTicketProps {
@@ -26,8 +26,6 @@ export interface EventTicketProps {
   onSelfCheckinStep?: (step: 'exchange' | 'entrance') => Promise<void>
   isHalalEnabled?: boolean
   isConcertEnabled?: boolean
-  latitude?: number | null
-  longitude?: number | null
 }
 
 export function EventTicket({
@@ -46,8 +44,6 @@ export function EventTicket({
   onSelfCheckinStep,
   isHalalEnabled = false,
   isConcertEnabled = false,
-  latitude,
-  longitude,
 }: EventTicketProps) {
   const ticketRef = useRef<HTMLDivElement>(null)
   const [isCheckingIn, setIsCheckingIn] = useState<

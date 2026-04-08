@@ -44,8 +44,13 @@ export function InvitePageClient({
   const [isHalalEnabled, setIsHalalEnabled] = useState(false)
   const [isConcertEnabled, setIsConcertEnabled] = useState(false)
 
-  // Enable Halal Bihalal check-in 30 min before internal open gate
+  // Enable Halal Bihalal check-in 30 min before internal open gate, until 4 hours after
   useEffect(() => {
+    if (!event.is_halal_checkin_open) {
+      setIsHalalEnabled(false)
+      return
+    }
+
     if (!openGateHalal) {
       setIsHalalEnabled(true)
       return
@@ -53,15 +58,23 @@ export function InvitePageClient({
     const check = () => {
       const gateISO = toJakartaISOString(event.event_date, openGateHalal)
       const gateTime = new Date(gateISO).getTime()
-      setIsHalalEnabled(Date.now() >= gateTime - 1800000) // 30 min
+      const now = Date.now()
+      
+      // Open from 30 min before gate until 4 hours after gate
+      setIsHalalEnabled(now >= gateTime - 1800000 && now < gateTime + 14400000)
     }
     check()
     const interval = setInterval(check, 10000)
     return () => clearInterval(interval)
-  }, [event.event_date, openGateHalal])
+  }, [event.event_date, openGateHalal, event.is_halal_checkin_open])
 
-  // Enable Konser check-in 30 min before external open gate
+  // Enable Konser check-in 30 min before external open gate, until 4 hours after
   useEffect(() => {
+    if (!event.is_concert_checkin_open) {
+      setIsConcertEnabled(false)
+      return
+    }
+
     if (!openGateKonser) {
       setIsConcertEnabled(true)
       return
@@ -69,12 +82,15 @@ export function InvitePageClient({
     const check = () => {
       const gateISO = toJakartaISOString(event.event_date, openGateKonser)
       const gateTime = new Date(gateISO).getTime()
-      setIsConcertEnabled(Date.now() >= gateTime - 1800000) // 30 min
+      const now = Date.now()
+
+      // Open from 30 min before gate until 4 hours after gate
+      setIsConcertEnabled(now >= gateTime - 1800000 && now < gateTime + 14400000)
     }
     check()
     const interval = setInterval(check, 10000)
     return () => clearInterval(interval)
-  }, [event.event_date, openGateKonser])
+  }, [event.event_date, openGateKonser, event.is_concert_checkin_open])
 
   useEffect(() => {
     document.title = `Undangan ${guest.full_name} - ${event.name}`
