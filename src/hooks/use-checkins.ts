@@ -12,6 +12,10 @@ export interface CheckinLog {
     full_name: string
     phone: string
     guest_type: string
+    email?: string | null
+    address?: string | null
+    shirt_size?: string | null
+    metadata?: any
   }
   events: {
     name: string

@@ -32,7 +32,11 @@ export async function GET(req: Request) {
         guests (
           full_name,
           phone,
-          guest_type
+          guest_type,
+          email,
+          address,
+          shirt_size,
+          metadata
         ),
         events (
           name
